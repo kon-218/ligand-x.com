@@ -1435,6 +1435,14 @@ img { max-width: 100%; display: block; }
 @media (max-width: 640px) {
   .topnav-inner          { gap: 12px; }
   .nav-links             { display: none; }
+  .topnav-inner          { height: auto; min-height: 48px; padding: 8px 0 6px; align-items: center; }
+  .brand                 { position: static; height: 40px; padding: 0 16px; }
+  .nav-right             { margin-left: auto; gap: 6px; padding: 0 12px 0 0; }
+  .nav-right .ver        { display: none; }
+  .nav-right .btn-ghost[title="Search"] { display: none; }
+  .nav-right .btn-secondary { display: none; }
+  .nav-right .btn-sm     { padding: 4px 10px; font-size: 12px; }
+  .nav-right .btn-primary { padding: 4px 12px; }
   .container,
   .container-wide        { padding: 0 16px; }
   .hero                  { padding: 48px 0 40px; }
