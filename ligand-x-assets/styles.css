@@ -23,6 +23,14 @@
   --hero-muted:    #58736d;
   --hero-badge-bg: rgba(249,250,249,0.82);
   --hero-badge-border: rgba(42,157,143,0.22);
+  --local-section-bg: var(--ink);
+  --local-section-fg: var(--bg);
+  --local-section-heading: var(--bg);
+  --local-section-muted: #b9b9b2;
+  --local-section-eyebrow: #a8a8a0;
+  --local-item-bg: #22221f;
+  --local-item-border: #3a3a34;
+  --local-item-fg: #e7e7df;
   --ok:            #22c55e;
   --code-comment:  #6b7280;
   --font-mono:     'IBM Plex Mono', 'Fira Mono', monospace;
@@ -53,6 +61,14 @@
   --hero-muted:    #7a8f87;
   --hero-badge-bg: rgba(5, 8, 13, 0.72);
   --hero-badge-border: #1a2820;
+  --local-section-bg: #0b1311;
+  --local-section-fg: var(--ink);
+  --local-section-heading: var(--ink);
+  --local-section-muted: var(--muted);
+  --local-section-eyebrow: var(--muted);
+  --local-item-bg: #101a17;
+  --local-item-border: var(--border-strong);
+  --local-item-fg: var(--ink-2);
 }
 
 [data-density="spacious"] {
@@ -2019,15 +2035,15 @@ img { max-width: 100%; display: block; }
   border-bottom: 1px solid var(--border);
 }
 .local-value-section {
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--local-section-bg);
+  color: var(--local-section-fg);
   border-bottom: 1px solid var(--border);
 }
 .local-value-section h2 {
-  color: var(--bg);
+  color: var(--local-section-heading);
 }
 .local-value-section .eyebrow {
-  color: #a8a8a0;
+  color: var(--local-section-eyebrow);
 }
 .local-value-section .dot {
   background: #4dbfb3;
@@ -2039,7 +2055,7 @@ img { max-width: 100%; display: block; }
   align-items: center;
 }
 .local-value-grid p {
-  color: #b9b9b2;
+  color: var(--local-section-muted);
 }
 .local-value-list {
   display: grid;
@@ -2050,10 +2066,10 @@ img { max-width: 100%; display: block; }
   align-items: flex-start;
   gap: 12px;
   padding: 16px;
-  border: 1px solid #3a3a34;
+  border: 1px solid var(--local-item-border);
   border-radius: var(--radius);
-  background: #22221f;
-  color: #e7e7df;
+  background: var(--local-item-bg);
+  color: var(--local-item-fg);
 }
 .local-value-item svg {
   color: #4dbfb3;
@@ -2520,6 +2536,40 @@ img { max-width: 100%; display: block; }
   }
 }
 
+
+/* Dark mode contrast repairs */
+[data-theme="dark"] .btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #04110f;
+}
+[data-theme="dark"] .btn-primary:hover {
+  background: #4dbfb3;
+  border-color: #4dbfb3;
+  color: #04110f;
+}
+[data-theme="dark"] .hero-showcase-copy .btn-primary {
+  color: #fff;
+}
+[data-theme="dark"] .final-story-cta {
+  background: #0b1311;
+  color: var(--ink);
+}
+[data-theme="dark"] .final-story-inner h2 {
+  color: var(--ink);
+}
+[data-theme="dark"] .final-story-inner p {
+  color: var(--muted);
+}
+[data-theme="dark"] .final-story-inner .btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #04110f;
+}
+[data-theme="dark"] .final-story-inner .btn-secondary {
+  color: var(--ink);
+  border-color: var(--border-strong);
+}
 
 /* Dark mode softened legacy light bands */
 [data-theme="dark"] .hero-c,
