@@ -124,6 +124,7 @@ function applyStructure(viewer, index) {
       sphere: { color: '#c8922a', radius: 0.45 },
     });
     viewer.zoomTo(ligand);
+    return;
   }
 }
 
