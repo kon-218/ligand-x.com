@@ -2686,3 +2686,95 @@ img { max-width: 100%; display: block; }
   background: #e7efec;
   border-color: #e7efec;
 }
+
+/* ================================================================
+   Mol* hero viewer · scroll reveal · micro-interactions
+   ================================================================ */
+
+/* Poster (SVG) paints instantly behind the live Mol* canvas, and stays
+   visible as the graceful fallback if the viewer fails to load. */
+.hero-viewer-poster {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.5s ease;
+}
+/* Once the live (transparent) Mol* canvas is up, fade the poster out so it
+   doesn't show through behind the real molecule. */
+.hero-viewer-poster.hidden { opacity: 0; }
+
+/* The real Mol* canvas fills the panel and renders transparent, so the
+   molecule floats on the page background in both light and dark themes. */
+.hero-viewer-container { position: relative; z-index: 1; }
+.hero-viewer-container .msp-plugin { position: absolute; inset: 0; }
+.hero-viewer-container .msp-plugin,
+.hero-viewer-container .msp-plugin .msp-layout-standard,
+.hero-viewer-container .msp-layout-region,
+.hero-viewer-container .msp-viewport,
+.hero-viewer-container .msp-viewport-host3d,
+.hero-viewer-container .msp-viewport-host3d > canvas {
+  background: transparent !important;
+}
+/* Kill Mol*'s 1px framing border so the viewer blends into the page. */
+.hero-viewer-container .msp-plugin .msp-layout-standard,
+.hero-viewer-container .msp-layout-region {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+/* We drive the viewer ourselves — suppress any residual Mol* chrome. */
+.hero-viewer-container .msp-viewport-controls,
+.hero-viewer-container .msp-viewport-top-left-controls,
+.hero-viewer-container .msp-hover-box-wrapper,
+.hero-viewer-container .msp-highlight-toast-wrapper {
+  display: none !important;
+}
+
+.hero-struct-badge-static { opacity: 0.7; }
+
+/* The transparent Mol* canvas (.hero-viewer-container, z-index:1) would
+   otherwise paint over the controls and swallow their clicks. Lift the
+   overlays above it so the switcher dots and badge stay interactive. */
+.hero-struct-badge { z-index: 4; }
+.hero-dot-bar { z-index: 4; }
+.hero-spin-prompt { z-index: 3; }
+
+/* ── Scroll reveal — only animates when the user permits motion ── */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: calc(var(--reveal-i, 0) * 70ms);
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Micro-interactions ── */
+@media (prefers-reduced-motion: no-preference) {
+  .use-case-card,
+  .edition-card,
+  .service-cell,
+  .local-value-item {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .use-case-card:hover,
+  .edition-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 30px -20px rgba(20, 33, 30, 0.55);
+    border-color: var(--border-strong);
+  }
+  .service-cell:hover,
+  .local-value-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+  }
+}

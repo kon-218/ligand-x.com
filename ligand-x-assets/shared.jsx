@@ -227,6 +227,84 @@ const Str = ({ children }) => <span className="c-string">{children}</span>;
 const Fn = ({ children }) => <span className="c-fn">{children}</span>;
 
 // ============================================================
+// Mol* lazy loader — injects the vendored standalone bundle once
+// and resolves with the global `molstar` namespace. Kept off the
+// critical path so the ~5MB viewer never blocks first paint.
+// ============================================================
+
+const MOLSTAR_VERSION = '20260610m';
+let __molstarPromise = null;
+
+function loadMolstar() {
+  if (typeof window !== 'undefined' && window.molstar) return Promise.resolve(window.molstar);
+  if (__molstarPromise) return __molstarPromise;
+
+  __molstarPromise = new Promise((resolve, reject) => {
+    // Stylesheet (needed for the canvas/viewport chrome even with panels hidden)
+    if (!document.getElementById('molstar-css')) {
+      const link = document.createElement('link');
+      link.id = 'molstar-css';
+      link.rel = 'stylesheet';
+      link.href = '/ligand-x-assets/molstar/molstar.css?v=' + MOLSTAR_VERSION;
+      document.head.appendChild(link);
+    }
+
+    const script = document.createElement('script');
+    script.src = '/ligand-x-assets/molstar/molstar.js?v=' + MOLSTAR_VERSION;
+    script.async = true;
+    script.onload = () => {
+      if (window.molstar) resolve(window.molstar);
+      else reject(new Error('Mol* loaded but global `molstar` is missing'));
+    };
+    script.onerror = () => reject(new Error('Failed to load Mol* bundle'));
+    document.body.appendChild(script);
+  });
+
+  return __molstarPromise;
+}
+
+// ============================================================
+// Reveal — scroll-into-view animation wrapper.
+// Renders a real element (default <div>) so it can REPLACE an
+// existing node rather than nest one (keeps grids intact).
+// Pass `i` for a stagger index (read by CSS as --reveal-i).
+// Motion is gated in CSS behind prefers-reduced-motion.
+// ============================================================
+
+const __revealObserver = (typeof IntersectionObserver === 'undefined')
+  ? null
+  : new IntersectionObserver((entries, obs) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+
+const Reveal = ({ as = 'div', i = 0, className = '', style, children, ...rest }) => {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (!__revealObserver) { el.classList.add('is-visible'); return; }
+    __revealObserver.observe(el);
+    return () => __revealObserver.unobserve(el);
+  }, []);
+  const Tag = as;
+  return (
+    <Tag
+      ref={ref}
+      className={('reveal ' + className).trim()}
+      style={{ '--reveal-i': i, ...style }}
+      {...rest}
+    >
+      {children}
+    </Tag>
+  );
+};
+
+// ============================================================
 // Brand mark
 // ============================================================
 
@@ -253,4 +331,6 @@ Object.assign(window, {
   CodeBlock,
   BrandMark,
   Cmd, Comment, Kw, Str, Fn,
+  loadMolstar,
+  Reveal,
 });

@@ -95,46 +95,34 @@ const USE_CASES = [
   },
 ];
 
-function frameSelection(viewer, selection, scale = 1) {
-  viewer.zoomTo(selection);
-  if (scale !== 1 && typeof viewer.zoom === 'function') {
-    viewer.zoom(scale);
-  }
-}
+// Hero viewer uses the real Mol* engine (same library + representation
+// recipe as the Ligand-X app). 1M17 = EGFR kinase with erlotinib (AQ4).
+const HERO_PDB_URL = 'https://files.rcsb.org/download/1M17.pdb';
+const HERO_CARBON  = 0x2a9d8f; // brand teal for ligand carbons (element-symbol theme)
+const HERO_CHAIN   = 'A';
+const HERO_RESI    = [696, 944]; // kinase domain core — crops the floppy terminal tails
+const HERO_LIGAND  = 'AQ4';      // erlotinib
 
-function applyStructure(viewer, index) {
-  const proteinCore = { chain: 'A', resi: '696-944' };
-  const ligand      = { resn: 'AQ4' };
-
-  if (index === 0) {
-    viewer.setStyle(proteinCore, { cartoon: { color: '#2a9d8f', opacity: 1 } });
-    frameSelection(viewer, proteinCore, 1.16);
-    return;
-  }
-
-  if (index === 1) {
-    viewer.setStyle(proteinCore, { cartoon: { color: '#2a9d8f', opacity: 1 } });
-    viewer.setStyle(ligand, {
-      stick:  { colorscheme: 'Jmol', radius: 0.18 },
-      sphere: { colorscheme: 'Jmol', radius: 0.30 },
-    });
-    if (typeof viewer.addHBonds === 'function') {
-      viewer.addHBonds(ligand, proteinCore, {
-        color: '#ead8b8', opacity: 0.45, dashed: true,
-      });
+// Keep only the folded kinase core (chain A, 696-944) + the ligand, dropping
+// waters, ions, other chains, and the disordered termini that read as
+// "unfolded" trailing strands. Mirrors the prior 3Dmol hero crop.
+function cleanHeroPdb(text) {
+  const [lo, hi] = HERO_RESI;
+  const out = [];
+  for (const line of text.split('\n')) {
+    const rec = line.slice(0, 6);
+    if (rec === 'ATOM  ') {
+      const chain = line[21];
+      const resSeq = parseInt(line.slice(22, 26), 10);
+      if (chain === HERO_CHAIN && resSeq >= lo && resSeq <= hi) out.push(line);
+    } else if (rec === 'HETATM') {
+      if (line.slice(17, 20).trim() === HERO_LIGAND) out.push(line);
+    } else if (rec.startsWith('CRYST') || rec.startsWith('SCALE')) {
+      out.push(line);
     }
-    frameSelection(viewer, proteinCore, 1.16);
-    return;
   }
-
-  if (index === 2) {
-    viewer.setStyle(ligand, {
-      stick:  { colorscheme: 'Jmol', radius: 0.22 },
-      sphere: { colorscheme: 'Jmol', radius: 0.38 },
-    });
-    frameSelection(viewer, ligand, 1.25);
-    return;
-  }
+  out.push('END');
+  return out.join('\n');
 }
 
 const HERO_STRUCTURES = [
@@ -192,213 +180,215 @@ const MoleculeScene = () => (
 );
 
 const HeroShowcase = () => {
-  const viewerRef  = React.useRef(null);
-  const viewer3d   = React.useRef(null);
-  const dragStart  = React.useRef(null);
-  const hintTimer  = React.useRef(null);
-  const promptTimer = React.useRef(null);
-  const promptDemoFrame = React.useRef(null);
-  const idleSpinTimer = React.useRef(null);
-  const spinFrame = React.useRef(null);
-  const viewerTouched = React.useRef(false);
+  const viewerRef    = React.useRef(null);   // Mol* canvas container
+  const pluginRef    = React.useRef(null);   // Mol* PluginContext
+  const sceneRef     = React.useRef(null);   // { molstar, polymer, ligand, *Data }
+  const idleTimer    = React.useRef(null);
+  const touched      = React.useRef(false);
   const [current, setCurrent] = React.useState(HERO_DEFAULT);
-  const [loading,  setLoading]  = React.useState(true);
-  const [hintOn,   setHintOn]   = React.useState(true);
-  const [spinPromptOn, setSpinPromptOn] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [failed,  setFailed]  = React.useState(false);
+  const [hintOn,  setHintOn]  = React.useState(true);
+  const [promptOn, setPromptOn] = React.useState(false);
 
-  React.useEffect(() => {
-    if (!viewerRef.current || typeof $3Dmol === 'undefined') return;
+  // Show / hide representations + reframe the camera for each switcher state.
+  // Visibility is driven by representation opacity (alpha 0/1), the same
+  // mechanism the app's toggleComponentVisibility uses.
+  const applyState = (index) => {
+    const plugin = pluginRef.current;
+    const scene  = sceneRef.current;
+    if (!plugin || !scene) return;
 
-    const viewer = $3Dmol.createViewer(viewerRef.current, {
-      backgroundColor: 'transparent',
-      backgroundAlpha: 0,
-      antialias: true,
-    });
-    viewer3d.current = viewer;
-    if (typeof viewer.setBackgroundColor === 'function') {
-      viewer.setBackgroundColor(0x000000, 0);
+    const showPolymer = index !== 2;  // protein + complex
+    const showLigand  = index !== 0;  // complex + ligand
+
+    try {
+      const b = plugin.state.data.build();
+      let changed = false;
+      const setAlpha = (sel, show) => {
+        if (!sel) return;
+        b.to(sel).update((old) => ({
+          ...old,
+          type: { ...old.type, params: { ...(old.type && old.type.params), alpha: show ? 1 : 0 } },
+        }));
+        changed = true;
+      };
+      setAlpha(scene.polymer, showPolymer);
+      setAlpha(scene.ligand, showLigand);
+      if (changed) b.commit();
+    } catch (e) {
+      console.warn('[hero] representation toggle failed:', e);
     }
 
-    $3Dmol.download('pdb:1M17', viewer, {}, () => {
-      viewer.setStyle({}, {});
-      applyStructure(viewer, HERO_DEFAULT);
-      viewer.render();
-      viewerRef.current.style.opacity = '1';
-      setLoading(false);
-      if (!viewerTouched.current) {
-        promptTimer.current = setTimeout(() => {
-          setSpinPromptOn(true);
-          startSpinPromptDemo();
-        }, 1800);
-      }
-    });
+    let sphere = scene.structureData && scene.structureData.boundary && scene.structureData.boundary.sphere;
+    if (index === 2 && scene.ligandData && scene.ligandData.boundary) sphere = scene.ligandData.boundary.sphere;
+    else if (index === 0 && scene.polymerData && scene.polymerData.boundary) sphere = scene.polymerData.boundary.sphere;
 
+    const cam = plugin.managers && plugin.managers.camera;
+    if (sphere && cam && cam.focusSphere) {
+      try { cam.focusSphere(sphere, { durationMs: 420, extraRadius: index === 2 ? 3 : 1 }); return; } catch (e) { /* fall through */ }
+    }
+    if (plugin.canvas3d) plugin.canvas3d.requestCameraReset();
+  };
+
+  const startSpin = () => {
+    const plugin = pluginRef.current;
+    if (!plugin || !plugin.canvas3d) return;
+    plugin.canvas3d.setProps({ trackball: { animate: { name: 'spin', params: { speed: 0.18 } } } });
+  };
+  const stopSpin = () => {
+    const plugin = pluginRef.current;
+    if (!plugin || !plugin.canvas3d) return;
+    plugin.canvas3d.setProps({ trackball: { animate: { name: 'off', params: {} } } });
+  };
+  // Resume the gentle spin 4s after the last interaction.
+  const scheduleIdleSpin = () => {
+    clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(startSpin, 4000);
+  };
+
+  React.useEffect(() => {
+    let cancelled = false;
     const el = viewerRef.current;
 
-    const stopIdleSpin = () => {
-      if (spinFrame.current) {
-        cancelAnimationFrame(spinFrame.current);
-        spinFrame.current = null;
+    const init = async () => {
+      const molstar = await loadMolstar();
+      if (cancelled || !viewerRef.current) return;
+
+      const viewer = await molstar.Viewer.create(viewerRef.current, {
+        layoutIsExpanded: false,
+        layoutShowControls: false,
+        layoutShowRemoteState: false,
+        layoutShowSequence: false,
+        layoutShowLog: false,
+        layoutShowLeftPanel: false,
+        viewportShowExpand: false,
+        viewportShowControls: false,
+        viewportShowSettings: false,
+        viewportShowSelectionMode: false,
+        viewportShowAnimation: false,
+        viewportShowTrajectoryControls: false,
+        pdbProvider: 'rcsb',
+        emdbProvider: 'rcsb',
+      });
+      if (cancelled) { try { viewer.plugin.dispose(); } catch (e) {} return; }
+
+      const plugin = viewer.plugin;
+      pluginRef.current = plugin;
+
+      // Transparent background (sits on the page), HiDPI sharpness, no axis widget.
+      const dpr = window.devicePixelRatio || 1;
+      if (plugin.canvas3d) {
+        plugin.canvas3d.setProps({
+          transparentBackground: true,
+          camera: { helper: { axes: { name: 'off', params: {} } } },
+          renderer: { pixelScale: dpr },
+        });
       }
-    };
 
-    const startIdleSpin = () => {
-      if (spinFrame.current || !viewer3d.current) return;
-      let last = performance.now();
-      const tick = (now) => {
-        const v = viewer3d.current;
-        if (!v || typeof v.rotate !== 'function') {
-          spinFrame.current = null;
-          return;
-        }
-        const elapsed = Math.min(now - last, 40);
-        last = now;
-        v.rotate(elapsed * 0.0045, 'y');
-        v.render();
-        spinFrame.current = requestAnimationFrame(tick);
-      };
-      spinFrame.current = requestAnimationFrame(tick);
-    };
+      // Build the structure manually so we keep refs for the switcher
+      // (mirrors the app's MiniMolstarViewer recipe: fetch text + rawData).
+      const pdbText = await fetch(HERO_PDB_URL).then((r) => {
+        if (!r.ok) throw new Error('PDB fetch failed: ' + r.status);
+        return r.text();
+      });
+      if (cancelled) { try { plugin.dispose(); } catch (e) {} return; }
+      const data = await plugin.builders.data.rawData({ data: cleanHeroPdb(pdbText), label: '1M17' });
+      const trajectory = await plugin.builders.structure.parseTrajectory(data, 'pdb');
+      const model = await plugin.builders.structure.createModel(trajectory);
+      const structure = await plugin.builders.structure.createStructure(model);
 
-    const scheduleIdleSpin = () => {
-      clearTimeout(idleSpinTimer.current);
-      idleSpinTimer.current = setTimeout(startIdleSpin, 5000);
-    };
-
-    const stopSpinPromptDemo = () => {
-      if (promptDemoFrame.current) {
-        cancelAnimationFrame(promptDemoFrame.current);
-        promptDemoFrame.current = null;
+      const polymer = await plugin.builders.structure.tryCreateComponentStatic(structure, 'polymer');
+      let polymerRepr = null;
+      if (polymer) {
+        polymerRepr = await plugin.builders.structure.representation.addRepresentation(polymer, {
+          type: 'cartoon',
+          color: 'chain-id',
+        });
       }
-    };
 
-    const startSpinPromptDemo = () => {
-      if (promptDemoFrame.current || viewerTouched.current || !viewer3d.current) return;
-      let last = performance.now();
-      const started = last;
-      const tick = (now) => {
-        const v = viewer3d.current;
-        if (!v || viewerTouched.current || typeof v.rotate !== 'function') {
-          promptDemoFrame.current = null;
-          return;
-        }
-        const elapsed = Math.min(now - last, 40);
-        const demoAge = now - started;
-        last = now;
-        const direction = demoAge < 1050 ? 1 : -0.35;
-        v.rotate(elapsed * 0.018 * direction, 'y');
-        v.render();
-        if (demoAge < 1800) {
-          promptDemoFrame.current = requestAnimationFrame(tick);
-        } else {
-          promptDemoFrame.current = null;
-          if (!viewerTouched.current) {
-            promptTimer.current = setTimeout(startSpinPromptDemo, 1200);
-          }
-        }
+      const ligand = await plugin.builders.structure.tryCreateComponentStatic(structure, 'ligand');
+      let ligandRepr = null;
+      if (ligand) {
+        ligandRepr = await plugin.builders.structure.representation.addRepresentation(ligand, {
+          type: 'ball-and-stick',
+          color: 'element-symbol',
+          colorParams: { carbonColor: { name: 'uniform', params: { value: HERO_CARBON } } },
+          typeParams: { multipleBonds: 'symmetric' },
+        });
+      }
+
+      if (cancelled) { try { plugin.dispose(); } catch (e) {} return; }
+
+      sceneRef.current = {
+        molstar,
+        polymer: polymerRepr,
+        ligand: ligandRepr,
+        polymerData: polymer && polymer.data,
+        ligandData: ligand && ligand.data,
+        structureData: structure && structure.data,
       };
-      promptDemoFrame.current = requestAnimationFrame(tick);
+
+      applyState(current);
+      setLoading(false);
+
+      // Gentle invitation: spin briefly, show the drag prompt, until the
+      // visitor takes over.
+      setTimeout(() => {
+        if (cancelled || touched.current) return;
+        setPromptOn(true);
+        startSpin();
+        scheduleIdleSpin();
+      }, 1100);
     };
 
-    const noteViewerInteraction = () => {
-      viewerTouched.current = true;
-      clearTimeout(promptTimer.current);
-      setSpinPromptOn(false);
-      stopSpinPromptDemo();
-      stopIdleSpin();
+    // Defer the ~5MB load until the browser is idle so it never blocks LCP.
+    const ric = window.requestIdleCallback || ((cb) => setTimeout(cb, 250));
+    const ricId = ric(() => {
+      init().catch((err) => {
+        if (cancelled) return;
+        console.warn('[hero] Mol* init failed:', err);
+        setFailed(true);
+        setLoading(false);
+      });
+    });
+
+    const onInteract = () => {
+      touched.current = true;
+      setHintOn(false);
+      setPromptOn(false);
+      stopSpin();
       scheduleIdleSpin();
     };
-
-    const onDown = (e) => {
-      noteViewerInteraction();
-      const x = e.touches ? e.touches[0].clientX : e.clientX;
-      dragStart.current = { x, t: Date.now() };
-    };
-    const onMove = () => {
-      if (dragStart.current) noteViewerInteraction();
-    };
-    const onUp = (e) => {
-      if (!dragStart.current) return;
-      noteViewerInteraction();
-      const x  = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-      const dx = x - dragStart.current.x;
-      const dt = Date.now() - dragStart.current.t;
-      dragStart.current = null;
-      const isSwipe = Math.abs(dx) > 80 || (Math.abs(dx) > 10 && dt > 0 && Math.abs(dx) / dt > 0.5);
-      if (isSwipe) {
-        setCurrent(prev =>
-          dx < 0
-            ? (prev + 1) % HERO_STRUCTURES.length
-            : (prev + HERO_STRUCTURES.length - 1) % HERO_STRUCTURES.length
-        );
-        setHintOn(false);
-      }
-    };
-
-    const blockNonRotateNavigation = (e) => {
-      const isMousePan = e.type === 'mousedown' && e.button !== 0;
-      const isModifierDrag = e.type === 'mousedown' && (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey);
-      const isWheelZoom = e.type === 'wheel';
-      const isMultiTouch = e.touches && e.touches.length > 1;
-      const isDoubleClick = e.type === 'dblclick';
-      const isContextMenu = e.type === 'contextmenu';
-      if (isMousePan || isModifierDrag || isWheelZoom || isMultiTouch || isDoubleClick || isContextMenu) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-      }
-    };
-
-    el.addEventListener('wheel',      blockNonRotateNavigation, { capture: true, passive: false });
-    el.addEventListener('mousedown',  blockNonRotateNavigation, true);
-    el.addEventListener('touchstart', blockNonRotateNavigation, { capture: true, passive: false });
-    el.addEventListener('touchmove',  blockNonRotateNavigation, { capture: true, passive: false });
-    el.addEventListener('dblclick',   blockNonRotateNavigation, true);
-    el.addEventListener('contextmenu', blockNonRotateNavigation, true);
-
-    el.addEventListener('mousedown',  onDown);
-    el.addEventListener('mousemove',  onMove);
-    el.addEventListener('mouseup',    onUp);
-    el.addEventListener('touchstart', onDown, { passive: true });
-    el.addEventListener('touchmove',  onMove, { passive: true });
-    el.addEventListener('touchend',   onUp);
-
-    hintTimer.current = setTimeout(() => setHintOn(false), 4000);
+    if (el) {
+      el.addEventListener('pointerdown', onInteract);
+      el.addEventListener('wheel', onInteract, { passive: true });
+    }
+    const hintTimer = setTimeout(() => setHintOn(false), 5500);
 
     return () => {
-      el.removeEventListener('wheel',      blockNonRotateNavigation, true);
-      el.removeEventListener('mousedown',  blockNonRotateNavigation, true);
-      el.removeEventListener('touchstart', blockNonRotateNavigation, true);
-      el.removeEventListener('touchmove',  blockNonRotateNavigation, true);
-      el.removeEventListener('dblclick',   blockNonRotateNavigation, true);
-      el.removeEventListener('contextmenu', blockNonRotateNavigation, true);
-      el.removeEventListener('mousedown',  onDown);
-      el.removeEventListener('mousemove',  onMove);
-      el.removeEventListener('mouseup',    onUp);
-      el.removeEventListener('touchstart', onDown);
-      el.removeEventListener('touchmove',  onMove);
-      el.removeEventListener('touchend',   onUp);
-      clearTimeout(hintTimer.current);
-      clearTimeout(promptTimer.current);
-      clearTimeout(idleSpinTimer.current);
-      stopSpinPromptDemo();
-      stopIdleSpin();
+      cancelled = true;
+      clearTimeout(idleTimer.current);
+      clearTimeout(hintTimer);
+      if (window.cancelIdleCallback && typeof ricId === 'number') {
+        try { window.cancelIdleCallback(ricId); } catch (e) {}
+      }
+      if (el) {
+        el.removeEventListener('pointerdown', onInteract);
+        el.removeEventListener('wheel', onInteract);
+      }
+      const p = pluginRef.current;
+      if (p) { try { p.dispose(); } catch (e) {} pluginRef.current = null; }
     };
   }, []);
 
+  // React to switcher changes once the scene is live.
   React.useEffect(() => {
-    if (!viewer3d.current || loading) return;
-    const v   = viewer3d.current;
-    const el  = viewerRef.current;
-    el.style.opacity = '0';
-    const tid = setTimeout(() => {
-      v.setStyle({}, {});
-      v.removeAllShapes();
-      applyStructure(v, current);
-      v.render();
-      el.style.opacity = '1';
-    }, 180);
-    return () => clearTimeout(tid);
-  }, [current, loading]);
+    if (loading || failed) return;
+    applyState(current);
+  }, [current, loading, failed]);
+
+  const ready = !loading && !failed;
 
   return (
     <section className="hero hero-interactive">
@@ -432,17 +422,23 @@ const HeroShowcase = () => {
 
           <div className="hero-interactive-visual">
             <div className="hero-viewer-panel">
+              <div className={"hero-viewer-poster" + (ready ? " hidden" : "")} aria-hidden="true">
+                <MoleculeScene />
+              </div>
+
               {loading && (
                 <div className="hero-viewer-loading">
                   <div className="hero-viewer-spinner" />
                 </div>
               )}
+
               <div
                 ref={viewerRef}
                 className="hero-viewer-container"
-                style={{ opacity: 0 }}
+                style={{ opacity: ready ? 1 : 0 }}
               />
-              {spinPromptOn && !loading && (
+
+              {ready && promptOn && !touched.current && (
                 <div className="hero-spin-prompt" aria-hidden="true">
                   <span className="hero-spin-touch" />
                   <svg className="hero-spin-hand" viewBox="0 0 28 32" focusable="false">
@@ -451,11 +447,19 @@ const HeroShowcase = () => {
                   </svg>
                 </div>
               )}
-              {!loading && (
+
+              {ready && (
                 <div className="hero-struct-badge">
                   {HERO_STRUCTURES[current].label}
                 </div>
               )}
+
+              {failed && (
+                <div className="hero-struct-badge hero-struct-badge-static">
+                  {HERO_STRUCTURES[HERO_DEFAULT].label}
+                </div>
+              )}
+
               <div className="hero-dot-bar">
                 <div className="hero-dot-row">
                   {HERO_STRUCTURES.map((s, i) => (
@@ -463,21 +467,18 @@ const HeroShowcase = () => {
                       key={s.key}
                       className={"hero-dot" + (i === current ? " active" : "")}
                       onClick={() => {
-                        viewerTouched.current = true;
-                        clearTimeout(promptTimer.current);
-                        if (promptDemoFrame.current) {
-                          cancelAnimationFrame(promptDemoFrame.current);
-                          promptDemoFrame.current = null;
-                        }
-                        setSpinPromptOn(false);
+                        touched.current = true;
+                        setPromptOn(false);
+                        stopSpin();
+                        scheduleIdleSpin();
                         setCurrent(i);
                       }}
                       aria-label={s.label}
                     />
                   ))}
                 </div>
-                <div className={"hero-drag-hint" + (hintOn ? "" : " hidden")}>
-                  drag to rotate · swipe to switch
+                <div className={"hero-drag-hint" + (hintOn && ready ? "" : " hidden")}>
+                  drag to rotate · scroll to zoom
                 </div>
               </div>
             </div>
@@ -521,10 +522,10 @@ const PainValueSection = () => (
       <div className="pain-panel">
         <div className="pain-list">
           {PAIN_ITEMS.map((item, i) => (
-            <div key={i} className="pain-list-row">
+            <Reveal key={i} className="pain-list-row" i={i}>
               <span className="mono pain-index">{String(i + 1).padStart(2, "0")}</span>
               <span>{item}</span>
-            </div>
+            </Reveal>
           ))}
         </div>
         <p className="pain-statement">
@@ -549,15 +550,15 @@ const WorkflowSection = () => (
       </div>
       <div>
         {STORY_STAGES.map((stage, i) => (
-          <WorkflowRow key={stage.n} stage={stage} first={i === 0} />
+          <WorkflowRow key={stage.n} stage={stage} first={i === 0} index={i} />
         ))}
       </div>
     </div>
   </section>
 );
 
-const WorkflowRow = ({ stage, first }) => (
-  <div className="workflow-row-grid" style={{
+const WorkflowRow = ({ stage, first, index = 0 }) => (
+  <Reveal className="workflow-row-grid" i={index} style={{
     display: 'grid',
     gridTemplateColumns: '72px 1fr 1fr',
     gap: '0 32px',
@@ -592,7 +593,7 @@ const WorkflowRow = ({ stage, first }) => (
         </li>
       ))}
     </ul>
-  </div>
+  </Reveal>
 );
 
 const LocalValueSection = () => (
@@ -606,8 +607,8 @@ const LocalValueSection = () => (
         </p>
       </div>
       <div className="local-value-list">
-        {["No required cloud upload for sensitive structures", "Use local CPU/GPU resources", "Works for desktop or server deployment", "Suitable for academic labs, startups, and internal research environments"].map((item) => (
-          <div className="local-value-item" key={item}><Icon name="check" size={16} /><span>{item}</span></div>
+        {["No required cloud upload for sensitive structures", "Use local CPU/GPU resources", "Works for desktop or server deployment", "Suitable for academic labs, startups, and internal research environments"].map((item, i) => (
+          <Reveal className="local-value-item" key={item} i={i}><Icon name="check" size={16} /><span>{item}</span></Reveal>
         ))}
       </div>
     </div>
@@ -627,14 +628,14 @@ const OpenCoreProSection = () => (
         </p>
       </div>
       <div className="edition-map">
-        <div className="edition-card">
+        <Reveal className="edition-card" i={0}>
           <h3>Open Core</h3>
           <p>Everyday local workflows for project setup, target preparation, screening, simulation, and review.</p>
           <div className="capability-cloud">
             {CORE_LABELS.map((item) => <span key={item}>{item}</span>)}
           </div>
-        </div>
-        <div className="edition-card pro-edition-card">
+        </Reveal>
+        <Reveal className="edition-card pro-edition-card" i={1}>
           <h3>Pro</h3>
           <p>Licensed services for higher-confidence prioritization once the project needs more evidence.</p>
           <div className="module-decision-list">
@@ -645,7 +646,7 @@ const OpenCoreProSection = () => (
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
       </div>
     </div>
   </section>
@@ -662,11 +663,11 @@ const ArchitectureProofSection = () => (
       </div>
       <div className="service-board">
         <div className="service-grid proof-grid">
-          {SERVICES.map((svc) => (
-            <div className="service-cell" key={svc.name}>
+          {SERVICES.map((svc, i) => (
+            <Reveal className="service-cell" key={svc.name} i={i}>
               <strong>{svc.name}</strong>
               <span>{svc.detail}</span>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -687,11 +688,11 @@ const UseCasesSection = () => (
         </p>
       </div>
       <div className="use-case-grid">
-        {USE_CASES.map((item) => (
-          <div className="use-case-card" key={item.title}>
+        {USE_CASES.map((item, i) => (
+          <Reveal className="use-case-card" key={item.title} i={i}>
             <h3>{item.title}</h3>
             <p>{item.text}</p>
-          </div>
+          </Reveal>
         ))}
       </div>
     </div>
@@ -712,14 +713,14 @@ const QuickStartSection = () => (
         <div className="eyebrow"><span className="dot" />Installation</div>
         <h2>Use the launcher for desktops, or Compose for servers.</h2>
         <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14 }}>
-          {INSTALL_STEPS.map(([n, title, sub]) => (
-            <div key={n} style={{ display: 'grid', gridTemplateColumns: '36px 1fr', gap: 14, alignItems: 'baseline' }}>
+          {INSTALL_STEPS.map(([n, title, sub], i) => (
+            <Reveal key={n} i={i} style={{ display: 'grid', gridTemplateColumns: '36px 1fr', gap: 14, alignItems: 'baseline' }}>
               <span className="mono" style={{ color: 'var(--muted-2)', fontSize: 13 }}>{n}</span>
               <div>
                 <div style={{ fontWeight: 500 }}>{title}</div>
                 <div style={{ color: 'var(--muted)', fontSize: 13, marginTop: 2 }}>{sub}</div>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>
