@@ -95,6 +95,38 @@ const USE_CASES = [
   },
 ];
 
+function applyStructure(viewer, index) {
+  const nonLigand = { not: { resn: ['AQ4', 'HOH', 'EDO', 'GOL'] } };
+  const ligand    = { resn: 'AQ4' };
+
+  if (index === 0) {
+    viewer.setStyle(nonLigand, { cartoon: { color: '#2a9d8f', opacity: 1 } });
+    return;
+  }
+
+  if (index === 1) {
+    viewer.setStyle(nonLigand, { cartoon: { color: '#2a9d8f', opacity: 1 } });
+    viewer.setStyle(ligand, {
+      stick:  { color: '#c8922a', radius: 0.18 },
+      sphere: { color: '#c8922a', radius: 0.32 },
+    });
+    if (typeof viewer.addHBonds === 'function') {
+      viewer.addHBonds(ligand, nonLigand, {
+        color: '#ead8b8', opacity: 0.45, dashed: true,
+      });
+    }
+    return;
+  }
+
+  if (index === 2) {
+    viewer.setStyle(ligand, {
+      stick:  { color: '#c8922a', radius: 0.22 },
+      sphere: { color: '#c8922a', radius: 0.45 },
+    });
+    viewer.zoomTo(ligand);
+  }
+}
+
 const MoleculeScene = () => (
   <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', maxWidth: 400 }}>
     <svg viewBox="0 0 560 560" style={{ width: '100%', height: '100%' }}>
