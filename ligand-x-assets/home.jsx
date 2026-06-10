@@ -196,9 +196,15 @@ const HeroShowcase = () => {
   const viewer3d   = React.useRef(null);
   const dragStart  = React.useRef(null);
   const hintTimer  = React.useRef(null);
+  const promptTimer = React.useRef(null);
+  const promptDemoFrame = React.useRef(null);
+  const idleSpinTimer = React.useRef(null);
+  const spinFrame = React.useRef(null);
+  const viewerTouched = React.useRef(false);
   const [current, setCurrent] = React.useState(HERO_DEFAULT);
   const [loading,  setLoading]  = React.useState(true);
   const [hintOn,   setHintOn]   = React.useState(true);
+  const [spinPromptOn, setSpinPromptOn] = React.useState(false);
 
   React.useEffect(() => {
     if (!viewerRef.current || typeof $3Dmol === 'undefined') return;
@@ -219,16 +225,101 @@ const HeroShowcase = () => {
       viewer.render();
       viewerRef.current.style.opacity = '1';
       setLoading(false);
+      if (!viewerTouched.current) {
+        promptTimer.current = setTimeout(() => {
+          setSpinPromptOn(true);
+          startSpinPromptDemo();
+        }, 1800);
+      }
     });
 
     const el = viewerRef.current;
 
+    const stopIdleSpin = () => {
+      if (spinFrame.current) {
+        cancelAnimationFrame(spinFrame.current);
+        spinFrame.current = null;
+      }
+    };
+
+    const startIdleSpin = () => {
+      if (spinFrame.current || !viewer3d.current) return;
+      let last = performance.now();
+      const tick = (now) => {
+        const v = viewer3d.current;
+        if (!v || typeof v.rotate !== 'function') {
+          spinFrame.current = null;
+          return;
+        }
+        const elapsed = Math.min(now - last, 40);
+        last = now;
+        v.rotate(elapsed * 0.0045, 'y');
+        v.render();
+        spinFrame.current = requestAnimationFrame(tick);
+      };
+      spinFrame.current = requestAnimationFrame(tick);
+    };
+
+    const scheduleIdleSpin = () => {
+      clearTimeout(idleSpinTimer.current);
+      idleSpinTimer.current = setTimeout(startIdleSpin, 5000);
+    };
+
+    const stopSpinPromptDemo = () => {
+      if (promptDemoFrame.current) {
+        cancelAnimationFrame(promptDemoFrame.current);
+        promptDemoFrame.current = null;
+      }
+    };
+
+    const startSpinPromptDemo = () => {
+      if (promptDemoFrame.current || viewerTouched.current || !viewer3d.current) return;
+      let last = performance.now();
+      const started = last;
+      const tick = (now) => {
+        const v = viewer3d.current;
+        if (!v || viewerTouched.current || typeof v.rotate !== 'function') {
+          promptDemoFrame.current = null;
+          return;
+        }
+        const elapsed = Math.min(now - last, 40);
+        const demoAge = now - started;
+        last = now;
+        const direction = demoAge < 1050 ? 1 : -0.35;
+        v.rotate(elapsed * 0.018 * direction, 'y');
+        v.render();
+        if (demoAge < 1800) {
+          promptDemoFrame.current = requestAnimationFrame(tick);
+        } else {
+          promptDemoFrame.current = null;
+          if (!viewerTouched.current) {
+            promptTimer.current = setTimeout(startSpinPromptDemo, 1200);
+          }
+        }
+      };
+      promptDemoFrame.current = requestAnimationFrame(tick);
+    };
+
+    const noteViewerInteraction = () => {
+      viewerTouched.current = true;
+      clearTimeout(promptTimer.current);
+      setSpinPromptOn(false);
+      stopSpinPromptDemo();
+      stopIdleSpin();
+      scheduleIdleSpin();
+    };
+
     const onDown = (e) => {
+      noteViewerInteraction();
       const x = e.touches ? e.touches[0].clientX : e.clientX;
       dragStart.current = { x, t: Date.now() };
     };
+    const onMove = () => {
+      if (dragStart.current) noteViewerInteraction();
+    };
     const onUp = (e) => {
       if (!dragStart.current) return;
+      noteViewerInteraction();
       const x  = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
       const dx = x - dragStart.current.x;
       const dt = Date.now() - dragStart.current.t;
@@ -265,8 +356,10 @@ const HeroShowcase = () => {
     el.addEventListener('contextmenu', blockNonRotateNavigation, true);
 
     el.addEventListener('mousedown',  onDown);
+    el.addEventListener('mousemove',  onMove);
     el.addEventListener('mouseup',    onUp);
     el.addEventListener('touchstart', onDown, { passive: true });
+    el.addEventListener('touchmove',  onMove, { passive: true });
     el.addEventListener('touchend',   onUp);
 
     hintTimer.current = setTimeout(() => setHintOn(false), 4000);
@@ -279,10 +372,16 @@ const HeroShowcase = () => {
       el.removeEventListener('dblclick',   blockNonRotateNavigation, true);
       el.removeEventListener('contextmenu', blockNonRotateNavigation, true);
       el.removeEventListener('mousedown',  onDown);
+      el.removeEventListener('mousemove',  onMove);
       el.removeEventListener('mouseup',    onUp);
       el.removeEventListener('touchstart', onDown);
+      el.removeEventListener('touchmove',  onMove);
       el.removeEventListener('touchend',   onUp);
       clearTimeout(hintTimer.current);
+      clearTimeout(promptTimer.current);
+      clearTimeout(idleSpinTimer.current);
+      stopSpinPromptDemo();
+      stopIdleSpin();
     };
   }, []);
 
@@ -343,6 +442,15 @@ const HeroShowcase = () => {
                 className="hero-viewer-container"
                 style={{ opacity: 0 }}
               />
+              {spinPromptOn && !loading && (
+                <div className="hero-spin-prompt" aria-hidden="true">
+                  <span className="hero-spin-touch" />
+                  <svg className="hero-spin-hand" viewBox="0 0 28 32" focusable="false">
+                    <path d="M13.2 2.7c1.2 0 2.1 0.9 2.1 2.1v9.4l1.1-1.7c0.5-0.8 1.6-1.1 2.4-0.6 0.4 0.2 0.7 0.6 0.8 1l0.8-1.1c0.6-0.8 1.7-0.9 2.5-0.3 0.4 0.3 0.6 0.7 0.7 1.2l0.2-0.2c0.7-0.6 1.8-0.5 2.4 0.2 0.4 0.5 0.5 1.1 0.3 1.7l-1.9 7.2c-0.9 3.7-4.3 6.4-8.1 6.4h-2.2c-2.8 0-5.4-1.4-6.9-3.8l-4.1-6.3c-0.6-0.9-0.3-2.1 0.6-2.7 0.8-0.5 1.8-0.4 2.5 0.3l4.7 4.3v-15c0-1.2 0.9-2.1 2.1-2.1Z" />
+                    <path d="M15.3 14.2v5.1M19.6 12.9v6.4M23.6 12.7v6.2" />
+                  </svg>
+                </div>
+              )}
               {!loading && (
                 <div className="hero-struct-badge">
                   {HERO_STRUCTURES[current].label}
@@ -354,7 +462,16 @@ const HeroShowcase = () => {
                     <button
                       key={s.key}
                       className={"hero-dot" + (i === current ? " active" : "")}
-                      onClick={() => setCurrent(i)}
+                      onClick={() => {
+                        viewerTouched.current = true;
+                        clearTimeout(promptTimer.current);
+                        if (promptDemoFrame.current) {
+                          cancelAnimationFrame(promptDemoFrame.current);
+                          promptDemoFrame.current = null;
+                        }
+                        setSpinPromptOn(false);
+                        setCurrent(i);
+                      }}
                       aria-label={s.label}
                     />
                   ))}
