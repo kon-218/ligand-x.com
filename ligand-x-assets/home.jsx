@@ -205,6 +205,7 @@ const HeroShowcase = () => {
       applyStructure(viewer, HERO_DEFAULT);
       viewer.zoomTo();
       viewer.render();
+      viewerRef.current.style.opacity = '1';
       setLoading(false);
     });
 
@@ -220,7 +221,7 @@ const HeroShowcase = () => {
       const dx = x - dragStart.current.x;
       const dt = Date.now() - dragStart.current.t;
       dragStart.current = null;
-      const isSwipe = Math.abs(dx) > 80 || (dt > 0 && Math.abs(dx) / dt > 0.5);
+      const isSwipe = Math.abs(dx) > 80 || (Math.abs(dx) > 10 && dt > 0 && Math.abs(dx) / dt > 0.5);
       if (isSwipe) {
         setCurrent(prev =>
           dx < 0
@@ -252,13 +253,14 @@ const HeroShowcase = () => {
     const v   = viewer3d.current;
     const el  = viewerRef.current;
     el.style.opacity = '0';
-    setTimeout(() => {
+    const tid = setTimeout(() => {
       v.setStyle({}, {});
       v.removeAllShapes();
       applyStructure(v, current);
       v.render();
       el.style.opacity = '1';
     }, 180);
+    return () => clearTimeout(tid);
   }, [current, loading]);
 
   return (
@@ -293,7 +295,7 @@ const HeroShowcase = () => {
           <div
             ref={viewerRef}
             className="hero-viewer-container"
-            style={{ opacity: loading ? 0 : 1 }}
+            style={{ opacity: 0 }}
           />
           {!loading && (
             <div className="hero-struct-badge">
