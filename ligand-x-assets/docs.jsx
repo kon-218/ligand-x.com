@@ -383,6 +383,43 @@ const VideoPlaceholder = ({ title }) => (
 );
 
 // ============================================================
+// Guide video embeds
+// ============================================================
+
+const GUIDE_VIDEOS = {
+  "protein-cleaning": {
+    id: "QjBEVPHYAHE",
+    title: "Protein cleaning video",
+  },
+  docking: {
+    id: "QI_l-w5ilUM",
+    title: "Docking example video",
+  },
+};
+
+const GuideVideo = ({ guide }) => {
+  const video = GUIDE_VIDEOS[guide.id];
+  if (!video) return null;
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', marginBottom: 10 }}>
+        {video.title}
+      </div>
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <iframe
+          src={`https://www.youtube.com/embed/${video.id}`}
+          title={video.title}
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+        />
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
 // GuideView — renders a single guide
 // ============================================================
 
@@ -408,7 +445,7 @@ const GuideView = ({ guide, guideRefs, activeGuideSection }) => {
         {guide.prereqs.map((p, i) => <li key={i}>{p}</li>)}
       </ul>
 
-      <VideoPlaceholder title={guide.title} />
+      <GuideVideo guide={guide} />
 
       <h2 id="walkthrough" ref={(r) => guideRefs.current.walkthrough = r}>
         Walkthrough
