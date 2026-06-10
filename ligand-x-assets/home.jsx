@@ -128,6 +128,13 @@ function applyStructure(viewer, index) {
   }
 }
 
+const HERO_STRUCTURES = [
+  { label: 'Protein · EGFR · 4W52',     key: 'protein' },
+  { label: 'Complex · erlotinib · 4W52', key: 'complex' },
+  { label: 'Ligand · erlotinib',         key: 'ligand'  },
+];
+const HERO_DEFAULT = 1;
+
 const MoleculeScene = () => (
   <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', maxWidth: 400 }}>
     <svg viewBox="0 0 560 560" style={{ width: '100%', height: '100%' }}>
@@ -175,49 +182,145 @@ const MoleculeScene = () => (
   </div>
 );
 
-const HomeHero = () => (
-  <section className="story-hero">
-    <div className="container story-hero-inner">
-      <div className="story-hero-copy">
-        <div className="eyebrow">
-          <span className="dot" />The local CADD workbench
+const HeroShowcase = () => {
+  const viewerRef  = React.useRef(null);
+  const viewer3d   = React.useRef(null);
+  const dragStart  = React.useRef(null);
+  const hintTimer  = React.useRef(null);
+  const [current, setCurrent] = React.useState(HERO_DEFAULT);
+  const [loading,  setLoading]  = React.useState(true);
+  const [hintOn,   setHintOn]   = React.useState(true);
+
+  React.useEffect(() => {
+    if (!viewerRef.current || typeof $3Dmol === 'undefined') return;
+
+    const viewer = $3Dmol.createViewer(viewerRef.current, {
+      backgroundColor: 'transparent',
+      antialias: true,
+    });
+    viewer3d.current = viewer;
+
+    $3Dmol.download('pdb:4W52', viewer, {}, () => {
+      viewer.setStyle({}, {});
+      applyStructure(viewer, HERO_DEFAULT);
+      viewer.zoomTo();
+      viewer.render();
+      setLoading(false);
+    });
+
+    const el = viewerRef.current;
+
+    const onDown = (e) => {
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      dragStart.current = { x, t: Date.now() };
+    };
+    const onUp = (e) => {
+      if (!dragStart.current) return;
+      const x  = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+      const dx = x - dragStart.current.x;
+      const dt = Date.now() - dragStart.current.t;
+      dragStart.current = null;
+      const isSwipe = Math.abs(dx) > 80 || (dt > 0 && Math.abs(dx) / dt > 0.5);
+      if (isSwipe) {
+        setCurrent(prev =>
+          dx < 0
+            ? (prev + 1) % HERO_STRUCTURES.length
+            : (prev + HERO_STRUCTURES.length - 1) % HERO_STRUCTURES.length
+        );
+        setHintOn(false);
+      }
+    };
+
+    el.addEventListener('mousedown',  onDown);
+    el.addEventListener('mouseup',    onUp);
+    el.addEventListener('touchstart', onDown, { passive: true });
+    el.addEventListener('touchend',   onUp);
+
+    hintTimer.current = setTimeout(() => setHintOn(false), 4000);
+
+    return () => {
+      el.removeEventListener('mousedown',  onDown);
+      el.removeEventListener('mouseup',    onUp);
+      el.removeEventListener('touchstart', onDown);
+      el.removeEventListener('touchend',   onUp);
+      clearTimeout(hintTimer.current);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!viewer3d.current || loading) return;
+    const v   = viewer3d.current;
+    const el  = viewerRef.current;
+    el.style.opacity = '0';
+    setTimeout(() => {
+      v.setStyle({}, {});
+      v.removeAllShapes();
+      applyStructure(v, current);
+      v.render();
+      el.style.opacity = '1';
+    }, 180);
+  }, [current, loading]);
+
+  return (
+    <section className="hero-showcase">
+      <div className="hero-showcase-inner">
+
+        <div className="hero-showcase-copy">
+          <div className="eyebrow">Free · self-hosted · open-source</div>
+          <h1>Your own <em>CADD</em><br />workbench.</h1>
+          <p className="hero-lede">
+            Protein prep, docking, MD, and more —<br />
+            on your hardware, under your control.
+          </p>
+          <div className="hero-cta">
+            <button className="btn btn-primary btn-lg" onClick={() => window.__nav('download')}>
+              <Icon name="download" size={16} />
+              Download free
+            </button>
+            <button className="btn btn-secondary btn-lg" onClick={() => window.__nav('docs')}>
+              View docs
+              <Icon name="arrow" size={14} />
+            </button>
+          </div>
         </div>
-        <h1 className="hero-headline">
-          Integrated.<br />
-          Self-hosted.<br />
-          Reliable.<br />
-          <span className="hero-headline-serif">
-            Ligand-X
-            <svg width="100%" height="14" style={{ position: 'absolute', left: 0, bottom: -4 }} viewBox="0 0 600 14" preserveAspectRatio="none">
-              <path d="M2 9 C 140 2, 280 14, 598 6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-            </svg>
-          </span>
-        </h1>
-        <p className="hero-lede">
-          A free, self-hosted desktop app for computational drug discovery —
-          docking, MD, and more, running on your own hardware.
-        </p>
-        <div className="hero-cta">
-          <button className="btn btn-primary btn-lg" onClick={() => window.__nav('download')}>
-            <Icon name="download" size={16} />
-            Download Ligand-X
-          </button>
-          <button className="btn btn-secondary btn-lg" onClick={() => window.open('https://github.com/kon-218/ligand-x-launcher', '_blank')}>
-            <Icon name="github" size={16} />
-            Star
-          </button>
-          <button className="btn btn-secondary btn-lg" onClick={() => window.__nav('docs')}>
-            Read the docs
-            <Icon name="arrow" size={14} />
-          </button>
+
+        <div className="hero-viewer-panel">
+          {loading && (
+            <div className="hero-viewer-loading">
+              <div className="hero-viewer-spinner" />
+            </div>
+          )}
+          <div
+            ref={viewerRef}
+            className="hero-viewer-container"
+            style={{ opacity: loading ? 0 : 1 }}
+          />
+          {!loading && (
+            <div className="hero-struct-badge">
+              {HERO_STRUCTURES[current].label}
+            </div>
+          )}
+          <div className="hero-dot-bar">
+            <div className="hero-dot-row">
+              {HERO_STRUCTURES.map((s, i) => (
+                <button
+                  key={s.key}
+                  className={'hero-dot' + (i === current ? ' active' : '')}
+                  onClick={() => setCurrent(i)}
+                  aria-label={s.label}
+                />
+              ))}
+            </div>
+            <div className={'hero-drag-hint' + (hintOn ? '' : ' hidden')}>
+              ← drag to rotate · swipe to switch →
+            </div>
+          </div>
         </div>
+
       </div>
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <MoleculeScene />
-      </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 const CredibilityBand = () => (
   <section className="local-value-section" style={{ borderBottom: '1px solid var(--border)' }}>
@@ -515,7 +618,7 @@ const CTASection = () => (
 
 const HomePage = () => (
   <div className="page-fade">
-    <HomeHero />
+    <HeroShowcase />
     <CredibilityBand />
     <PainValueSection />
     <WorkflowSection />
