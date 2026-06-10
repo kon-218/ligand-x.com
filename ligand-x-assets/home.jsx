@@ -35,7 +35,7 @@ const STORY_STAGES = [
     text: "Import proteins, ligands, structures, and generated assets into one project so the experiment has a durable record from the first file onward.",
     points: ["Project-scoped proteins, molecules, pockets, jobs, and outputs", "Ketcher editing with SMILES, SDF, and PDB import/export", "Mol* review for proteins, complexes, pockets, and poses"],
     annotType: "files",
-    annotValue: "project.json · 4W52.pdb · leads.sdf",
+    annotValue: "project.json · 1M17.pdb · leads.sdf",
     cli: "lx new && lx import …",
   },
   {
@@ -95,42 +95,51 @@ const USE_CASES = [
   },
 ];
 
+function frameSelection(viewer, selection, scale = 1) {
+  viewer.zoomTo(selection);
+  if (scale !== 1 && typeof viewer.zoom === 'function') {
+    viewer.zoom(scale);
+  }
+}
+
 function applyStructure(viewer, index) {
-  const nonLigand = { not: { resn: ['AQ4', 'HOH', 'EDO', 'GOL'] } };
-  const ligand    = { resn: 'AQ4' };
+  const proteinCore = { chain: 'A', resi: '696-944' };
+  const ligand      = { resn: 'AQ4' };
 
   if (index === 0) {
-    viewer.setStyle(nonLigand, { cartoon: { color: '#2a9d8f', opacity: 1 } });
+    viewer.setStyle(proteinCore, { cartoon: { color: '#2a9d8f', opacity: 1 } });
+    frameSelection(viewer, proteinCore, 1.16);
     return;
   }
 
   if (index === 1) {
-    viewer.setStyle(nonLigand, { cartoon: { color: '#2a9d8f', opacity: 1 } });
+    viewer.setStyle(proteinCore, { cartoon: { color: '#2a9d8f', opacity: 1 } });
     viewer.setStyle(ligand, {
-      stick:  { color: '#c8922a', radius: 0.18 },
-      sphere: { color: '#c8922a', radius: 0.32 },
+      stick:  { colorscheme: 'Jmol', radius: 0.18 },
+      sphere: { colorscheme: 'Jmol', radius: 0.30 },
     });
     if (typeof viewer.addHBonds === 'function') {
-      viewer.addHBonds(ligand, nonLigand, {
+      viewer.addHBonds(ligand, proteinCore, {
         color: '#ead8b8', opacity: 0.45, dashed: true,
       });
     }
+    frameSelection(viewer, proteinCore, 1.16);
     return;
   }
 
   if (index === 2) {
     viewer.setStyle(ligand, {
-      stick:  { color: '#c8922a', radius: 0.22 },
-      sphere: { color: '#c8922a', radius: 0.45 },
+      stick:  { colorscheme: 'Jmol', radius: 0.22 },
+      sphere: { colorscheme: 'Jmol', radius: 0.38 },
     });
-    viewer.zoomTo(ligand);
+    frameSelection(viewer, ligand, 1.25);
     return;
   }
 }
 
 const HERO_STRUCTURES = [
-  { label: 'Protein · EGFR · 4W52',     key: 'protein' },
-  { label: 'Complex · erlotinib · 4W52', key: 'complex' },
+  { label: 'Protein · EGFR · 1M17',     key: 'protein' },
+  { label: 'Complex · erlotinib · 1M17', key: 'complex' },
   { label: 'Ligand · erlotinib',         key: 'ligand'  },
 ];
 const HERO_DEFAULT = 1;
@@ -196,14 +205,17 @@ const HeroShowcase = () => {
 
     const viewer = $3Dmol.createViewer(viewerRef.current, {
       backgroundColor: 'transparent',
+      backgroundAlpha: 0,
       antialias: true,
     });
     viewer3d.current = viewer;
+    if (typeof viewer.setBackgroundColor === 'function') {
+      viewer.setBackgroundColor(0x000000, 0);
+    }
 
-    $3Dmol.download('pdb:4W52', viewer, {}, () => {
+    $3Dmol.download('pdb:1M17', viewer, {}, () => {
       viewer.setStyle({}, {});
       applyStructure(viewer, HERO_DEFAULT);
-      viewer.zoomTo();
       viewer.render();
       viewerRef.current.style.opacity = '1';
       setLoading(false);
@@ -232,6 +244,26 @@ const HeroShowcase = () => {
       }
     };
 
+    const blockNonRotateNavigation = (e) => {
+      const isMousePan = e.type === 'mousedown' && e.button !== 0;
+      const isModifierDrag = e.type === 'mousedown' && (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey);
+      const isWheelZoom = e.type === 'wheel';
+      const isMultiTouch = e.touches && e.touches.length > 1;
+      const isDoubleClick = e.type === 'dblclick';
+      const isContextMenu = e.type === 'contextmenu';
+      if (isMousePan || isModifierDrag || isWheelZoom || isMultiTouch || isDoubleClick || isContextMenu) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    };
+
+    el.addEventListener('wheel',      blockNonRotateNavigation, { capture: true, passive: false });
+    el.addEventListener('mousedown',  blockNonRotateNavigation, true);
+    el.addEventListener('touchstart', blockNonRotateNavigation, { capture: true, passive: false });
+    el.addEventListener('touchmove',  blockNonRotateNavigation, { capture: true, passive: false });
+    el.addEventListener('dblclick',   blockNonRotateNavigation, true);
+    el.addEventListener('contextmenu', blockNonRotateNavigation, true);
+
     el.addEventListener('mousedown',  onDown);
     el.addEventListener('mouseup',    onUp);
     el.addEventListener('touchstart', onDown, { passive: true });
@@ -240,6 +272,12 @@ const HeroShowcase = () => {
     hintTimer.current = setTimeout(() => setHintOn(false), 4000);
 
     return () => {
+      el.removeEventListener('wheel',      blockNonRotateNavigation, true);
+      el.removeEventListener('mousedown',  blockNonRotateNavigation, true);
+      el.removeEventListener('touchstart', blockNonRotateNavigation, true);
+      el.removeEventListener('touchmove',  blockNonRotateNavigation, true);
+      el.removeEventListener('dblclick',   blockNonRotateNavigation, true);
+      el.removeEventListener('contextmenu', blockNonRotateNavigation, true);
       el.removeEventListener('mousedown',  onDown);
       el.removeEventListener('mouseup',    onUp);
       el.removeEventListener('touchstart', onDown);
@@ -264,61 +302,70 @@ const HeroShowcase = () => {
   }, [current, loading]);
 
   return (
-    <section className="hero-showcase">
-      <div className="hero-showcase-inner">
-
-        <div className="hero-showcase-copy">
-          <div className="eyebrow">Free · self-hosted · open-source</div>
-          <h1>Your own <em>CADD</em><br />workbench.</h1>
-          <p className="hero-lede">
-            Protein prep, docking, MD, and more —<br />
-            on your hardware, under your control.
-          </p>
-          <div className="hero-cta">
-            <button className="btn btn-primary btn-lg" onClick={() => window.__nav('download')}>
-              <Icon name="download" size={16} />
-              Download free
-            </button>
-            <button className="btn btn-secondary btn-lg" onClick={() => window.__nav('docs')}>
-              View docs
-              <Icon name="arrow" size={14} />
-            </button>
-          </div>
-        </div>
-
-        <div className="hero-viewer-panel">
-          {loading && (
-            <div className="hero-viewer-loading">
-              <div className="hero-viewer-spinner" />
-            </div>
-          )}
-          <div
-            ref={viewerRef}
-            className="hero-viewer-container"
-            style={{ opacity: 0 }}
-          />
-          {!loading && (
-            <div className="hero-struct-badge">
-              {HERO_STRUCTURES[current].label}
-            </div>
-          )}
-          <div className="hero-dot-bar">
-            <div className="hero-dot-row">
-              {HERO_STRUCTURES.map((s, i) => (
-                <button
-                  key={s.key}
-                  className={'hero-dot' + (i === current ? ' active' : '')}
-                  onClick={() => setCurrent(i)}
-                  aria-label={s.label}
-                />
-              ))}
-            </div>
-            <div className={'hero-drag-hint' + (hintOn ? '' : ' hidden')}>
-              ← drag to rotate · swipe to switch →
+    <section className="hero hero-interactive">
+      <div className="container">
+        <div className="hero-grid">
+          <div className="hero-copy">
+            <div className="eyebrow"><span className="dot" /> The local CADD workbench</div>
+            <h1>Integrated.<br />Self-hosted.<br />Reliable.<br /><em>Ligand-X</em></h1>
+            <p className="hero-lede">
+              A free, self-hosted desktop app for computational drug discovery — docking,
+              MD, and more, running on your own hardware.
+            </p>
+            <div className="hero-cta">
+              <button className="btn btn-primary btn-lg" onClick={() => window.__nav("download")}>
+                <Icon name="download" size={16} />
+                Download Ligand-X
+              </button>
+              <button
+                className="btn btn-secondary btn-lg"
+                onClick={() => window.open("https://github.com/kon-218/ligand-x-launcher", "_blank")}
+              >
+                <Icon name="github" size={16} />
+                Star
+              </button>
+              <button className="btn btn-secondary btn-lg" onClick={() => window.__nav("docs")}>
+                Read the docs
+                <Icon name="arrow" size={14} />
+              </button>
             </div>
           </div>
-        </div>
 
+          <div className="hero-interactive-visual">
+            <div className="hero-viewer-panel">
+              {loading && (
+                <div className="hero-viewer-loading">
+                  <div className="hero-viewer-spinner" />
+                </div>
+              )}
+              <div
+                ref={viewerRef}
+                className="hero-viewer-container"
+                style={{ opacity: 0 }}
+              />
+              {!loading && (
+                <div className="hero-struct-badge">
+                  {HERO_STRUCTURES[current].label}
+                </div>
+              )}
+              <div className="hero-dot-bar">
+                <div className="hero-dot-row">
+                  {HERO_STRUCTURES.map((s, i) => (
+                    <button
+                      key={s.key}
+                      className={"hero-dot" + (i === current ? " active" : "")}
+                      onClick={() => setCurrent(i)}
+                      aria-label={s.label}
+                    />
+                  ))}
+                </div>
+                <div className={"hero-drag-hint" + (hintOn ? "" : " hidden")}>
+                  drag to rotate · swipe to switch
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

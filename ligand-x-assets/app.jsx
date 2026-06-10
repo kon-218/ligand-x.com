@@ -12,7 +12,7 @@ const PAGES = [
 
 const ROUTES = [...PAGES, { id: "contact", label: "Contact" }];
 
-const TopNav = ({ page, onNav, version = "v0.1.0" }) => (
+const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => (
   <header className="topnav">
     <div className="container-wide topnav-inner">
       <div className="brand" onClick={() => onNav('home')}>
@@ -33,6 +33,15 @@ const TopNav = ({ page, onNav, version = "v0.1.0" }) => (
       </nav>
       <div className="nav-right">
         <span className="ver">{version}</span>
+        <button
+          className="btn btn-ghost btn-sm theme-toggle"
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-pressed={theme === 'dark'}
+          onClick={onThemeToggle}
+        >
+          <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={14} />
+        </button>
         <button className="btn btn-ghost btn-sm" title="Search">
           <Icon name="search" size={14} />
         </button>
@@ -117,6 +126,12 @@ const App = () => {
   };
   const [page, setPage] = React.useState(getHashPage);
 
+  const getInitialTheme = () => {
+    const stored = window.localStorage && window.localStorage.getItem('ligandx-theme');
+    return stored === 'light' || stored === 'dark' ? stored : 'light';
+  };
+  const [theme, setTheme] = React.useState(getInitialTheme);
+
   const onNav = (id) => {
     window.location.hash = id;
     setPage(id);
@@ -132,10 +147,15 @@ const App = () => {
   // Tweaks (returns [values, setter])
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
-  // Apply density to root
+  // Apply density and theme to root
   React.useEffect(() => {
     document.documentElement.setAttribute('data-density', tweaks.density);
   }, [tweaks.density]);
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    window.localStorage && window.localStorage.setItem('ligandx-theme', theme);
+  }, [theme]);
 
   let PageComp;
   switch (page) {
@@ -149,7 +169,7 @@ const App = () => {
 
   return (
     <>
-      <TopNav page={page} onNav={onNav} />
+      <TopNav page={page} onNav={onNav} theme={theme} onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
       <main>{PageComp}</main>
       <Footer />
 

@@ -30,6 +30,8 @@ const Icon = ({ name, size = 16, ...rest }) => {
     scale: <g stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round"><path d="M12 3v18M5 8l7-4 7 4M3 12h4l-2 5h-2zM17 12h4l-2 5h-2zM3 17h4M17 17h4"/></g>,
     download: <g stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v12M6 12l6 6 6-6M4 20h16"/></g>,
     external: <g stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6M21 3l-9 9M14 5h-9v14h14v-9"/></g>,
+    sun: <g stroke="currentColor" strokeWidth="1.7" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></g>,
+    moon: <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5z" fill="currentColor"/>,
   };
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'block' }} {...rest}>
