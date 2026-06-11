@@ -442,7 +442,7 @@ img { max-width: 100%; display: block; }
   width: 720px;
   max-width: none;
   height: 600px;
-  transform: translateX(clamp(40px, 4vw, 90px));
+  transform: translateX(clamp(40px, 4vw, 90px)) translateY(-24px);
 }
 
 .hero-lede {
@@ -2538,7 +2538,7 @@ img { max-width: 100%; display: block; }
 }
 .hero-dot-bar {
   position: absolute;
-  bottom: 16px;
+  bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -2741,6 +2741,14 @@ img { max-width: 100%; display: block; }
 .hero-struct-badge { z-index: 4; }
 .hero-dot-bar { z-index: 4; }
 .hero-spin-prompt { z-index: 3; }
+
+@media (min-width: 961px) {
+  .hero-viewer-container,
+  .hero-viewer-poster,
+  .hero-viewer-loading {
+    transform: translateY(-36px);
+  }
+}
 
 /* ── Scroll reveal — only animates when the user permits motion ── */
 @media (prefers-reduced-motion: no-preference) {

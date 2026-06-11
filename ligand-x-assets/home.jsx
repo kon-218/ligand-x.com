@@ -185,6 +185,8 @@ const HeroShowcase = () => {
   const sceneRef     = React.useRef(null);   // { molstar, polymer, ligand, *Data }
   const idleTimer    = React.useRef(null);
   const touched      = React.useRef(false);
+  const lastSpinDirection = React.useRef(1);
+  const dragSample = React.useRef(null);
   const [current, setCurrent] = React.useState(HERO_DEFAULT);
   const [loading, setLoading] = React.useState(true);
   const [failed,  setFailed]  = React.useState(false);
@@ -234,7 +236,8 @@ const HeroShowcase = () => {
   const startSpin = () => {
     const plugin = pluginRef.current;
     if (!plugin || !plugin.canvas3d) return;
-    plugin.canvas3d.setProps({ trackball: { animate: { name: 'spin', params: { speed: 0.18 } } } });
+    const direction = lastSpinDirection.current < 0 ? -1 : 1;
+    plugin.canvas3d.setProps({ trackball: { animate: { name: 'spin', params: { speed: 0.18 * direction } } } });
   };
   const stopSpin = () => {
     const plugin = pluginRef.current;
@@ -276,14 +279,38 @@ const HeroShowcase = () => {
       const plugin = viewer.plugin;
       pluginRef.current = plugin;
 
-      // Transparent background (sits on the page), HiDPI sharpness, no axis widget.
-      const dpr = window.devicePixelRatio || 1;
+      // Transparent background, no axis widget. Throw-to-spin inertia:
+      // staticMoving:false keeps the last rotation delta alive after pointer
+      // release; dynamicDampingFactor controls how fast it decays per frame
+      // (lower = longer coast). Default is staticMoving:true / factor:0.2
+      // which stops dead on release.
       if (plugin.canvas3d) {
         plugin.canvas3d.setProps({
           transparentBackground: true,
           camera: { helper: { axes: { name: 'off', params: {} } } },
-          renderer: { pixelScale: dpr },
+          trackball: { staticMoving: false, dynamicDampingFactor: 0.055 },
         });
+      }
+
+      // Disable hover highlights. The highlight system is two-layered: the
+      // lociHighlights manager records which atoms are highlighted (data), and
+      // the renderer draws them. Setting renderer.highlightStrength to 0 only
+      // dims the draw — atoms are still marked and outline effects still show.
+      // Patching the manager methods to no-ops stops highlights being recorded.
+      const lh = plugin.managers.interactivity.lociHighlights;
+      lh.highlight = () => {};
+      lh.highlightOnly = () => {};
+      lh.highlightOnlyExtend = () => {};
+
+      // HiDPI sharpness. pixelScale is a Canvas3DContext prop, NOT a renderer
+      // prop — setting it on canvas3d.renderer is silently ignored. In Mol*'s
+      // default "scaled" mode the drawing buffer renders at CSS-pixel
+      // resolution (pixelScale 1 ignores devicePixelRatio), so on high-DPR
+      // phones the browser upscales it and the hero looks pixelated. Render the
+      // buffer at 2x CSS resolution instead (the param's max; retina-sharp on
+      // dpr<=2, far sharper on dpr 3, capped so phones don't render 9x pixels).
+      if (plugin.canvas3dContext) {
+        plugin.canvas3dContext.setProps({ pixelScale: 2 });
       }
 
       // Build the structure manually so we keep refs for the switcher
@@ -330,6 +357,13 @@ const HeroShowcase = () => {
       };
 
       applyState(current);
+
+      // Disable click-to-select and click-to-focus. Both behaviors subscribe
+      // to plugin.behaviors.interaction.click (an RxJS Subject). Patching
+      // next() to a no-op after the structure is loaded (so initial camera
+      // framing is unaffected) silences all click interactions in one place.
+      plugin.behaviors.interaction.click.next = () => {};
+
       setLoading(false);
 
       // Gentle invitation: spin briefly, show the drag prompt, until the
@@ -353,16 +387,48 @@ const HeroShowcase = () => {
       });
     });
 
-    const onInteract = () => {
+    const rememberThrowDirection = (e) => {
+      const sample = dragSample.current;
+      if (!sample || e.pointerId !== sample.pointerId) return;
+      const dx = e.clientX - sample.x;
+      if (Math.abs(dx) < 4) return;
+      lastSpinDirection.current = dx > 0 ? 1 : -1;
+      dragSample.current = { pointerId: e.pointerId, x: e.clientX };
+    };
+
+    const onGrab = (e) => {
       touched.current = true;
       setHintOn(false);
       setPromptOn(false);
       stopSpin();
+      clearTimeout(idleTimer.current);
+      if (typeof e.pointerId === 'number') {
+        dragSample.current = { pointerId: e.pointerId, x: e.clientX };
+        try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+      } else {
+        scheduleIdleSpin();
+      }
+    };
+    const onMove = (e) => rememberThrowDirection(e);
+    // Schedule idle spin from release so the throw coast plays out fully
+    // before the gentle spin resumes.
+    const onRelease = (e) => {
+      rememberThrowDirection(e);
+      dragSample.current = null;
       scheduleIdleSpin();
     };
+    // Prevent Mol*'s scroll-zoom — viewer is rotate-only. Mol* attaches its
+    // wheel handler directly to the canvas element, so a bubbling listener on
+    // the container fires AFTER Mol* already zoomed. A capturing listener fires
+    // first, stopPropagation() prevents the event from ever reaching the canvas.
+    const blockZoom = (e) => e.stopPropagation();
     if (el) {
-      el.addEventListener('pointerdown', onInteract);
-      el.addEventListener('wheel', onInteract, { passive: true });
+      el.addEventListener('pointerdown', onGrab);
+      el.addEventListener('pointermove', onMove);
+      el.addEventListener('pointerup', onRelease);
+      el.addEventListener('pointercancel', onRelease);
+      el.addEventListener('wheel', onGrab, { passive: true });
+      el.addEventListener('wheel', blockZoom, { capture: true, passive: true });
     }
     const hintTimer = setTimeout(() => setHintOn(false), 5500);
 
@@ -374,8 +440,12 @@ const HeroShowcase = () => {
         try { window.cancelIdleCallback(ricId); } catch (e) {}
       }
       if (el) {
-        el.removeEventListener('pointerdown', onInteract);
-        el.removeEventListener('wheel', onInteract);
+        el.removeEventListener('pointerdown', onGrab);
+        el.removeEventListener('pointermove', onMove);
+        el.removeEventListener('pointerup', onRelease);
+        el.removeEventListener('pointercancel', onRelease);
+        el.removeEventListener('wheel', onGrab);
+        el.removeEventListener('wheel', blockZoom, { capture: true });
       }
       const p = pluginRef.current;
       if (p) { try { p.dispose(); } catch (e) {} pluginRef.current = null; }
@@ -493,9 +563,9 @@ const CredibilityBand = () => (
   <section className="local-value-section" style={{ borderBottom: '1px solid var(--border)' }}>
     <div className="container">
       <div className="hero-meta" style={{ margin: 0, padding: '18px 0' }}>
-        <span>Built by Konstantin Nomerotski</span>
+        <span>Built with Open Source tools</span>
         <span>Runs locally on your hardware</span>
-        <span>PolyForm Noncommercial</span>
+        <span>Always free for Academics</span>
       </div>
     </div>
   </section>
