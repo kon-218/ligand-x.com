@@ -250,6 +250,17 @@ const WORKFLOW_PRESETS = [
   },
 ];
 
+// In-page scroll only. The app's router treats any hash change as a page
+// navigation (see app.jsx's hashchange listener), so these links must
+// preventDefault before the hash actually changes or they get redirected home.
+const jumpTo = (e, id) => {
+  e.preventDefault();
+  const el = document.getElementById(id);
+  if (!el) return;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+};
+
 const filterFeature = (feature, category) => {
   if (category === "all") return true;
   if (category === "core") return feature.tier === "Open Core";
@@ -324,7 +335,7 @@ const FeatureDetail = ({ feature }) => (
 );
 
 const WorkflowShowcase = ({ featureMap, onPreview }) => (
-  <section className="fx-workflow-section">
+  <section className="fx-workflow-section" id="workflows" style={{ scrollMarginTop: 72 }}>
     <div className="fx-workflow-head">
       <div>
         <div className="eyebrow"><span className="dot" />Workflows</div>
@@ -445,16 +456,20 @@ const FeaturesPage = () => {
         <div className="container">
           <div className="eyebrow"><span className="dot" />Features</div>
           <h1 style={{ fontSize: 'clamp(34px, 4vw, 52px)', margin: '12px 0 16px', lineHeight: 1.1, letterSpacing: '-0.02em', fontWeight: 600 }}>
-            Open-core workflows with licensed Pro services.
+            Twelve capabilities. Four ways to chain them.
           </h1>
-          <p style={{ color: 'var(--muted)', fontSize: 17, maxWidth: 720, margin: 0 }}>
+          <p style={{ color: 'var(--muted)', fontSize: 17, maxWidth: 720, margin: '0 0 24px' }}>
             Ligand-X combines local structure handling, docking, MD, sequence analysis, editing, and project storage
             with licensed Pro modules for quantum chemistry, ADMET, Boltz-2, free energy, and REINVENT.
           </p>
+          <div className="fx-hero-jump">
+            <a href="#capabilities" onClick={(e) => jumpTo(e, "capabilities")}>Browse capabilities<Icon name="arrowDown" size={13} /></a>
+            <a href="#workflows" onClick={(e) => jumpTo(e, "workflows")}>See composed workflows<Icon name="arrowDown" size={13} /></a>
+          </div>
         </div>
       </section>
 
-      <section style={{ padding: 'var(--sp-7) 0 0' }}>
+      <section id="capabilities" style={{ padding: 'var(--sp-7) 0 0', scrollMarginTop: 72 }}>
         <div className="container">
           <div className="fx-controls">
             <label className="fx-search">

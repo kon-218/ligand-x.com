@@ -10,7 +10,7 @@ const PAGES = [
   { id: "download", label: "Download" },
 ];
 
-const ROUTES = [...PAGES, { id: "contact", label: "Contact" }];
+const ROUTES = [...PAGES, { id: "contact", label: "Request license" }];
 
 const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => (
   <header className="topnav">
@@ -82,7 +82,7 @@ const Footer = () => (
             <li><a onClick={() => window.__nav('docs')}>Docs</a></li>
             <li><a onClick={() => window.__nav('pro')}>Pro</a></li>
             <li><a onClick={() => window.__nav('download')}>Download</a></li>
-            <li><a onClick={() => window.__nav('contact')}>Contact</a></li>
+            <li><a onClick={() => window.__nav('contact')}>Request license</a></li>
             <li><a href="https://github.com/kon-218/ligand-x-launcher/releases" target="_blank">Changelog</a></li>
           </ul>
         </div>
@@ -98,7 +98,7 @@ const Footer = () => (
             <li><a href="https://github.com/kon-218/ligand-x-launcher" target="_blank">GitHub</a></li>
             <li><a href="https://github.com/kon-218/ligand-x-launcher/issues" target="_blank">Issues</a></li>
             <li><a href="https://github.com/kon-218/ligand-x-launcher/discussions" target="_blank">Discussions</a></li>
-            <li><a onClick={() => window.__nav('contact')}>Contact</a></li>
+            <li><a onClick={() => window.__nav('contact')}>Request license</a></li>
           </ul>
         </div>
       </div>

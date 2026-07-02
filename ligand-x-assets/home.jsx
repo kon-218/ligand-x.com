@@ -21,18 +21,18 @@ const CORE_LABELS = [
 
 const HOME_PRO_MODULES = [
   { name: "QC", decision: "Electronic properties, charges, Fukui indices, and frequencies" },
-  { name: "ADMET", decision: "Property and liability screening" },
+  { name: "ADMET", decision: "Developability and liability screening" },
   { name: "Boltz-2", decision: "Structure and affinity prediction" },
-  { name: "ABFE/RBFE", decision: "Binding free-energy prioritization" },
-  { name: "GenAI", decision: "Generative design and optimization" },
+  { name: "ABFE/RBFE", decision: "Compare binding free energies across analogs" },
+  { name: "GenAI", decision: "Explore and optimize new chemotypes" },
 ];
 
 const STORY_STAGES = [
   {
     n: "01",
     eyebrow: "Create a project",
-    title: "Start with a persistent workspace, not another folder tree.",
-    text: "Import proteins, ligands, structures, and generated assets into one project so the experiment has a durable record from the first file onward.",
+    title: "One project workspace, not another folder tree.",
+    text: "Import proteins, ligands, structures, and generated molecules into a single project. Files, jobs, and outputs stay linked from the first import.",
     points: ["Project-scoped proteins, molecules, pockets, jobs, and outputs", "Ketcher editing with SMILES, SDF, and PDB import/export", "Mol* review for proteins, complexes, pockets, and poses"],
     annotType: "files",
     annotValue: "project.json · 1M17.pdb · leads.sdf",
@@ -41,8 +41,8 @@ const STORY_STAGES = [
   {
     n: "02",
     eyebrow: "Prepare the target",
-    title: "Turn raw structures into modeling-ready systems.",
-    text: "Clean proteins, detect components, handle waters, ions, metals, and ligands, find pockets, and align sequences before the calculation starts.",
+    title: "Clean up raw structures before you dock or simulate.",
+    text: "Strip unwanted components, handle waters and cofactors, find pockets, and align sequences before you run calculations.",
     points: ["PDB, mmCIF, SDF, and SMILES-to-3D handling", "Protein cleanup and component detection", "Pocket finding plus pairwise and multiple-sequence alignment"],
     annotType: "outputs",
     annotValue: "cleaned.pdb · pockets[] · alignment",
@@ -51,8 +51,8 @@ const STORY_STAGES = [
   {
     n: "03",
     eyebrow: "Screen and simulate",
-    title: "Move from docked poses to MD trajectories without leaving the app.",
-    text: "Dock ligands, review ranked poses, inspect interactions, run MD, and track jobs through the same local workspace.",
+    title: "Go from docked poses to MD in the same app.",
+    text: "Dock ligands, compare poses, inspect interactions, run MD, and follow job progress in one workspace.",
     points: ["AutoDock Vina docking with receptor and ligand preparation", "Batch results, affinity scores, interactions, and pose downloads", "OpenMM minimization, equilibration, trajectories, checkpoints, and analytics"],
     annotType: "outputs",
     annotValue: "poses[] · scores · trajectory.dcd",
@@ -61,9 +61,9 @@ const STORY_STAGES = [
   {
     n: "04",
     eyebrow: "Prioritize with Pro",
-    title: "Add advanced modules when the project needs stronger decisions.",
-    text: "Licensed Pro services extend the same workflow with property risk, binding confidence, design expansion, and mechanistic insight.",
-    points: ["QC and ADMET for property risk", "Boltz-2, ABFE, and RBFE for binding confidence", "GenAI workflows for design expansion"],
+    title: "Add Pro modules when you need deeper analysis.",
+    text: "Pro adds QC, ADMET, Boltz-2, binding free energies, and generative design on top of the same project.",
+    points: ["QC and ADMET for developability screening", "Boltz-2, ABFE, and RBFE for ranking binders", "GenAI for exploring analogs"],
     annotType: "inputs",
     annotValue: "license key · target.pdb · ligand.sdf",
     cli: "lx pro boltz · lx pro abfe",
@@ -83,15 +83,15 @@ const SERVICES = [
 const USE_CASES = [
   {
     title: "Academic lab",
-    text: "Run teaching, docking, MD, and local project workflows without managed cloud infrastructure.",
+    text: "Run teaching labs, docking, and MD on local hardware. No cloud account required.",
   },
   {
     title: "Startup discovery team",
-    text: "Keep early target and ligand work private while standardizing project assets and computational jobs.",
+    text: "Keep early target and ligand work on your own machines, with one place for structures and job history.",
   },
   {
     title: "Computational chemist",
-    text: "Move from cleaned structures to docked poses to MD trajectories without manually stitching tools together.",
+    text: "Prep a structure, dock a library, and launch MD without copying files between five different tools.",
   },
 ];
 
@@ -126,9 +126,9 @@ function cleanHeroPdb(text) {
 }
 
 const HERO_STRUCTURES = [
-  { label: 'Protein · EGFR · 1M17',     key: 'protein' },
-  { label: 'Complex · erlotinib · 1M17', key: 'complex' },
-  { label: 'Ligand · erlotinib',         key: 'ligand'  },
+  { label: 'Protein · EGFR · 1M17',     short: 'Protein', key: 'protein' },
+  { label: 'Complex · erlotinib · 1M17', short: 'Complex', key: 'complex' },
+  { label: 'Ligand · erlotinib',         short: 'Ligand', key: 'ligand'  },
 ];
 const HERO_DEFAULT = 1;
 
@@ -178,6 +178,42 @@ const MoleculeScene = () => (
     </svg>
   </div>
 );
+
+const StructureGlyph = ({ kind }) => {
+  if (kind === 'protein') {
+    return (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M4 6c2 0 2 3 4 3s2-3 4-3 2 3 4 3 2-3 4-3" />
+        <path d="M4 12c2 0 2 3 4 3s2-3 4-3 2 3 4 3 2-3 4-3" opacity="0.85" />
+        <path d="M4 18c2 0 2 3 4 3s2-3 4-3 2 3 4 3 2-3 4-3" opacity="0.7" />
+      </svg>
+    );
+  }
+  if (kind === 'complex') {
+    return (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M3 7c2 0 2 3 4 3s2-3 4-3" />
+        <path d="M3 14c2 0 2 3 4 3s2-3 4-3" opacity="0.85" />
+        <circle cx="17" cy="9" r="1.4" fill="currentColor" stroke="none" />
+        <circle cx="20.5" cy="12" r="1.4" fill="currentColor" stroke="none" />
+        <circle cx="17" cy="15" r="1.4" fill="currentColor" stroke="none" />
+        <path d="M17 9l3.5 3M20.5 12L17 15M17 9v6" strokeWidth="1.3" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M8 6l4 2 4-2M8 6v5M16 6v5M8 11l-3 3M16 11l3 3M8 11l4 3 4-3M12 14v5" />
+      <circle cx="8" cy="6" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="16" cy="6" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="8" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="5" cy="14" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="19" cy="14" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="14" r="1.6" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+};
 
 const HeroShowcase = () => {
   const viewerRef    = React.useRef(null);   // Mol* canvas container
@@ -468,8 +504,8 @@ const HeroShowcase = () => {
             <div className="eyebrow"><span className="dot" /> The local CADD workbench</div>
             <h1>Integrated.<br />Self-hosted.<br />Reliable.<br /><em>Ligand-X</em></h1>
             <p className="hero-lede">
-              A free, self-hosted desktop app for computational drug discovery — docking,
-              MD, and more, running on your own hardware.
+              A free desktop app for computational drug discovery. Dock, simulate,
+              and keep your structures and results on your own hardware.
             </p>
             <div className="hero-cta">
               <button className="btn btn-primary btn-lg" onClick={() => window.__nav("download")}>
@@ -529,27 +565,26 @@ const HeroShowcase = () => {
                   {HERO_STRUCTURES[HERO_DEFAULT].label}
                 </div>
               )}
+            </div>
 
-              <div className="hero-dot-bar">
-                <div className="hero-dot-row">
-                  {HERO_STRUCTURES.map((s, i) => (
-                    <button
-                      key={s.key}
-                      className={"hero-dot" + (i === current ? " active" : "")}
-                      onClick={() => {
-                        touched.current = true;
-                        setPromptOn(false);
-                        stopSpin();
-                        scheduleIdleSpin();
-                        setCurrent(i);
-                      }}
-                      aria-label={s.label}
-                    />
-                  ))}
-                </div>
-                <div className={"hero-drag-hint" + (hintOn && ready ? "" : " hidden")}>
-                  drag to rotate · scroll to zoom
-                </div>
+            <div className="hero-switcher">
+              <div className="hero-switcher-track" role="tablist" aria-label="Structure view">
+                {HERO_STRUCTURES.map((s, i) => (
+                  <button
+                    key={s.key}
+                    className={"hero-glyph-btn" + (i === current ? " active" : "")}
+                    onClick={() => {
+                      setPromptOn(false);
+                      setCurrent(i);
+                    }}
+                    aria-label={s.label}
+                    aria-selected={i === current}
+                    role="tab"
+                    title={s.short}
+                  >
+                    <StructureGlyph kind={s.key} />
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -562,7 +597,7 @@ const HeroShowcase = () => {
 const CredibilityBand = () => (
   <section className="local-value-section" style={{ borderBottom: '1px solid var(--border)' }}>
     <div className="container">
-      <div className="hero-meta" style={{ margin: 0, padding: '18px 0' }}>
+      <div className="hero-meta" style={{ margin: 0, padding: '18px 0', justifyContent: 'center' }}>
         <span>Built with Open Source tools</span>
         <span>Runs locally on your hardware</span>
         <span>Always free for Academics</span>
@@ -583,10 +618,9 @@ const PainValueSection = () => (
   <section className="section pain-section">
     <div className="container pain-grid">
       <div>
-        <div className="eyebrow"><span className="dot" />Pain / value</div>
-        <h2>Built for the work between tools.</h2>
+        <h2>Less folder shuffling. More chemistry.</h2>
         <p className="pain-lede">
-          Ligand-X is for teams that need serious computational chemistry workflows, but do not want their discovery process spread across scripts, folders, cloud tools, and disconnected viewers.
+          If your structures live in one folder, docking outputs in another, and MD setup in a third script, Ligand-X puts the whole workflow in one project.
         </p>
       </div>
       <div className="pain-panel">
@@ -612,11 +646,8 @@ const WorkflowSection = () => (
       <div className="section-head" style={{ marginBottom: 48 }}>
         <div>
           <div className="eyebrow"><span className="dot" />Main workflow</div>
-          <h2>From target setup to project decisions.</h2>
+          <h2>From target setup to picking your next compound.</h2>
         </div>
-        <p className="sub">
-
-        </p>
       </div>
       <div>
         {STORY_STAGES.map((stage, i) => (
@@ -639,7 +670,7 @@ const WorkflowRow = ({ stage, first, index = 0 }) => (
     <div>
       <div style={{
         fontSize: 30, fontWeight: 600, lineHeight: 1,
-        color: stage.pro ? '#b45309' : 'var(--accent)',
+        color: stage.pro ? 'var(--pro-accent)' : 'var(--accent)',
         fontFamily: 'var(--font-mono)',
       }}>{stage.n}</div>
       <div style={{
@@ -658,7 +689,7 @@ const WorkflowRow = ({ stage, first, index = 0 }) => (
           borderTop: '1px solid var(--border)',
           fontSize: 14, color: 'var(--ink-2)', alignItems: 'baseline',
         }}>
-          <span style={{ fontFamily: 'var(--font-mono)', color: stage.pro ? '#b45309' : 'var(--accent)', flexShrink: 0 }}>→</span>
+          <span style={{ fontFamily: 'var(--font-mono)', color: stage.pro ? 'var(--pro-accent)' : 'var(--accent)', flexShrink: 0 }}>→</span>
           {b}
         </li>
       ))}
@@ -666,48 +697,28 @@ const WorkflowRow = ({ stage, first, index = 0 }) => (
   </Reveal>
 );
 
-const LocalValueSection = () => (
-  <section className="section local-value-section">
-    <div className="container local-value-grid">
-      <div>
-        <div className="eyebrow"><span className="dot" />Why local matters</div>
-        <h2>Your structures and results stay on your hardware.</h2>
-        <p>
-          Ligand-X is designed for sensitive structures, early ligand ideas, internal targets, and teams that want reproducible workflows without forcing every calculation through a managed cloud app.
-        </p>
-      </div>
-      <div className="local-value-list">
-        {["No required cloud upload for sensitive structures", "Use local CPU/GPU resources", "Works for desktop or server deployment", "Suitable for academic labs, startups, and internal research environments"].map((item, i) => (
-          <Reveal className="local-value-item" key={item} i={i}><Icon name="check" size={16} /><span>{item}</span></Reveal>
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
 const OpenCoreProSection = () => (
   <section className="section capability-map-section">
     <div className="container">
       <div className="section-head">
         <div>
-          <div className="eyebrow"><span className="dot" />Open Core vs Pro</div>
-          <h2>Start with the local workbench. Add advanced decision modules when needed.</h2>
+          <h2>Start with the local workbench. Add Pro when you need it.</h2>
         </div>
         <p className="sub">
-          Each layer is framed by the decisions it supports, from day-to-day project execution to higher-confidence prioritization.
+          Open Core covers day-to-day prep, docking, and MD. Pro adds property screening, binding prediction, and generative design.
         </p>
       </div>
       <div className="edition-map">
         <Reveal className="edition-card" i={0}>
           <h3>Open Core</h3>
-          <p>Everyday local workflows for project setup, target preparation, screening, simulation, and review.</p>
+          <p>Project setup, target prep, docking, MD, and structure review on your own hardware.</p>
           <div className="capability-cloud">
             {CORE_LABELS.map((item) => <span key={item}>{item}</span>)}
           </div>
         </Reveal>
         <Reveal className="edition-card pro-edition-card" i={1}>
           <h3>Pro</h3>
-          <p>Licensed services for higher-confidence prioritization once the project needs more evidence.</p>
+          <p>Licensed add-ons for ADMET, binding free energies, structure prediction, and generative design.</p>
           <div className="module-decision-list">
             {HOME_PRO_MODULES.map((item) => (
               <div className="module-decision" key={item.name}>
@@ -727,9 +738,11 @@ const ArchitectureProofSection = () => (
     <div className="container">
       <div className="section-head">
         <div>
-          <div className="eyebrow"><span className="dot" />Why it's reliable</div>
-          <h2>Your work persists, reproduces, and stays on your machine.</h2>
+          <h2>Your structures and results stay on your hardware.</h2>
         </div>
+        <p className="sub">
+          Built for sensitive structures, unpublished targets, and teams who want reproducible workflows without uploading everything to a cloud service.
+        </p>
       </div>
       <div className="service-board">
         <div className="service-grid proof-grid">
@@ -750,11 +763,10 @@ const UseCasesSection = () => (
     <div className="container">
       <div className="section-head">
         <div>
-          <div className="eyebrow"><span className="dot" />Use cases</div>
-          <h2>Built for teams that need workflow control.</h2>
+          <h2>For labs, startups, and solo computational chemists.</h2>
         </div>
         <p className="sub">
-          Ligand-X fits small teams and individual computational chemists who want local execution, project continuity, and a path to advanced methods.
+          Local execution, one project per experiment, and a clear upgrade path to Pro modules.
         </p>
       </div>
       <div className="use-case-grid">
@@ -771,7 +783,7 @@ const UseCasesSection = () => (
 
 const INSTALL_STEPS = [
   ["01", "Install Docker", "Docker Desktop or Docker Engine + Compose plugin"],
-  ["02", "Open the Ligand-X launcher", "Download the launcher for your OS — no terminal needed"],
+  ["02", "Open the Ligand-X launcher", "Download the launcher for your OS. No terminal needed."],
   ["03", "Select modules and start", "Enable Free modules, or add licensed Pro modules"],
   ["04", "Open localhost:3000", "Frontend, gateway, and workers all live"],
 ];
@@ -780,7 +792,6 @@ const QuickStartSection = () => (
   <section className="section quick-story-section">
     <div className="container quick-story-grid">
       <div>
-        <div className="eyebrow"><span className="dot" />Installation</div>
         <h2>Use the launcher for desktops, or Compose for servers.</h2>
         <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 10, fontSize: 14 }}>
           {INSTALL_STEPS.map(([n, title, sub], i) => (
@@ -805,7 +816,7 @@ const QuickStartSection = () => (
                 <Cmd>Install Docker Desktop or Docker Engine</Cmd>{"\n"}
                 <Cmd>Open the Ligand-X launcher</Cmd>{"\n"}
                 <Cmd>Select Free or licensed Pro modules</Cmd>{"\n"}
-                <span style={{ color: "#7ee787" }}>ready at http://localhost:3000</span>
+                <span style={{ color: "var(--code-success)" }}>ready at http://localhost:3000</span>
               </>
             ),
           },
@@ -831,10 +842,9 @@ const QuickStartSection = () => (
 const CTASection = () => (
   <section className="section final-story-cta">
     <div className="container final-story-inner">
-      <div className="eyebrow"><span className="dot" />Open core + licensed Pro</div>
-      <h2>Start local. Add advanced modules when the project needs them.</h2>
+      <h2>Start local. Add Pro when you need it.</h2>
       <p>
-        Run the open-core workbench for projects, structures, docking, and MD. Compare Free and Pro when your team needs property risk, binding confidence, generative design.
+        Run the open-core workbench for projects, structures, docking, and MD. Compare Free and Pro when you need ADMET, binding prediction, or generative design.
       </p>
       <div className="hero-cta">
         <button className="btn btn-primary btn-lg" onClick={() => window.__nav('download')}>
@@ -844,9 +854,6 @@ const CTASection = () => (
         <button className="btn btn-secondary btn-lg" onClick={() => window.__nav('pro')}>
           Compare Free and Pro
           <Icon name="arrow" size={14} />
-        </button>
-        <button className="btn btn-secondary btn-lg" onClick={() => window.__nav('contact')}>
-          Contact for access
         </button>
       </div>
     </div>
@@ -859,7 +866,6 @@ const HomePage = () => (
     <CredibilityBand />
     <PainValueSection />
     <WorkflowSection />
-    <LocalValueSection />
     <OpenCoreProSection />
     <ArchitectureProofSection />
     <UseCasesSection />

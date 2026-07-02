@@ -1,34 +1,34 @@
 // ============================================================
-// ProPage — sales page for licensed upgrades and advanced services
+// ProPage — licensed modules and upgrade paths
 // ============================================================
 
 const PRO_MODULES = [
   {
-    title: "Property risk: Quantum Chemistry",
+    title: "Quantum chemistry (QC)",
     icon: "sigma",
-    desc: "ORCA-backed geometry, frequency, charge, Fukui, and property calculations for ligand design.",
+    desc: "ORCA-backed geometry, frequencies, charges, Fukui indices, and related property calculations.",
     tags: ["ORCA", "QC worker", "charges"],
   },
   {
-    title: "Property risk: ADMET",
+    title: "ADMET screening",
     icon: "flask",
-    desc: "Batch drug-likeness and ADMET property screening for project molecule libraries.",
+    desc: "Batch drug-likeness and ADMET property screening across a project molecule library.",
     tags: ["batch SMILES", "properties", "cache"],
   },
   {
-    title: "Binding confidence: Boltz-2",
+    title: "Boltz-2",
     icon: "atom",
     desc: "GPU-backed Boltz-2 workflows for structure and protein-ligand binding affinity prediction.",
     tags: ["GPU", "affinity", "reports"],
   },
   {
-    title: "Binding confidence: ABFE and RBFE",
+    title: "ABFE and RBFE",
     icon: "scale",
     desc: "Alchemical free-energy workflows for absolute affinity estimates and lead-optimization networks.",
     tags: ["OpenFE", "MBAR", "GPU-long"],
   },
   {
-    title: "Design expansion: REINVENT",
+    title: "REINVENT",
     icon: "network",
     desc: "Generative design workflows for molecule generation and optimization against project objectives.",
     tags: ["generation", "optimization", "private worker"],
@@ -37,40 +37,37 @@ const PRO_MODULES = [
 
 const WHY_PRO_POINTS = [
   {
-    title: "Prioritize compounds with more evidence",
-    desc: "Combine docking, MD, ADMET, affinity prediction, and free-energy workflows in one project context before spending synthesis or assay budget.",
+    title: "More evidence before you synthesize",
+    desc: "Run ADMET, affinity prediction, free energies, and QC in the same project as your docking and MD, before you spend on synthesis or assays.",
   },
   {
-    title: "Keep sensitive discovery work local",
-    desc: "Run licensed Pro services through private containers on your own workstation or server while keeping structures and results on your hardware.",
+    title: "Keep sensitive work local",
+    desc: "Pro modules run in private containers on your workstation or server. Structures and results stay on your hardware.",
   },
   {
-    title: "Reduce workflow fragmentation",
-    desc: "Stop moving structures, poses, tables, and scripts across disconnected notebooks, cloud tools, and viewers for each decision cycle.",
+    title: "Fewer tools to stitch together",
+    desc: "Stop copying poses, tables, and scripts between notebooks, cloud apps, and viewers every time you need a new readout.",
   },
 ];
 
 const DECISION_MAP_ROWS = [
   {
-    gate: "Hit triage: what enters synthesis this cycle?",
-    baseline: "Docking-heavy triage with manual spreadsheet filtering and limited liability checks.",
-    proWorkflow: "ADMET + QC + Boltz-2",
-    output: "Ranked shortlist with confidence tiering, liabilities flags, and charge sanity checks.",
-    impact: "Reduces low-probability synthesis picks and shortens sprint-level triage decisions.",
+    question: "Which hits to make?",
+    without: "Docking scores and a spreadsheet",
+    modules: "ADMET + QC + Boltz-2",
+    result: "Shortlist with ADMET flags and affinity estimates",
   },
   {
-    gate: "Lead series selection: which binders advance?",
-    baseline: "Pose inspection and mixed-tool affinity proxies with weak uncertainty framing.",
-    proWorkflow: "Boltz-2 + ABFE and RBFE",
-    output: "Affinity confidence package with rank ordering and free-energy evidence.",
-    impact: "Improves go/no-go confidence before committing assay and medicinal chemistry bandwidth.",
+    question: "Which binders advance?",
+    without: "Pose review and rough affinity guesses",
+    modules: "Boltz-2 + ABFE/RBFE",
+    result: "Rank order backed by affinity and free energies",
   },
   {
-    gate: "Design expansion: what should we make next?",
-    baseline: "Medicinal chemistry ideation across disconnected notebooks and scoring scripts.",
-    proWorkflow: "REINVENT + ADMET + project constraints",
-    output: "Proposal set of novel structures with objective-aware scoring and filter traceability.",
-    impact: "Increases idea throughput while keeping proposals aligned to project objectives.",
+    question: "What to make next?",
+    without: "Notebook ideation and one-off scripts",
+    modules: "REINVENT + ADMET",
+    result: "Novel structures scored to project filters",
   },
 ];
 
@@ -84,7 +81,7 @@ const PRO_EDITIONS = [
   {
     name: "Academic",
     badge: "Licensed",
-    desc: "Unlock Pro modules for academic labs and research groups that need advanced computational workflows.",
+    desc: "Unlock Pro modules for academic labs and research groups.",
     items: ["Signed Academic license", "All Pro modules", "Private image access"],
   },
   {
@@ -130,6 +127,23 @@ const WhyProCard = ({ point }) => (
   </div>
 );
 
+const ProFitCard = ({ row }) => (
+  <div className="pro-fit-card">
+    <h3 className="pro-fit-question">{row.question}</h3>
+    <div className="pro-fit-rows">
+      <div className="pro-fit-row">
+        <span className="pro-fit-label">Without</span>
+        <span>{row.without}</span>
+      </div>
+      <div className="pro-fit-row">
+        <span className="pro-fit-label">Pro</span>
+        <span className="pro-fit-modules">{row.modules}</span>
+      </div>
+    </div>
+    <p className="pro-fit-result">{row.result}</p>
+  </div>
+);
+
 const ProPage = () => (
   <div className="page-fade">
     <section style={{ padding: 'var(--sp-8) 0 var(--sp-6)', borderBottom: '1px solid var(--border)' }}>
@@ -138,16 +152,15 @@ const ProPage = () => (
           <div>
             <div className="eyebrow"><span className="dot" />Ligand-X Pro</div>
             <h1 style={{ fontSize: 'clamp(38px, 5vw, 68px)', margin: '14px 0 18px', lineHeight: 1.05, letterSpacing: '-0.02em', fontWeight: 600 }}>
-              Move from screening and simulation into higher-confidence prioritization.
+              Go beyond docking and MD with licensed analysis modules.
             </h1>
             <p style={{ color: 'var(--muted)', fontSize: 18, maxWidth: 720, margin: 0, lineHeight: 1.6 }}>
-              Upgrade the local Ligand-X environment with licensed modules grouped around the decisions
-              teams make every week: property risk, binding confidence, design expansion, and mechanistic insight.
+              Add QC, ADMET, Boltz-2, binding free energies, and generative design to your local Ligand-X install.
             </p>
             <div style={{ display: 'flex', gap: 10, marginTop: 28, flexWrap: 'wrap' }}>
               <button className="btn btn-primary btn-lg" onClick={() => window.__nav('contact')}>
                 <Icon name="scale" size={16} />
-                Contact sales
+                Request license
               </button>
               <button className="btn btn-secondary btn-lg" onClick={() => window.__nav('features')}>
                 Compare features
@@ -190,10 +203,10 @@ const ProPage = () => (
         <div className="section-head">
           <div>
             <div className="eyebrow"><span className="dot" />Why Pro</div>
-            <h2>Built for teams past first-pass docking.</h2>
+            <h2>When docking alone is not enough.</h2>
           </div>
           <p className="sub">
-            Pro is for biotech, pharma, and academic teams that need stronger evidence before committing synthesis, assay, or additional compute budget.
+            For biotech, pharma, and academic teams who want ADMET, affinity, or free-energy readouts before committing synthesis or compute spend.
           </p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14 }}>
@@ -206,42 +219,15 @@ const ProPage = () => (
       <div className="container">
         <div className="section-head">
           <div>
-            <div className="eyebrow"><span className="dot" />Decision map</div>
-            <h2>Map pharma decision gates to operational evidence.</h2>
+            <div className="eyebrow"><span className="dot" />Where Pro fits</div>
+            <h2>Typical workflows after the first dock or MD pass.</h2>
           </div>
           <p className="sub">
-            Evaluate Pro by decision gate, evidence artifact, and operational impact, not just by module inventory.
+            Examples of questions teams answer with Pro modules, not a module checklist.
           </p>
         </div>
-        <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', background: 'var(--surface)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1200 }}>
-            <thead>
-              <tr>
-                {[
-                  "Program decision gate",
-                  "Baseline today",
-                  "Pro workflow",
-                  "Decision output artifact",
-                  "Commercial impact",
-                ].map((header) => (
-                  <th key={header} style={{ textAlign: 'left', padding: '14px 16px', fontSize: 13, letterSpacing: '0.01em', color: 'var(--ink-3)', borderBottom: '1px solid var(--border)', background: 'var(--bg-subtle)' }}>
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {DECISION_MAP_ROWS.map((row, idx) => (
-                <tr key={row.gate}>
-                  <td style={{ padding: '14px 16px', borderBottom: idx === DECISION_MAP_ROWS.length - 1 ? 'none' : '1px solid var(--border)', color: 'var(--ink-2)', fontWeight: 500, verticalAlign: 'top', lineHeight: 1.45 }}>{row.gate}</td>
-                  <td style={{ padding: '14px 16px', borderBottom: idx === DECISION_MAP_ROWS.length - 1 ? 'none' : '1px solid var(--border)', color: 'var(--muted)', verticalAlign: 'top', lineHeight: 1.45 }}>{row.baseline}</td>
-                  <td style={{ padding: '14px 16px', borderBottom: idx === DECISION_MAP_ROWS.length - 1 ? 'none' : '1px solid var(--border)', color: 'var(--ink-2)', verticalAlign: 'top', lineHeight: 1.45 }}>{row.proWorkflow}</td>
-                  <td style={{ padding: '14px 16px', borderBottom: idx === DECISION_MAP_ROWS.length - 1 ? 'none' : '1px solid var(--border)', color: 'var(--muted)', verticalAlign: 'top', lineHeight: 1.45 }}>{row.output}</td>
-                  <td style={{ padding: '14px 16px', borderBottom: idx === DECISION_MAP_ROWS.length - 1 ? 'none' : '1px solid var(--border)', color: 'var(--muted)', verticalAlign: 'top', lineHeight: 1.45 }}>{row.impact}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="pro-fit-grid">
+          {DECISION_MAP_ROWS.map((row) => <ProFitCard row={row} key={row.question} />)}
         </div>
       </div>
     </section>
@@ -250,11 +236,11 @@ const ProPage = () => (
       <div className="container">
         <div className="section-head">
           <div>
-            <div className="eyebrow"><span className="dot" />Advanced services</div>
-            <h2>Pro modules support the decisions after the first screen.</h2>
+            <div className="eyebrow"><span className="dot" />Modules</div>
+            <h2>What Pro adds on top of Open Core.</h2>
           </div>
           <p className="sub">
-            Keep the same local UI, projects, job tracking, and Docker deployment model while adding private services for higher-value prioritization work.
+            Same local UI, projects, and job tracking. Private containers for the modules your license covers.
           </p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
@@ -268,10 +254,10 @@ const ProPage = () => (
         <div className="section-head">
           <div>
             <div className="eyebrow"><span className="dot" />Editions</div>
-            <h2>Choose the right access model.</h2>
+            <h2>Free, Academic, or Commercial Pro.</h2>
           </div>
           <p className="sub">
-            Free runs the open-core workbench. Academic and Pro licenses unlock advanced modules through signed license files and private image access.
+            Open Core is free. Academic and Commercial Pro licenses unlock advanced modules via a signed license file and private image access.
           </p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
@@ -285,10 +271,9 @@ const ProPage = () => (
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 0.7fr)', gap: 'var(--sp-7)', alignItems: 'center' }}>
           <div>
             <div className="eyebrow"><span className="dot" />Deployment</div>
-            <h2 style={{ marginTop: 14 }}>Private services, same local Ligand-X experience.</h2>
+            <h2 style={{ marginTop: 14 }}>Private containers, same Ligand-X UI.</h2>
             <p style={{ color: 'var(--muted)', fontSize: 16, lineHeight: 1.6 }}>
-              The launcher and gateway verify signed licenses, request access to the private Pro image namespace,
-              and start only the services covered by the active license. Your scientific data still runs on your hardware.
+              The launcher checks your license, pulls the private Pro images it needs, and starts only the services your license covers. Your data still runs on your hardware.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 10, marginTop: 18 }}>
               {[
@@ -320,21 +305,21 @@ const ProPage = () => (
       <div className="container">
         <div className="section-head">
           <div>
-            <div className="eyebrow"><span className="dot" />What happens next</div>
-            <h2>Clear purchase and onboarding path.</h2>
+            <div className="eyebrow"><span className="dot" />Getting started</div>
+            <h2>How to get a license.</h2>
           </div>
           <p className="sub">
-            After you contact us, we scope deployment, align modules to your workflows, and help you activate the right license path.
+            After you submit a request, we help you pick modules, set up deployment, and activate your license.
           </p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
           {[
-            "Discuss deployment target: desktop, workstation, or server",
-            "Identify required modules by workflow and decision goals",
-            "Issue Academic or Pro license access",
-            "Install through launcher or Docker Compose",
-            "Pull private Pro images via registry credentials",
-            "Optional onboarding to validate your first workflow",
+            "Pick a deployment target: desktop, workstation, or server",
+            "Choose the modules you need",
+            "Receive an Academic or Commercial Pro license",
+            "Install via launcher or Docker Compose",
+            "Pull private Pro images with registry credentials",
+            "Optional help validating your first workflow",
           ].map((step, index) => (
             <div key={step} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '12px 14px', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <span className="tag" style={{ minWidth: 28, justifyContent: 'center' }}>{index + 1}</span>
@@ -347,17 +332,17 @@ const ProPage = () => (
 
     <section className="section" style={{ background: 'var(--bg-subtle)', borderTop: '1px solid var(--border)' }}>
       <div className="container" style={{ textAlign: 'center', padding: '24px 0' }}>
-        <div className="eyebrow" style={{ justifyContent: 'center' }}><span className="dot" />Upgrade path</div>
+        <div className="eyebrow" style={{ justifyContent: 'center' }}><span className="dot" />Get Pro</div>
         <h2 style={{ marginTop: 16, fontSize: 'clamp(28px, 3vw, 42px)', maxWidth: 760, margin: '16px auto 16px' }}>
-          Move from screened hits to higher-confidence prioritization while staying local and private.
+          Screen locally. Add Pro when you need deeper analysis.
         </h2>
         <p style={{ color: 'var(--muted)', maxWidth: 620, margin: '0 auto 32px', fontSize: 16 }}>
-          Contact us for module selection, license activation, and deployment support for your team.
+          Tell us which modules you need and we'll help you get a license set up.
         </p>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
           <button className="btn btn-primary btn-lg" onClick={() => window.__nav('contact')}>
             <Icon name="scale" size={16} />
-            Contact sales
+            Request license
           </button>
           <button className="btn btn-secondary btn-lg" onClick={() => window.__nav('download')}>
             <Icon name="download" size={16} />
