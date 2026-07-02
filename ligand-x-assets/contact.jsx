@@ -1,5 +1,5 @@
 // ============================================================
-// ContactPage — Ligand-X-specific sales/contact page
+// ContactPage — license request form
 // ============================================================
 
 const CONTACT_TOPICS = [
@@ -15,12 +15,12 @@ const ContactPage = () => (
   <div className="page-fade">
     <section style={{ padding: 'var(--sp-8) 0 var(--sp-5)', borderBottom: '1px solid var(--border)' }}>
       <div className="container">
-        <div className="eyebrow"><span className="dot" />Ligand-X Contact</div>
+        <div className="eyebrow"><span className="dot" />Request license</div>
         <h1 style={{ fontSize: 'clamp(34px, 4vw, 52px)', margin: '12px 0 16px', lineHeight: 1.1, letterSpacing: '-0.02em', fontWeight: 600 }}>
-          Talk to us about Ligand-X Pro.
+          Request a Ligand-X Pro license.
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: 17, maxWidth: 720, margin: 0 }}>
-          Use this page for Academic licenses, commercial Pro access, advanced services, and deployment questions.
+          Academic licenses, commercial Pro access, deployment questions, or help picking modules.
         </p>
       </div>
     </section>
@@ -28,41 +28,44 @@ const ContactPage = () => (
     <section className="section">
       <div className="container">
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(300px, 0.7fr)', gap: 'var(--sp-7)', alignItems: 'start' }}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 'var(--sp-6)' }}>
-            <form action="/contact.php" method="get">
+          <div className="contact-form-panel" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 'var(--sp-6)' }}>
+            <form className="contact-form" action="https://formsubmit.co/support@ligand-x.com" method="POST">
+              <input type="hidden" name="_subject" value="New Ligand-X license request" />
+              <input type="hidden" name="_template" value="table" />
+              <input type="text" name="_honey" tabIndex="-1" autoComplete="off" style={{ display: 'none' }} />
               <input type="hidden" name="product" value="Ligand-X" />
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--ink-2)' }}>
                   First name
-                  <input name="firstname" placeholder="Your name" style={{ padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit' }} />
+                  <input name="firstname" placeholder="Your name" required style={{ padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit' }} />
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--ink-2)' }}>
                   Last name
-                  <input name="lastname" placeholder="Your last name" style={{ padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit' }} />
+                  <input name="lastname" placeholder="Your last name" required style={{ padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit' }} />
                 </label>
               </div>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--ink-2)', marginTop: 14 }}>
                 Work email
-                <input name="email" type="email" placeholder="name@example.com" style={{ padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit' }} />
+                <input name="email" type="email" placeholder="name@example.com" required style={{ padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit' }} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--ink-2)', marginTop: 14 }}>
                 Organization
-                <input name="organization" placeholder="Lab, university, or company" style={{ padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit' }} />
+                <input name="organization" placeholder="Lab, university, or company" required style={{ padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit' }} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--ink-2)', marginTop: 14 }}>
                 What do you need?
-                <select name="topic" defaultValue="Commercial Pro modules" style={{ padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit', background: 'var(--surface)' }}>
+                <select name="topic" defaultValue="Commercial Pro modules" required style={{ padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit', background: 'var(--surface)' }}>
                   {CONTACT_TOPICS.map((topic) => <option key={topic} value={topic}>{topic}</option>)}
                 </select>
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--ink-2)', marginTop: 14 }}>
                 Message
-                <textarea name="subject" placeholder="Tell us which modules, deployment setup, timeline, and support needs you have." style={{ minHeight: 170, padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit', resize: 'vertical' }} />
+                <textarea name="message" placeholder="Tell us which modules, deployment setup, timeline, and support needs you have." required style={{ minHeight: 170, padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit', resize: 'vertical' }} />
               </label>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 20 }}>
                 <button type="submit" className="btn btn-primary btn-lg">
                   <Icon name="scale" size={16} />
-                  Send Ligand-X inquiry
+                  Request license
                 </button>
                 <button type="button" className="btn btn-secondary btn-lg" onClick={() => window.__nav('pro')}>
                   Back to Pro
