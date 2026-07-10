@@ -132,53 +132,6 @@ const HERO_STRUCTURES = [
 ];
 const HERO_DEFAULT = 1;
 
-const MoleculeScene = () => (
-  <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', maxWidth: 400 }}>
-    <svg viewBox="0 0 560 560" style={{ width: '100%', height: '100%' }}>
-      <defs>
-        <radialGradient id="hero-aura" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#7BCAB8" stopOpacity="0.45" />
-          <stop offset="55%" stopColor="#E8F5F2" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#F5F3ED" stopOpacity="0" />
-        </radialGradient>
-        <pattern id="hero-grid" width="28" height="28" patternUnits="userSpaceOnUse">
-          <path d="M28 0H0V28" fill="none" stroke="rgba(14,138,126,0.10)" strokeWidth="1" />
-        </pattern>
-      </defs>
-      <rect width="560" height="560" fill="url(#hero-grid)" />
-      <circle cx="280" cy="280" r="240" fill="url(#hero-aura)" />
-      <g transform="translate(280 280)">
-        <circle r="200" fill="none" stroke="#0E8A7E" strokeOpacity="0.16" strokeWidth="38" />
-        <circle r="160" fill="none" stroke="#0E8A7E" strokeOpacity="0.22" strokeWidth="6" strokeDasharray="2 6" />
-        <path d="M -180 30 a 180 180 0 0 1 320 -80" fill="none" stroke="#0E8A7E" strokeWidth="9" strokeLinecap="round" strokeOpacity="0.7" />
-        <path d="M 160 -80 a 180 180 0 0 1 -10 230" fill="none" stroke="#0a6b61" strokeWidth="7" strokeLinecap="round" strokeOpacity="0.55" />
-        <path d="M -100 130 a 140 140 0 0 1 0 -190" fill="none" stroke="#0a6b61" strokeWidth="5" strokeLinecap="round" strokeOpacity="0.55" />
-        <line x1="-22" y1="14" x2="14" y2="-6" stroke="#0E1412" strokeWidth="3" />
-        <line x1="14" y1="-6" x2="34" y2="22" stroke="#0E1412" strokeWidth="3" />
-        <line x1="14" y1="-6" x2="42" y2="-32" stroke="#0E1412" strokeWidth="3" />
-        <line x1="-22" y1="14" x2="-44" y2="-16" stroke="#0E1412" strokeWidth="3" />
-        <line x1="-44" y1="-16" x2="-72" y2="6" stroke="#0E1412" strokeWidth="3" />
-        <line x1="34" y1="22" x2="60" y2="46" stroke="#0E1412" strokeWidth="3" />
-        <circle cx="-22" cy="14" r="10" fill="#0E1412" />
-        <circle cx="14" cy="-6" r="10" fill="#0E1412" />
-        <circle cx="34" cy="22" r="9" fill="#c44b3a" />
-        <circle cx="42" cy="-32" r="9" fill="#3a73c4" />
-        <circle cx="-44" cy="-16" r="9" fill="#0E1412" />
-        <circle cx="-72" cy="6" r="8" fill="#c44b3a" />
-        <circle cx="60" cy="46" r="8" fill="#0E1412" />
-      </g>
-      <g fontFamily="'IBM Plex Mono', monospace" fontSize="11" fill="#7a8480">
-        <line x1="430" y1="180" x2="370" y2="220" stroke="#b0b8b5" strokeWidth="1" />
-        <text x="436" y="184">pocket A</text>
-        <line x1="120" y1="380" x2="200" y2="320" stroke="#b0b8b5" strokeWidth="1" />
-        <text x="40" y="396">&#x2212;9.4 kcal/mol</text>
-        <line x1="430" y1="430" x2="350" y2="370" stroke="#b0b8b5" strokeWidth="1" />
-        <text x="436" y="434">trajectory · 5 ns</text>
-      </g>
-    </svg>
-  </div>
-);
-
 const StructureGlyph = ({ kind }) => {
   if (kind === 'protein') {
     return (
@@ -219,6 +172,7 @@ const HeroShowcase = () => {
   const viewerRef    = React.useRef(null);   // Mol* canvas container
   const pluginRef    = React.useRef(null);   // Mol* PluginContext
   const sceneRef     = React.useRef(null);   // { molstar, polymer, ligand, *Data }
+  const appliedViewRef = React.useRef(null);
   const idleTimer    = React.useRef(null);
   const touched      = React.useRef(false);
   const lastSpinDirection = React.useRef(1);
@@ -229,7 +183,7 @@ const HeroShowcase = () => {
   const [hintOn,  setHintOn]  = React.useState(true);
   const [promptOn, setPromptOn] = React.useState(false);
 
-  // Show / hide representations + reframe the camera for each switcher state.
+  // Show / hide representations and reframe only when entering or leaving ligand-only mode.
   // Visibility is driven by representation opacity (alpha 0/1), the same
   // mechanism the app's toggleComponentVisibility uses.
   const applyState = (index) => {
@@ -237,8 +191,13 @@ const HeroShowcase = () => {
     const scene  = sceneRef.current;
     if (!plugin || !scene) return;
 
+    const previous = appliedViewRef.current;
+    if (previous === index) return;
+
     const showPolymer = index !== 2;  // protein + complex
     const showLigand  = index !== 0;  // complex + ligand
+    const previousShowPolymer = previous !== null && previous !== 2;
+    const previousShowLigand  = previous !== null && previous !== 0;
 
     try {
       const b = plugin.state.data.build();
@@ -251,12 +210,16 @@ const HeroShowcase = () => {
         }));
         changed = true;
       };
-      setAlpha(scene.polymer, showPolymer);
-      setAlpha(scene.ligand, showLigand);
+      if (previous === null || previousShowPolymer !== showPolymer) setAlpha(scene.polymer, showPolymer);
+      if (previous === null || previousShowLigand !== showLigand) setAlpha(scene.ligand, showLigand);
       if (changed) b.commit();
     } catch (e) {
       console.warn('[hero] representation toggle failed:', e);
     }
+
+    const keepCamera = (previous === 0 && index === 1) || (previous === 1 && index === 0);
+    appliedViewRef.current = index;
+    if (keepCamera) return;
 
     let sphere = scene.structureData && scene.structureData.boundary && scene.structureData.boundary.sphere;
     if (index === 2 && scene.ligandData && scene.ligandData.boundary) sphere = scene.ligandData.boundary.sphere;
@@ -495,6 +458,7 @@ const HeroShowcase = () => {
   }, [current, loading, failed]);
 
   const ready = !loading && !failed;
+  const waiting = !ready;
 
   return (
     <section className="hero hero-interactive">
@@ -528,11 +492,7 @@ const HeroShowcase = () => {
 
           <div className="hero-interactive-visual">
             <div className="hero-viewer-panel">
-              <div className={"hero-viewer-poster" + (ready ? " hidden" : "")} aria-hidden="true">
-                <MoleculeScene />
-              </div>
-
-              {loading && (
+              {waiting && (
                 <div className="hero-viewer-loading">
                   <div className="hero-viewer-spinner" />
                 </div>
@@ -557,12 +517,6 @@ const HeroShowcase = () => {
               {ready && (
                 <div className="hero-struct-badge">
                   {HERO_STRUCTURES[current].label}
-                </div>
-              )}
-
-              {failed && (
-                <div className="hero-struct-badge hero-struct-badge-static">
-                  {HERO_STRUCTURES[HERO_DEFAULT].label}
                 </div>
               )}
             </div>

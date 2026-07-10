@@ -2954,22 +2954,6 @@ img { max-width: 100%; display: block; }
    Mol* hero viewer · scroll reveal · micro-interactions
    ================================================================ */
 
-/* Poster (SVG) paints instantly behind the live Mol* canvas, and stays
-   visible as the graceful fallback if the viewer fails to load. */
-.hero-viewer-poster {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 0;
-  transition: opacity 0.5s ease;
-}
-/* Once the live (transparent) Mol* canvas is up, fade the poster out so it
-   doesn't show through behind the real molecule. */
-.hero-viewer-poster.hidden { opacity: 0; }
-
 /* The real Mol* canvas fills the panel and renders transparent, so the
    molecule floats on the page background in both light and dark themes. */
 .hero-viewer-container { position: relative; z-index: 1; }
@@ -2996,8 +2980,6 @@ img { max-width: 100%; display: block; }
   display: none !important;
 }
 
-.hero-struct-badge-static { opacity: 0.7; }
-
 /* The transparent Mol* canvas (.hero-viewer-container, z-index:1) would
    otherwise paint over the controls and swallow their clicks. Lift the
    overlays above it so the switcher dots and badge stay interactive. */
@@ -3007,7 +2989,6 @@ img { max-width: 100%; display: block; }
 
 @media (min-width: 961px) {
   .hero-viewer-container,
-  .hero-viewer-poster,
   .hero-viewer-loading {
     transform: none;
   }
