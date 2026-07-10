@@ -9,7 +9,7 @@ const OS_OPTIONS = [
     icon: "windows",
     sub: "Docker Desktop + WSL 2 backend",
     archs: [
-      { arch: "x86_64", file: "ligandx-launcher-windows-amd64-installer.exe", url: "https://github.com/kon-218/ligand-x-launcher/releases/latest/download/ligandx-launcher-windows-amd64-installer.exe" },
+      { arch: "x86_64", file: "ligandx-windows-amd64.exe", url: "https://github.com/kon-218/ligand-x-launcher/releases/latest/download/ligandx-windows-amd64.exe" },
     ],
     notes: [
       "Recommended path for non-terminal users",
@@ -22,7 +22,7 @@ const OS_OPTIONS = [
     icon: "apple",
     sub: "Docker Desktop",
     archs: [
-      { arch: "Universal (M1/M2/M3 & Intel)", file: "ligandx-launcher-darwin-universal.dmg", url: "https://github.com/kon-218/ligand-x-launcher/releases/latest/download/ligandx-launcher-darwin-universal.dmg" },
+      { arch: "Universal (M1/M2/M3 & Intel)", file: "ligandx-darwin-universal.dmg", url: "https://github.com/kon-218/ligand-x-launcher/releases/latest/download/ligandx-darwin-universal.dmg" },
     ],
     notes: [
       "Drag the app from the DMG into Applications",
@@ -35,7 +35,7 @@ const OS_OPTIONS = [
     icon: "linux",
     sub: "Docker Engine + Compose v2",
     archs: [
-      { arch: "x86_64", file: "ligandx-launcher-linux-amd64.AppImage", url: "https://github.com/kon-218/ligand-x-launcher/releases/latest/download/ligandx-launcher-linux-amd64.AppImage" },
+      { arch: "x86_64", file: "ligandx-linux-amd64.AppImage", url: "https://github.com/kon-218/ligand-x-launcher/releases/latest/download/ligandx-linux-amd64.AppImage" },
     ],
     notes: [
       "Make the AppImage executable before running it",
@@ -54,8 +54,8 @@ const INSTALL_PATHS = [
 # 3. Open it and click Install & Start
 
 # Linux only, after download
-chmod +x ligandx-launcher-linux-amd64.AppImage
-./ligandx-launcher-linux-amd64.AppImage`,
+chmod +x ligandx-linux-amd64.AppImage
+./ligandx-linux-amd64.AppImage`,
   },
   {
     title: "Production / headless CLI",
