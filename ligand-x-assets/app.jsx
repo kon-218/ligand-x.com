@@ -3,32 +3,34 @@
 // ============================================================
 
 const PAGES = [
-  { id: "home", label: "Home" },
-  { id: "features", label: "Features" },
-  { id: "docs", label: "Docs" },
-  { id: "pro", label: "Pro" },
-  { id: "download", label: "Download" },
+  { id: "home", label: "Home", path: "/" },
+  { id: "features", label: "Features", path: "/features/" },
+  { id: "docs", label: "Docs", path: "/docs/" },
+  { id: "pro", label: "Pro", path: "/pro/" },
+  { id: "download", label: "Download", path: "/download/" },
 ];
 
-const ROUTES = [...PAGES, { id: "contact", label: "Request license" }];
+const ROUTES = [...PAGES, { id: "contact", label: "Request license", path: "/contact/" }];
+const routeFor = (id) => ROUTES.find((route) => route.id === id) || ROUTES[0];
 
 const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => (
   <header className="topnav">
     <div className="container-wide topnav-inner">
-      <div className="brand" onClick={() => onNav('home')}>
+      <a className="brand" href="/" onClick={(event) => onNav('home', event)}>
         <BrandMark />
         <span>Ligand-X</span>
         <small>BETA</small>
-      </div>
+      </a>
       <nav className="nav-links">
         {PAGES.map((p) => (
-          <button
+          <a
             key={p.id}
+            href={p.path}
             className={page === p.id ? "active" : ""}
-            onClick={() => onNav(p.id)}
+            onClick={(event) => onNav(p.id, event)}
           >
             {p.label}
-          </button>
+          </a>
         ))}
       </nav>
       <div className="nav-right">
@@ -52,10 +54,10 @@ const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => (
           <Icon name="github" size={14} />
           Star
         </button>
-        <button className="btn btn-primary btn-sm" onClick={() => onNav('download')}>
+        <a className="btn btn-primary btn-sm" href="/download/" onClick={(event) => onNav('download', event)}>
           <Icon name="download" size={13} />
           Download
-        </button>
+        </a>
       </div>
     </div>
   </header>
@@ -78,18 +80,18 @@ const Footer = () => (
         <div>
           <h6>Product</h6>
           <ul>
-            <li><a onClick={() => window.__nav('features')}>Features</a></li>
-            <li><a onClick={() => window.__nav('docs')}>Docs</a></li>
-            <li><a onClick={() => window.__nav('pro')}>Pro</a></li>
-            <li><a onClick={() => window.__nav('download')}>Download</a></li>
-            <li><a onClick={() => window.__nav('contact')}>Request license</a></li>
+            <li><a href="/features/" onClick={(event) => window.__nav('features', event)}>Features</a></li>
+            <li><a href="/docs/" onClick={(event) => window.__nav('docs', event)}>Docs</a></li>
+            <li><a href="/pro/" onClick={(event) => window.__nav('pro', event)}>Pro</a></li>
+            <li><a href="/download/" onClick={(event) => window.__nav('download', event)}>Download</a></li>
+            <li><a href="/contact/" onClick={(event) => window.__nav('contact', event)}>Request license</a></li>
             <li><a href="https://github.com/kon-218/ligand-x-launcher/releases" target="_blank">Changelog</a></li>
           </ul>
         </div>
         <div>
           <h6>Resources</h6>
           <ul>
-            <li><a onClick={() => { window.__nav('docs'); requestAnimationFrame(() => window.__navDocs && window.__navDocs('api-reference')); }}>API reference</a></li>
+            <li><a href="/docs/#api-reference" onClick={(event) => { window.__nav('docs', event); requestAnimationFrame(() => window.__navDocs && window.__navDocs('api-reference')); }}>API reference</a></li>
           </ul>
         </div>
         <div>
@@ -98,7 +100,7 @@ const Footer = () => (
             <li><a href="https://github.com/kon-218/ligand-x-launcher" target="_blank">GitHub</a></li>
             <li><a href="https://github.com/kon-218/ligand-x-launcher/issues" target="_blank">Issues</a></li>
             <li><a href="https://github.com/kon-218/ligand-x-launcher/discussions" target="_blank">Discussions</a></li>
-            <li><a onClick={() => window.__nav('contact')}>Request license</a></li>
+            <li><a href="/contact/" onClick={(event) => window.__nav('contact', event)}>Request license</a></li>
           </ul>
         </div>
       </div>
@@ -119,12 +121,13 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 
 const App = () => {
-  // Page state from hash
-  const getHashPage = () => {
-    const h = (window.location.hash || "").replace("#", "");
-    return ROUTES.find((p) => p.id === h) ? h : "home";
+  // Page state from the indexable URL path. Old #page links are migrated below.
+  const getPathPage = () => {
+    const path = window.location.pathname.replace(/\/+$/, "") || "/";
+    const route = ROUTES.find((candidate) => candidate.path.replace(/\/+$/, "") === path);
+    return route ? route.id : "home";
   };
-  const [page, setPage] = React.useState(getHashPage);
+  const [page, setPage] = React.useState(getPathPage);
 
   const getInitialTheme = () => {
     const stored = window.localStorage && window.localStorage.getItem('ligandx-theme');
@@ -132,16 +135,28 @@ const App = () => {
   };
   const [theme, setTheme] = React.useState(getInitialTheme);
 
-  const onNav = (id) => {
-    window.location.hash = id;
-    setPage(id);
-    window.scrollTo({ top: 0, behavior: 'instant' });
+  const onNav = (id, event) => {
+    if (event) {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      // Let ordinary links load their canonical page so its page-specific
+      // metadata and static HTML are present in the document.
+      return;
+    }
+    const route = routeFor(id);
+    if (window.location.pathname === route.path) {
+      setPage(id);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      return;
+    }
+    window.location.assign(route.path);
   };
   React.useEffect(() => {
     window.__nav = onNav;
-    const onHash = () => setPage(getHashPage());
-    window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
+    const legacyPage = (window.location.hash || "").replace("#", "");
+    if (ROUTES.some((route) => route.id === legacyPage)) {
+      const route = routeFor(legacyPage);
+      window.location.replace(route.path);
+    }
   }, []);
 
   // Tweaks (returns [values, setter])

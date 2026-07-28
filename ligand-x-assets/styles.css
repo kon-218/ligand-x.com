@@ -295,8 +295,10 @@ img { max-width: 100%; display: block; }
   /* align left edge with .container content start */
   margin-left: max(180px, calc((100vw - 1080px) / 2 + 24px));
 }
-.nav-links button {
+.nav-links a {
   position: relative;
+  display: flex;
+  align-items: center;
   font-size: 14px;
   font-weight: 500;
   color: var(--muted);
@@ -305,10 +307,11 @@ img { max-width: 100%; display: block; }
   border-radius: 0;
   transition: color 0.15s;
   font-family: inherit;
+  text-decoration: none;
 }
-.nav-links button:hover { color: var(--ink); }
-.nav-links button.active { color: var(--ink); font-weight: 600; }
-.nav-links button.active::after {
+.nav-links a:hover { color: var(--ink); text-decoration: none; }
+.nav-links a.active { color: var(--ink); font-weight: 600; }
+.nav-links a.active::after {
   content: '';
   position: absolute;
   bottom: 0;
