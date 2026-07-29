@@ -138,26 +138,29 @@ const App = () => {
   const onNav = (id, event) => {
     if (event) {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      // Let ordinary links load their canonical page so its page-specific
-      // metadata and static HTML are present in the document.
-      return;
+      event.preventDefault();
     }
     const route = routeFor(id);
-    if (window.location.pathname === route.path) {
-      setPage(id);
-      window.scrollTo({ top: 0, behavior: 'instant' });
-      return;
+    if (window.location.pathname !== route.path) {
+      window.history.pushState({ page: id }, '', route.path);
     }
-    window.location.assign(route.path);
+    setPage(id);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
   React.useEffect(() => {
     document.documentElement.classList.remove('app-loading');
     window.__nav = onNav;
+    const onPopState = () => {
+      setPage(getPathPage());
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    };
+    window.addEventListener('popstate', onPopState);
     const legacyPage = (window.location.hash || "").replace("#", "");
     if (ROUTES.some((route) => route.id === legacyPage)) {
       const route = routeFor(legacyPage);
       window.location.replace(route.path);
     }
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   // Tweaks (returns [values, setter])
