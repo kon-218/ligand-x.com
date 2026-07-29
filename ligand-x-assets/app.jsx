@@ -151,6 +151,7 @@ const App = () => {
     window.location.assign(route.path);
   };
   React.useEffect(() => {
+    document.documentElement.classList.remove('app-loading');
     window.__nav = onNav;
     const legacyPage = (window.location.hash || "").replace("#", "");
     if (ROUTES.some((route) => route.id === legacyPage)) {

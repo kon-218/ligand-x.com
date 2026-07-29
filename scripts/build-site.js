@@ -9,11 +9,11 @@ const pages = [
   {
     id: "home",
     path: "/",
-    title: "Ligand-X — Free, self-hosted CADD workbench",
+    title: "Ligand-X | Official computational drug discovery platform",
     description:
-      "Ligand-X is a free, self-hosted computational drug discovery workbench for protein preparation, ligand editing, docking, molecular dynamics, and analysis.",
-    eyebrow: "The local CADD workbench",
-    heading: "Computational drug discovery on hardware you control.",
+      "Official Ligand-X website. Download the free, self-hosted computational drug discovery platform for molecular docking, molecular dynamics, and protein-ligand analysis.",
+    eyebrow: "Official Ligand-X website",
+    heading: "Ligand-X: computational drug discovery on hardware you control.",
     intro:
       "Ligand-X—also written Ligand X or LigandX—is a free desktop workbench for computer-aided drug discovery. Prepare proteins, manage ligands, run molecular docking and molecular dynamics, and keep every structure and result connected in one local project.",
     sections: [
@@ -224,10 +224,23 @@ const structuredData = (page) => {
       alternateName: ["Ligand X", "LigandX"],
       url: `${ORIGIN}/`,
       downloadUrl: `${ORIGIN}/download/`,
-      sameAs: ["https://github.com/kon-218/ligand-x-launcher"],
+      sameAs: [
+        "https://github.com/kon-218/ligand-x-launcher",
+        "https://k-nom.com/portfolio/ligand-x/",
+      ],
       applicationCategory: "ScienceApplication",
       applicationSubCategory: "Computational chemistry and computer-aided drug discovery",
       operatingSystem: ["Windows", "macOS", "Linux"],
+      isAccessibleForFree: true,
+      softwareHelp: `${ORIGIN}/docs/`,
+      featureList: [
+        "Protein preparation",
+        "Ligand editing and management",
+        "Molecular docking with AutoDock Vina",
+        "Molecular dynamics with OpenMM",
+        "Binding-pocket detection",
+        "Protein-ligand analysis",
+      ],
       description:
         "A free, self-hosted workbench for protein preparation, ligand management, molecular docking, molecular dynamics, and computational drug discovery.",
       author: {

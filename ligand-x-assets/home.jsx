@@ -465,8 +465,8 @@ const HeroShowcase = () => {
       <div className="container">
         <div className="hero-grid">
           <div className="hero-copy">
-            <div className="eyebrow"><span className="dot" /> The local CADD workbench</div>
-            <h1>Integrated.<br />Self-hosted.<br />Reliable.<br /><em>Ligand-X</em></h1>
+            <div className="eyebrow"><span className="dot" /> Official Ligand-X website</div>
+            <h1><em>Ligand-X.</em><br />Integrated.<br />Self-hosted.<br />Reliable.</h1>
             <p className="hero-lede">
               A free desktop app for computational drug discovery. Dock, simulate,
               and keep your structures and results on your own hardware.
