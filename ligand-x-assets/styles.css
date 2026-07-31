@@ -336,6 +336,60 @@ img { max-width: 100%; display: block; }
   border-radius: 100px;
 }
 
+/* Mobile navigation ------------------------------------------------------
+   The panel sits in normal flow inside the sticky header, so it expands the
+   header rather than overlaying the page — no z-index or backdrop needed.
+   Hidden above the breakpoint, where .nav-links is visible instead. */
+/* .btn is declared later in this file with display:inline-flex, so a bare
+   .nav-toggle rule loses on source order at equal specificity. */
+.btn.nav-toggle { display: none; }
+.mobile-nav { display: none; }
+
+@media (max-width: 640px) {
+  .btn.nav-toggle {
+    display: inline-flex;
+    padding: 5px 8px;
+  }
+  .mobile-nav {
+    display: block;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    padding: 6px 0 10px;
+    animation: mobile-nav-in 160ms ease-out;
+  }
+  .mobile-nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    color: var(--ink-2);
+    font-size: 15px;
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-nav a:last-child { border-bottom: 0; }
+  /* Pushes the trailing chevron to the right edge on route rows, and sits
+     between the label and the external glyph on the GitHub row. */
+  .mobile-nav a svg:last-child { margin-left: auto; color: var(--muted-2); }
+  .mobile-nav a.active {
+    color: var(--ink);
+    font-weight: 600;
+    box-shadow: inset 2px 0 0 var(--accent);
+  }
+  .mobile-nav a:active { background: var(--accent-soft); }
+  .mobile-nav-ext {
+    margin-top: 6px;
+    color: var(--muted) !important;
+    font-size: 14px !important;
+  }
+  .mobile-nav-ext svg:last-child { margin-left: 0 !important; }
+}
+
+@keyframes mobile-nav-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
 
 /* ── Buttons ── */
 .btn {
@@ -1324,6 +1378,7 @@ img { max-width: 100%; display: block; }
   .orbit-tool-marquee { overflow-x: auto; mask-image: none; scrollbar-width: thin; }
   .orbit-tool-reel { animation: none; }
   .orbit-tool-reel > .orbit-tool-track[aria-hidden="true"] { display: none; }
+  .mobile-nav { animation: none; }
 }
 
 

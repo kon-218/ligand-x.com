@@ -13,7 +13,33 @@ const PAGES = [
 const ROUTES = [...PAGES, { id: "contact", label: "Request license", path: "/contact/" }];
 const routeFor = (id) => ROUTES.find((route) => route.id === id) || ROUTES[0];
 
-const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => (
+// Below 640px `.nav-links` is display:none and there was no replacement, so the
+// only reachable route from the header was Download. The panel renders the same
+// ROUTES list as the desktop nav — no third copy of the navigation to drift.
+const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => {
+  const [menuOpen, setMenuOpen] = React.useState(false);
+
+  // Navigating is a client-side state change, not a document load, so nothing
+  // else would ever close the panel.
+  React.useEffect(() => { setMenuOpen(false); }, [page]);
+
+  React.useEffect(() => {
+    if (!menuOpen) return undefined;
+    const onKey = (event) => { if (event.key === 'Escape') setMenuOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menuOpen]);
+
+  // Rotating to landscape crosses the breakpoint: without this the panel stays
+  // mounted underneath a now-visible desktop nav.
+  React.useEffect(() => {
+    const mq = window.matchMedia('(min-width: 641px)');
+    const onChange = () => { if (mq.matches) setMenuOpen(false); };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  return (
   <header className="topnav">
     <div className="container-wide topnav-inner">
       <a className="brand" href="/" onClick={(event) => onNav('home', event)}>
@@ -58,10 +84,49 @@ const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => (
           <Icon name="download" size={13} />
           Download
         </a>
+        <button
+          className="btn btn-ghost btn-sm nav-toggle"
+          aria-expanded={menuOpen}
+          aria-controls="mobile-nav"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <Icon name={menuOpen ? 'close' : 'menu'} size={17} />
+        </button>
       </div>
     </div>
+
+    {menuOpen && (
+      <nav className="mobile-nav" id="mobile-nav" aria-label="Site">
+        {ROUTES.map((p) => (
+          <a
+            key={p.id}
+            href={p.path}
+            className={page === p.id ? "active" : ""}
+            aria-current={page === p.id ? "page" : undefined}
+            onClick={(event) => onNav(p.id, event)}
+          >
+            {p.label}
+            <Icon name="arrow" size={15} />
+          </a>
+        ))}
+        {/* .nav-right hides this button below 640px, so the panel is the only
+            place the repo link exists on a phone. */}
+        <a
+          className="mobile-nav-ext"
+          href="https://github.com/kon-218/ligand-x-launcher"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Icon name="github" size={15} />
+          Star on GitHub
+          <Icon name="external" size={13} />
+        </a>
+      </nav>
+    )}
   </header>
-);
+  );
+};
 
 const Footer = () => (
   <footer className="foot" style={{ background: 'var(--bg)', borderTop: '1px solid var(--border)' }}>

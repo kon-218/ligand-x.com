@@ -16,6 +16,8 @@ const Icon = ({ name, size = 16, ...rest }) => {
     windows: <g fill="currentColor"><path d="M2 4.5l9-1.3v9H2zM12 3l10-1.5v11.3H12zM2 13.5h9v9L2 21zM12 13.5h10V23l-10-1.5z"/></g>,
     play: <path fill="currentColor" d="M8 5v14l11-7z"/>,
     search: <g stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></g>,
+    menu: <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.9" fill="none" strokeLinecap="round"/>,
+    close: <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.9" fill="none" strokeLinecap="round"/>,
     book: <g stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h12a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4H8a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h12z"/></g>,
     clock: <g stroke="currentColor" strokeWidth="1.7" fill="none" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></g>,
     box: <g stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8L12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v9"/></g>,
