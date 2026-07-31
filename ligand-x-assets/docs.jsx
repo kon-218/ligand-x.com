@@ -645,9 +645,9 @@ const DocsPage = () => {
             </>
           ) : (
             <>
-              <div className="eyebrow"><span className="dot" />Documentation · Getting started</div>
+              <div className="eyebrow"><span className="dot" />{SITE_COPY.docs.eyebrow}</div>
               <h1 style={{ fontSize: 'clamp(34px, 4vw, 52px)', margin: '12px 0 16px', lineHeight: 1.1, letterSpacing: '-0.02em', fontWeight: 600 }}>
-                Install Ligand-X with the launcher or CLI.
+                {SITE_COPY.docs.h1}
               </h1>
               <p style={{ color: 'var(--muted)', fontSize: 17, maxWidth: 680, margin: 0 }}>
                 Current setup paths for desktop users, production servers, and developers.

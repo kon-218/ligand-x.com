@@ -153,7 +153,7 @@ const EDITIONS = [
   { name: "Pro", access: "Signed license file", modules: "Paid Pro entitlements listed in the license" },
 ];
 
-const MODULES = [
+const MODULE_GROUPS = [
   { group: "Open core", items: ["structure", "docking", "md", "alignment", "msa", "ketcher", "pocket-finder", "projects"] },
   { group: "Pro images", items: ["licensing", "admet", "qc", "boltz2", "reinvent", "abfe", "rbfe"] },
   { group: "Pro workers", items: ["worker-qc", "worker-gpu-long", "worker-reinvent"] },
@@ -178,13 +178,12 @@ const DownloadPage = () => {
     <div className="page-fade">
       <section style={{ padding: 'var(--sp-8) 0 var(--sp-5)', borderBottom: '1px solid var(--border)' }}>
         <div className="container">
-          <div className="eyebrow"><span className="dot" />Download · current repository</div>
+          <div className="eyebrow"><span className="dot" />{SITE_COPY.download.eyebrow}</div>
           <h1 style={{ fontSize: 'clamp(34px, 4vw, 52px)', margin: '12px 0 16px', lineHeight: 1.1, letterSpacing: '-0.02em', fontWeight: 600 }}>
-            Get Ligand-X with the desktop launcher.
+            {SITE_COPY.download.h1}
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: 17, maxWidth: 720, margin: 0 }}>
-            The current install path is launcher-first. The launcher pulls selected open-core and licensed Pro
-            container images, writes local configuration, and opens the app at localhost:3000.
+            {SITE_COPY.download.lede}
           </p>
         </div>
       </section>
@@ -320,7 +319,7 @@ const DownloadPage = () => {
             </p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
-            {MODULES.map((m) => (
+            {MODULE_GROUPS.map((m) => (
               <div key={m.group} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 'var(--sp-4)' }}>
                 <h3 style={{ marginTop: 0, fontSize: 18 }}>{m.group}</h3>
                 <div className="tools">

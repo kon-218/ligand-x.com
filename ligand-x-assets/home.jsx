@@ -465,26 +465,23 @@ const HeroShowcase = () => {
       <div className="container">
         <div className="hero-grid">
           <div className="hero-copy">
-            <div className="eyebrow"><span className="dot" /> Official Ligand-X website</div>
-            <h1><em>Ligand-X.</em><br />Integrated.<br />Self-hosted.<br />Reliable.</h1>
-            <p className="hero-lede">
-              A free desktop app for computational drug discovery. Dock, simulate,
-              and keep your structures and results on your own hardware.
-            </p>
+            <div className="eyebrow"><span className="dot" /> {SITE_COPY.home.eyebrow}</div>
+            <h1>{SITE_COPY.home.h1Parts[0]}<br />{SITE_COPY.home.h1Parts[1]}<em>{SITE_COPY.home.h1Em}</em>.</h1>
+            <p className="hero-lede">{SITE_COPY.home.lede}</p>
             <div className="hero-cta">
               <button className="btn btn-primary btn-lg" onClick={() => window.__nav("download")}>
                 <Icon name="download" size={16} />
-                Download Ligand-X
+                {CTA.download}
               </button>
               <button
                 className="btn btn-secondary btn-lg"
                 onClick={() => window.open("https://github.com/kon-218/ligand-x-launcher", "_blank")}
               >
                 <Icon name="github" size={16} />
-                Star
+                {CTA.github}
               </button>
               <button className="btn btn-secondary btn-lg" onClick={() => window.__nav("docs")}>
-                Read the docs
+                {CTA.docs}
                 <Icon name="arrow" size={14} />
               </button>
             </div>
@@ -803,7 +800,7 @@ const CTASection = () => (
       <div className="hero-cta">
         <button className="btn btn-primary btn-lg" onClick={() => window.__nav('download')}>
           <Icon name="download" size={16} />
-          Download Ligand-X
+          {CTA.download}
         </button>
         <button className="btn btn-secondary btn-lg" onClick={() => window.__nav('pro')}>
           Compare Free and Pro

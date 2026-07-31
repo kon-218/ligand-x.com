@@ -2,16 +2,9 @@
 // App — top nav, page router, tweaks integration
 // ============================================================
 
-const PAGES = [
-  { id: "home", label: "Home", path: "/" },
-  { id: "features", label: "Features", path: "/features/" },
-  { id: "docs", label: "Docs", path: "/docs/" },
-  { id: "pro", label: "Pro", path: "/pro/" },
-  { id: "download", label: "Download", path: "/download/" },
-];
+const ROUTES = SITE_ROUTES;
+const PAGES = ROUTES.filter((route) => route.primary);
 
-const ROUTES = [...PAGES, { id: "contact", label: "Request license", path: "/contact/" }];
-const routeFor = (id) => ROUTES.find((route) => route.id === id) || ROUTES[0];
 
 const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => (
   <header className="topnav">
@@ -56,7 +49,7 @@ const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => (
         </button>
         <a className="btn btn-primary btn-sm" href="/download/" onClick={(event) => onNav('download', event)}>
           <Icon name="download" size={13} />
-          Download
+          {CTA.download}
         </a>
       </div>
     </div>
@@ -80,11 +73,11 @@ const Footer = () => (
         <div>
           <h6>Product</h6>
           <ul>
-            <li><a href="/features/" onClick={(event) => window.__nav('features', event)}>Features</a></li>
+            <li><a href="/features/" onClick={(event) => window.__nav('features', event)}>Capabilities</a></li>
             <li><a href="/docs/" onClick={(event) => window.__nav('docs', event)}>Docs</a></li>
-            <li><a href="/pro/" onClick={(event) => window.__nav('pro', event)}>Pro</a></li>
-            <li><a href="/download/" onClick={(event) => window.__nav('download', event)}>Download</a></li>
-            <li><a href="/contact/" onClick={(event) => window.__nav('contact', event)}>Request license</a></li>
+            <li><a href="/pro/" onClick={(event) => window.__nav('pro', event)}>Editions</a></li>
+            <li><a href="/download/" onClick={(event) => window.__nav('download', event)}>{CTA.download}</a></li>
+            <li><a href="/contact/" onClick={(event) => window.__nav('contact', event)}>{CTA.license}</a></li>
             <li><a href="https://github.com/kon-218/ligand-x-launcher/releases" target="_blank">Changelog</a></li>
           </ul>
         </div>
@@ -100,7 +93,7 @@ const Footer = () => (
             <li><a href="https://github.com/kon-218/ligand-x-launcher" target="_blank">GitHub</a></li>
             <li><a href="https://github.com/kon-218/ligand-x-launcher/issues" target="_blank">Issues</a></li>
             <li><a href="https://github.com/kon-218/ligand-x-launcher/discussions" target="_blank">Discussions</a></li>
-            <li><a href="/contact/" onClick={(event) => window.__nav('contact', event)}>Request license</a></li>
+            <li><a href="/contact/" onClick={(event) => window.__nav('contact', event)}>{CTA.license}</a></li>
           </ul>
         </div>
       </div>

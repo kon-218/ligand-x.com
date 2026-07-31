@@ -5,7 +5,44 @@ const ROOT = path.resolve(__dirname, "..");
 const DIST = path.join(ROOT, "dist");
 const ORIGIN = "https://www.ligand-x.com";
 
-const pages = [
+// Shared with the React pages. The crawler copy is a summary of the app copy,
+// never an alternative to it — see ligand-x-assets/copy.js.
+const { SITE_COPY } = require(path.join(ROOT, "ligand-x-assets", "copy.js"));
+const { MODULES, shippingModules } = require(path.join(ROOT, "ligand-x-assets", "modules.js"));
+const { SITE_ROUTES } = require(path.join(ROOT, "ligand-x-assets", "routes.js"));
+
+const pages = SITE_ROUTES.map(({ id, path: pagePath, label }) => {
+  const copy = SITE_COPY[id];
+  if (!copy) throw new Error(`build-site: no SITE_COPY entry for page "${id}"`);
+  const { seo } = copy;
+  return {
+    id,
+    path: pagePath,
+    label,
+    title: seo.title,
+    description: seo.description,
+    eyebrow: copy.eyebrow,
+    heading: copy.h1,
+    intro: seo.introTail ? `${copy.lede} ${seo.introTail}` : copy.lede,
+    sections: seo.sections,
+  };
+});
+
+const assertUnique = (items, key, label) => {
+  const seen = new Set();
+  for (const item of items) {
+    const value = item[key];
+    if (seen.has(value)) throw new Error(`build-site: duplicate ${label} "${value}"`);
+    seen.add(value);
+  }
+};
+
+assertUnique(SITE_ROUTES, "id", "route id");
+assertUnique(SITE_ROUTES, "path", "route path");
+assertUnique(MODULES, "id", "module id");
+
+const _legacyPages = [
+
   {
     id: "home",
     path: "/",
@@ -168,10 +205,9 @@ const navigation = (currentId) =>
     .filter((page) => page.id !== "contact")
     .map(
       (page) =>
-        `<a href="${page.path}"${page.id === currentId ? ' aria-current="page"' : ""}>${page.id === "home" ? "Home" : page.id[0].toUpperCase() + page.id.slice(1)}</a>`,
+        `<a href="${page.path}"${page.id === currentId ? ' aria-current="page"' : ""}>${page.label}</a>`,
     )
     .join("\n          ");
-
 const staticContent = (page) => `
     <div class="seo-static">
       <header class="seo-static-header">
@@ -233,14 +269,8 @@ const structuredData = (page) => {
       operatingSystem: ["Windows", "macOS", "Linux"],
       isAccessibleForFree: true,
       softwareHelp: `${ORIGIN}/docs/`,
-      featureList: [
-        "Protein preparation",
-        "Ligand editing and management",
-        "Molecular docking with AutoDock Vina",
-        "Molecular dynamics with OpenMM",
-        "Binding-pocket detection",
-        "Protein-ligand analysis",
-      ],
+      featureList: shippingModules().map((module) => module.name),
+
       description:
         "A free, self-hosted workbench for protein preparation, ligand management, molecular docking, molecular dynamics, and computational drug discovery.",
       author: {
@@ -368,7 +398,7 @@ fs.copyFileSync(path.join(ROOT, "robots.txt"), path.join(DIST, "robots.txt"));
 fs.copyFileSync(path.join(ROOT, "CNAME"), path.join(DIST, "CNAME"));
 fs.writeFileSync(path.join(DIST, ".nojekyll"), "");
 
-const lastModified = "2026-07-28";
+const lastModified = "2026-07-30";
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${pages

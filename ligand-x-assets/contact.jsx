@@ -15,12 +15,12 @@ const ContactPage = () => (
   <div className="page-fade">
     <section style={{ padding: 'var(--sp-8) 0 var(--sp-5)', borderBottom: '1px solid var(--border)' }}>
       <div className="container">
-        <div className="eyebrow"><span className="dot" />Request license</div>
+        <div className="eyebrow"><span className="dot" />{SITE_COPY.contact.eyebrow}</div>
         <h1 style={{ fontSize: 'clamp(34px, 4vw, 52px)', margin: '12px 0 16px', lineHeight: 1.1, letterSpacing: '-0.02em', fontWeight: 600 }}>
-          Request a Ligand-X Pro license.
+          {SITE_COPY.contact.h1}
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: 17, maxWidth: 720, margin: 0 }}>
-          Academic licenses, commercial Pro access, deployment questions, or help picking modules.
+          {SITE_COPY.contact.lede}
         </p>
       </div>
     </section>
@@ -65,7 +65,7 @@ const ContactPage = () => (
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 20 }}>
                 <button type="submit" className="btn btn-primary btn-lg">
                   <Icon name="scale" size={16} />
-                  Request license
+                  {SITE_COPY.contact.eyebrow}
                 </button>
                 <button type="button" className="btn btn-secondary btn-lg" onClick={() => window.__nav('pro')}>
                   Back to Pro

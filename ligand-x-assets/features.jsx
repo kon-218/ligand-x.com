@@ -2,212 +2,21 @@
 // FeaturesPage — current open-core + Pro capability reference
 // ============================================================
 
-const FEATURES = [
-  {
-    id: "structure",
-    icon: "funnel",
-    tier: "Open Core",
-    tag: "structure",
-    title: "Structure and Protein Cleaning",
-    summary: "Prepare PDB structures for downstream modeling with component detection, repair, and cleanup.",
-    details: [
-      "Fetch or import PDB structures",
-      "Identify chains, ligands, waters, ions, and metals",
-      "Repair missing atoms and incomplete residues",
-      "Optional water and ion removal",
-      "Export simulation-ready PDB assets",
-    ],
-    tools: ["PDBFixer", "BioPython", "RDKit", "OpenBabel"],
-    formats: ["PDB / mmCIF -> cleaned PDB"],
-  },
-  {
-    id: "docking",
-    icon: "target",
-    tier: "Open Core",
-    tag: "docking",
-    title: "Molecular Docking",
-    summary: "Single and batch ligand pose prediction with AutoDock Vina and interactive result review.",
-    details: [
-      "Receptor and ligand PDBQT preparation",
-      "Configurable binding box and exhaustiveness",
-      "Ranked poses with affinity scores",
-      "Interaction summaries and pose downloads",
-      "Mol* visualization for docked complexes",
-    ],
-    tools: ["AutoDock Vina", "Meeko", "RDKit", "OpenBabel", "Mol*"],
-    formats: ["PDB + SDF / SMILES -> ranked poses"],
-  },
-  {
-    id: "md",
-    icon: "wave",
-    tier: "Open Core",
-    tag: "simulation",
-    title: "Molecular Dynamics",
-    summary: "OpenMM molecular dynamics workflows for minimization, equilibration, and trajectory generation.",
-    details: [
-      "Protein-ligand system construction",
-      "OpenMM/OpenFF force-field setup",
-      "Minimization, NVT, and NPT stages",
-      "GPU acceleration when CUDA is available",
-      "Trajectory and checkpoint outputs",
-    ],
-    tools: ["OpenMM", "OpenFF", "AmberTools", "MDAnalysis"],
-    formats: ["PDB + ligand -> PDB / DCD / metrics"],
-  },
-  {
-    id: "alignment",
-    icon: "network",
-    tier: "Open Core",
-    tag: "structure",
-    title: "Molecule and Structure Alignment",
-    summary: "Align ligands and structures for comparison, mapping previews, and workflow setup.",
-    details: [
-      "3D molecule alignment for ligand series",
-      "Reference-based pose comparison",
-      "Geometry and RMSD outputs",
-      "Prepared inputs for docking and free-energy workflows",
-    ],
-    tools: ["RDKit", "Kartograf", "OpenFE helpers"],
-    formats: ["SDF series -> aligned structures"],
-  },
-  {
-    id: "msa",
-    icon: "book",
-    tier: "Open Core",
-    tag: "sequence",
-    title: "Sequence Tools and MSA",
-    summary: "Pairwise and multiple-sequence analysis for protein-family context and target comparison.",
-    details: [
-      "Pairwise sequence alignment workflows",
-      "Multiple sequence alignment service",
-      "Cached sequence results",
-      "Outputs for target comparison and reporting",
-    ],
-    tools: ["EMBOSS", "MSA service", "FastAPI"],
-    formats: ["FASTA -> alignments and reports"],
-  },
-  {
-    id: "editor",
-    icon: "atom",
-    tier: "Open Core",
-    tag: "structure",
-    title: "Molecule Editor and Library",
-    summary: "Draw, import, save, and reuse molecules and project assets inside the web app.",
-    details: [
-      "Ketcher molecule drawing and editing",
-      "SMILES, SDF, and PDB import/export",
-      "Persistent project molecule library",
-      "Saved structures, poses, and generated assets",
-    ],
-    tools: ["Ketcher", "RDKit", "PostgreSQL"],
-    formats: ["SMILES / SDF / PDB -> project assets"],
-  },
-  {
-    id: "pocket-finder",
-    icon: "search",
-    tier: "Open Core",
-    tag: "structure",
-    title: "Binding-Site and Pocket Finding",
-    summary: "Detect candidate binding pockets and prepare search regions for structure-based workflows.",
-    details: [
-      "Pocket prediction for imported protein structures",
-      "Binding-site summaries for docking setup",
-      "Reusable pocket coordinates in projects",
-      "Integration with downstream pose workflows",
-    ],
-    tools: ["P2Rank", "DeepPocket assets", "FastAPI"],
-    formats: ["PDB -> pocket candidates"],
-  },
-  {
-    id: "qc",
-    icon: "sigma",
-    tier: "Pro",
-    tag: "simulation",
-    title: "Quantum Chemistry",
-    summary: "Licensed ORCA-backed calculations for geometries, charges, energetics, and molecular properties.",
-    details: [
-      "Geometry optimization and single-point jobs",
-      "Frequency, charge, and Fukui analyses",
-      "ORCA parser integration",
-      "Worker-backed long-running calculations",
-    ],
-    tools: ["ORCA", "RDKit", "Pro QC worker"],
-    formats: ["SDF / XYZ -> energies, charges, properties"],
-  },
-  {
-    id: "admet",
-    icon: "flask",
-    tier: "Pro",
-    tag: "structure",
-    title: "ADMET Prediction",
-    summary: "Licensed screening for drug-likeness and ADMET properties across single molecules or batches.",
-    details: [
-      "Batch SMILES screening",
-      "Drug-likeness and property summaries",
-      "Cached project-level predictions",
-      "Private Pro container image",
-    ],
-    tools: ["PyTorch", "RDKit", "ADMET service"],
-    formats: ["SMILES / SDF -> ADMET table"],
-  },
-  {
-    id: "boltz2",
-    icon: "atom",
-    tier: "Pro",
-    tag: "structure",
-    title: "Boltz-2 Affinity Prediction",
-    summary: "Licensed GPU service for Boltz-2 structure and binding-affinity prediction workflows.",
-    details: [
-      "Protein-ligand affinity prediction",
-      "GPU-backed execution",
-      "Project outputs and downloadable reports",
-      "Private Pro image with licensed access",
-    ],
-    tools: ["Boltz-2", "CUDA", "Pro GPU worker"],
-    formats: ["Target + ligand -> affinity prediction"],
-  },
-  {
-    id: "free-energy",
-    icon: "scale",
-    tier: "Pro",
-    tag: "simulation",
-    title: "ABFE and RBFE Workflows",
-    summary: "Licensed alchemical free-energy calculations for single ligands and lead-optimization series.",
-    details: [
-      "Absolute binding free energy workflows",
-      "Relative binding free energy networks",
-      "Mapping previews and overlap analysis",
-      "GPU-long worker execution",
-    ],
-    tools: ["OpenFE", "OpenMM", "LOMAP", "MBAR"],
-    formats: ["PDB + ligand series -> DG / DDG"],
-  },
-  {
-    id: "reinvent",
-    icon: "sigma",
-    tier: "Pro",
-    tag: "structure",
-    title: "REINVENT Generative Design",
-    summary: "Licensed de novo molecule generation and optimization workflows backed by private workers.",
-    details: [
-      "Configuration generation for REINVENT runs",
-      "Worker-backed molecule generation",
-      "Project-level result handling",
-      "Private Pro service and worker images",
-    ],
-    tools: ["REINVENT", "RDKit", "Pro worker"],
-    formats: ["Objective config -> generated molecules"],
-  },
-];
+const FEATURES = MODULES.map((module) => ({
+  id: module.id,
+  icon: module.icon,
+  tier: module.edition === "pro" ? "Pro" : "Open Core",
+  edition: module.edition,
+  category: module.category,
+  tag: module.category,
+  title: module.name,
+  summary: module.summary,
+  details: module.details,
+  tools: module.tools,
+  formats: [module.io],
+}));
 
-const CATEGORIES = [
-  { id: "all", label: "All capabilities" },
-  { id: "core", label: "Open Core" },
-  { id: "structure", label: "Structure" },
-  { id: "simulation", label: "Simulation" },
-  { id: "sequence", label: "Sequence" },
-  { id: "pro", label: "Pro" },
-];
+const CATEGORIES = MODULE_CATEGORIES.map(({ id, label }) => ({ id, label }));
 
 const MODULE_STEP_LABELS = {
   structure: "Cleaning",
@@ -223,7 +32,7 @@ const MODULE_STEP_LABELS = {
   boltz2: "Boltz-2",
 };
 
-const WORKFLOW_PRESETS = [
+const FEATURE_WORKFLOW_PRESETS = [
   {
     id: "preset-docking",
     name: "Docking workflow",
@@ -261,11 +70,10 @@ const jumpTo = (e, id) => {
   el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
 };
 
-const filterFeature = (feature, category) => {
-  if (category === "all") return true;
-  if (category === "core") return feature.tier === "Open Core";
-  if (category === "pro") return feature.tier === "Pro";
-  return feature.tag === category;
+const filterFeature = (feature, category, edition = "any") => {
+  if (category !== "all" && feature.tag !== category) return false;
+  if (edition !== "any" && feature.edition !== edition) return false;
+  return true;
 };
 
 const toTagLabel = (tag) => {
@@ -352,7 +160,7 @@ const WorkflowShowcase = ({ featureMap, onPreview }) => (
     </p>
 
     <div className="fx-workflow-grid">
-      {WORKFLOW_PRESETS.map((preset, idx) => {
+      {FEATURE_WORKFLOW_PRESETS.map((preset, idx) => {
         const modules = preset.modules.map((id) => featureMap[id]).filter(Boolean);
         const proCount = modules.filter((m) => m.tier === "Pro").length;
         return (
