@@ -550,21 +550,29 @@ const CredibilityBand = () => (
   </section>
 );
 
+// Five DISTINCT failure modes — conversion, provenance, parsing, job durability,
+// traceability. The previous list said "your files are scattered" five different
+// ways, which the h2, the lede and the closing line then said twice more. One
+// idea stated seven times reads as padding; five different ones read as someone
+// who has actually done this.
 const PAIN_ITEMS = [
-  "Structures live in one folder. Ligands live somewhere else.",
-  "Docking outputs need manual parsing before they're useful.",
-  "MD setup becomes a separate workflow from the docking review.",
-  "Results are hard to connect back to the original experiment.",
-  "Reproducing a calculation means reconstructing the full script chain.",
+  "PDBQT to dock, SDF for the library, PDB for the viewer.",
+  "A receptor prepped at pH 7.4, and no note of it by Thursday.",
+  "Vina writes a log. Something still has to read it.",
+  "The trajectory needed nine hours. The laptop slept at six.",
+  "“Which run produced this pose?”",
 ];
 
+// Closes forward, not sideways: the old ending restated the headline, so the
+// scroll story arrived unannounced. "Four moves" is the explicit handoff into
+// OrbitStory's four acts.
 const PainValueSection = () => (
   <section className="section pain-section">
     <div className="container pain-grid">
       <div>
-        <h2>Less folder shuffling. More chemistry.</h2>
+        <h2>The chemistry was never the hard part.</h2>
         <p className="pain-lede">
-          If your structures live in one folder, docking outputs in another, and MD setup in a third script, Ligand-X puts the whole workflow in one project.
+          Every method below is solved, published, and available for free. What costs you the afternoon is the format conversion, the log parsing, and the run nobody can reconstruct three weeks later.
         </p>
       </div>
       <div className="pain-panel">
@@ -577,7 +585,7 @@ const PainValueSection = () => (
           ))}
         </div>
         <p className="pain-statement">
-          Ligand-X keeps proteins, molecules, pockets, jobs, poses, trajectories, and generated outputs in one project workspace.
+          None of that is chemistry. Ligand-X handles the conversions, keeps every job and result attached to the project that produced it, and lets you wire protein &rarr; docking &rarr; MD on one canvas and press run. What is left is the actual work &mdash; four moves.
         </p>
       </div>
     </div>
