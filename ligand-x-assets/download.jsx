@@ -153,7 +153,7 @@ const EDITIONS = [
   { name: "Pro", access: "Signed license file", modules: "Paid Pro entitlements listed in the license" },
 ];
 
-const MODULES = [
+const CONTAINER_GROUPS = [
   { group: "Open core", items: ["structure", "docking", "md", "alignment", "msa", "ketcher", "pocket-finder", "projects"] },
   { group: "Pro images", items: ["licensing", "admet", "qc", "boltz2", "reinvent", "abfe", "rbfe"] },
   { group: "Pro workers", items: ["worker-qc", "worker-gpu-long", "worker-reinvent"] },
@@ -320,7 +320,7 @@ const DownloadPage = () => {
             </p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
-            {MODULES.map((m) => (
+            {CONTAINER_GROUPS.map((m) => (
               <div key={m.group} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 'var(--sp-4)' }}>
                 <h3 style={{ marginTop: 0, fontSize: 18 }}>{m.group}</h3>
                 <div className="tools">

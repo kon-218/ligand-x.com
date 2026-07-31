@@ -1,722 +1,318 @@
 // ============================================================
-// FeaturesPage — current open-core + Pro capability reference
+// features.jsx — /features/ : the capability reference that sells the free core
 // ============================================================
+//
+// All module facts come from modules.js and all headline/CTA copy from copy.js.
+// Nothing on this page hardcodes a module name, edition, or tool list.
+//
+// Page order is deliberate:
+//   hero → reel → spotlights → pipelines → full reference → Pro note → CTA
+// The four spotlights carry the sell; the reference below satisfies the
+// evaluator checking for one specific capability.
 
-const FEATURES = [
-  {
-    id: "structure",
-    icon: "funnel",
-    tier: "Open Core",
-    tag: "structure",
-    title: "Structure and Protein Cleaning",
-    summary: "Prepare PDB structures for downstream modeling with component detection, repair, and cleanup.",
-    details: [
-      "Fetch or import PDB structures",
-      "Identify chains, ligands, waters, ions, and metals",
-      "Repair missing atoms and incomplete residues",
-      "Optional water and ion removal",
-      "Export simulation-ready PDB assets",
-    ],
-    tools: ["PDBFixer", "BioPython", "RDKit", "OpenBabel"],
-    formats: ["PDB / mmCIF -> cleaned PDB"],
-  },
-  {
-    id: "docking",
-    icon: "target",
-    tier: "Open Core",
-    tag: "docking",
-    title: "Molecular Docking",
-    summary: "Single and batch ligand pose prediction with AutoDock Vina and interactive result review.",
-    details: [
-      "Receptor and ligand PDBQT preparation",
-      "Configurable binding box and exhaustiveness",
-      "Ranked poses with affinity scores",
-      "Interaction summaries and pose downloads",
-      "Mol* visualization for docked complexes",
-    ],
-    tools: ["AutoDock Vina", "Meeko", "RDKit", "OpenBabel", "Mol*"],
-    formats: ["PDB + SDF / SMILES -> ranked poses"],
-  },
-  {
-    id: "md",
-    icon: "wave",
-    tier: "Open Core",
-    tag: "simulation",
-    title: "Molecular Dynamics",
-    summary: "OpenMM molecular dynamics workflows for minimization, equilibration, and trajectory generation.",
-    details: [
-      "Protein-ligand system construction",
-      "OpenMM/OpenFF force-field setup",
-      "Minimization, NVT, and NPT stages",
-      "GPU acceleration when CUDA is available",
-      "Trajectory and checkpoint outputs",
-    ],
-    tools: ["OpenMM", "OpenFF", "AmberTools", "MDAnalysis"],
-    formats: ["PDB + ligand -> PDB / DCD / metrics"],
-  },
-  {
-    id: "alignment",
-    icon: "network",
-    tier: "Open Core",
-    tag: "structure",
-    title: "Molecule and Structure Alignment",
-    summary: "Align ligands and structures for comparison, mapping previews, and workflow setup.",
-    details: [
-      "3D molecule alignment for ligand series",
-      "Reference-based pose comparison",
-      "Geometry and RMSD outputs",
-      "Prepared inputs for docking and free-energy workflows",
-    ],
-    tools: ["RDKit", "Kartograf", "OpenFE helpers"],
-    formats: ["SDF series -> aligned structures"],
-  },
-  {
-    id: "msa",
-    icon: "book",
-    tier: "Open Core",
-    tag: "sequence",
-    title: "Sequence Tools and MSA",
-    summary: "Pairwise and multiple-sequence analysis for protein-family context and target comparison.",
-    details: [
-      "Pairwise sequence alignment workflows",
-      "Multiple sequence alignment service",
-      "Cached sequence results",
-      "Outputs for target comparison and reporting",
-    ],
-    tools: ["EMBOSS", "MSA service", "FastAPI"],
-    formats: ["FASTA -> alignments and reports"],
-  },
-  {
-    id: "editor",
-    icon: "atom",
-    tier: "Open Core",
-    tag: "structure",
-    title: "Molecule Editor and Library",
-    summary: "Draw, import, save, and reuse molecules and project assets inside the web app.",
-    details: [
-      "Ketcher molecule drawing and editing",
-      "SMILES, SDF, and PDB import/export",
-      "Persistent project molecule library",
-      "Saved structures, poses, and generated assets",
-    ],
-    tools: ["Ketcher", "RDKit", "PostgreSQL"],
-    formats: ["SMILES / SDF / PDB -> project assets"],
-  },
-  {
-    id: "pocket-finder",
-    icon: "search",
-    tier: "Open Core",
-    tag: "structure",
-    title: "Binding-Site and Pocket Finding",
-    summary: "Detect candidate binding pockets and prepare search regions for structure-based workflows.",
-    details: [
-      "Pocket prediction for imported protein structures",
-      "Binding-site summaries for docking setup",
-      "Reusable pocket coordinates in projects",
-      "Integration with downstream pose workflows",
-    ],
-    tools: ["P2Rank", "DeepPocket assets", "FastAPI"],
-    formats: ["PDB -> pocket candidates"],
-  },
-  {
-    id: "qc",
-    icon: "sigma",
-    tier: "Pro",
-    tag: "simulation",
-    title: "Quantum Chemistry",
-    summary: "Licensed ORCA-backed calculations for geometries, charges, energetics, and molecular properties.",
-    details: [
-      "Geometry optimization and single-point jobs",
-      "Frequency, charge, and Fukui analyses",
-      "ORCA parser integration",
-      "Worker-backed long-running calculations",
-    ],
-    tools: ["ORCA", "RDKit", "Pro QC worker"],
-    formats: ["SDF / XYZ -> energies, charges, properties"],
-  },
-  {
-    id: "admet",
-    icon: "flask",
-    tier: "Pro",
-    tag: "structure",
-    title: "ADMET Prediction",
-    summary: "Licensed screening for drug-likeness and ADMET properties across single molecules or batches.",
-    details: [
-      "Batch SMILES screening",
-      "Drug-likeness and property summaries",
-      "Cached project-level predictions",
-      "Private Pro container image",
-    ],
-    tools: ["PyTorch", "RDKit", "ADMET service"],
-    formats: ["SMILES / SDF -> ADMET table"],
-  },
-  {
-    id: "boltz2",
-    icon: "atom",
-    tier: "Pro",
-    tag: "structure",
-    title: "Boltz-2 Affinity Prediction",
-    summary: "Licensed GPU service for Boltz-2 structure and binding-affinity prediction workflows.",
-    details: [
-      "Protein-ligand affinity prediction",
-      "GPU-backed execution",
-      "Project outputs and downloadable reports",
-      "Private Pro image with licensed access",
-    ],
-    tools: ["Boltz-2", "CUDA", "Pro GPU worker"],
-    formats: ["Target + ligand -> affinity prediction"],
-  },
-  {
-    id: "free-energy",
-    icon: "scale",
-    tier: "Pro",
-    tag: "simulation",
-    title: "ABFE and RBFE Workflows",
-    summary: "Licensed alchemical free-energy calculations for single ligands and lead-optimization series.",
-    details: [
-      "Absolute binding free energy workflows",
-      "Relative binding free energy networks",
-      "Mapping previews and overlap analysis",
-      "GPU-long worker execution",
-    ],
-    tools: ["OpenFE", "OpenMM", "LOMAP", "MBAR"],
-    formats: ["PDB + ligand series -> DG / DDG"],
-  },
-  {
-    id: "reinvent",
-    icon: "sigma",
-    tier: "Pro",
-    tag: "structure",
-    title: "REINVENT Generative Design",
-    summary: "Licensed de novo molecule generation and optimization workflows backed by private workers.",
-    details: [
-      "Configuration generation for REINVENT runs",
-      "Worker-backed molecule generation",
-      "Project-level result handling",
-      "Private Pro service and worker images",
-    ],
-    tools: ["REINVENT", "RDKit", "Pro worker"],
-    formats: ["Objective config -> generated molecules"],
-  },
-];
+// Free modules that earn a full-width spotlight, in workflow order. These are
+// the four an evaluator can run on day one without a license.
+const SPOTLIGHT_IDS = ["structure", "pocket-finder", "docking", "md"];
 
-const CATEGORIES = [
-  { id: "all", label: "All capabilities" },
-  { id: "core", label: "Open Core" },
-  { id: "structure", label: "Structure" },
-  { id: "simulation", label: "Simulation" },
-  { id: "sequence", label: "Sequence" },
-  { id: "pro", label: "Pro" },
-];
+const CATEGORY_LABEL = MODULE_CATEGORIES.reduce((acc, c) => ({ ...acc, [c.id]: c.label }), {});
 
-const MODULE_STEP_LABELS = {
-  structure: "Cleaning",
-  "pocket-finder": "Binding-Site",
-  docking: "Docking",
-  admet: "ADMET",
-  editor: "Molecule",
-  qc: "Quantum",
-  alignment: "Alignment",
-  md: "MD",
-  "free-energy": "FEP",
-  reinvent: "GenAI",
-  boltz2: "Boltz-2",
+// "Receptor + ligand library → ranked poses + interactions" → the two halves.
+const splitIO = (io) => {
+  const parts = String(io || "").split("→");
+  return { input: (parts[0] || "").trim(), output: (parts[1] || "").trim() };
 };
 
-const WORKFLOW_PRESETS = [
-  {
-    id: "preset-docking",
-    name: "Docking workflow",
-    desc: "Clean a target, find a pocket, dock a library, score with ADMET.",
-    modules: ["structure", "pocket-finder", "docking", "admet"],
-  },
-  {
-    id: "preset-admet",
-    name: "ADMET screen",
-    desc: "Triage a library against drug-likeness and basic property risk.",
-    modules: ["editor", "admet", "qc"],
-  },
-  {
-    id: "preset-fep",
-    name: "FEP campaign",
-    desc: "Align a series, run MD, then drive an RBFE campaign.",
-    modules: ["alignment", "md", "free-energy"],
-  },
-  {
-    id: "preset-gen",
-    name: "Generative loop",
-    desc: "Generate candidates with GenAI, dock, predict affinity, and re-score with ADMET.",
-    modules: ["reinvent", "docking", "boltz2", "admet"],
-  },
-];
-
-// In-page scroll only. The app's router treats any hash change as a page
-// navigation (see app.jsx's hashchange listener), so these links must
-// preventDefault before the hash actually changes or they get redirected home.
-const jumpTo = (e, id) => {
-  e.preventDefault();
-  const el = document.getElementById(id);
-  if (!el) return;
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+const EditionChip = ({ module: mod }) => {
+  if (mod.maturity === "preview") return <span className="fx-chip preview">Preview</span>;
+  return <span className={`fx-chip ${mod.edition}`}>{mod.edition === "pro" ? "Pro" : "Free"}</span>;
 };
 
-const filterFeature = (feature, category) => {
-  if (category === "all") return true;
-  if (category === "core") return feature.tier === "Open Core";
-  if (category === "pro") return feature.tier === "Pro";
-  return feature.tag === category;
-};
-
-const toTagLabel = (tag) => {
-  if (!tag) return "";
-  return tag
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-};
-
-const FeatureDetail = ({ feature }) => (
-  <div className="fx-detail">
-    <div className="fx-detail-head">
-      <div className={`fx-detail-icon ${feature.tier === "Pro" ? "pro" : ""}`}>
-        <Icon name={feature.icon} size={26} style={{ color: feature.tier === "Pro" ? "#b7791f" : "var(--accent-strong)" }} />
-      </div>
-      <div>
-        <div className="fx-detail-meta">
-          <span className={`fx-detail-tier ${feature.tier === "Pro" ? "pro" : ""}`}>{feature.tier}</span>
-          <span className="fx-detail-tag">{toTagLabel(feature.tag)}</span>
-        </div>
-        <h3>{feature.title}</h3>
-      </div>
-    </div>
-
-    <p className="fx-detail-summary">{feature.summary}</p>
-
-    <div className="fx-detail-grid">
-      <div>
-        <h5>Capabilities</h5>
-        <ul className="fx-bullet-list">
-          {feature.details.map((d, i) => <li key={i}>{d}</li>)}
-        </ul>
-      </div>
-      <div>
-        <h5>Tools</h5>
-        <div className="tools">
-          {feature.tools.map((t) => <span className="tool-pill" key={t}>{t}</span>)}
-        </div>
-        <h5 style={{ marginTop: 20 }}>Input -> Output</h5>
-        <div className="fx-io-list">
-          {feature.formats.map((t) => (
-            <span key={t}>{t}</span>
-          ))}
-        </div>
-      </div>
-    </div>
-
-    <div className="fx-detail-actions">
-      {feature.tier === "Pro" ? (
-        <button className="btn btn-primary btn-sm" onClick={() => window.__nav('pro')}>
-          <Icon name="scale" size={12} />
-          Explore Pro
-        </button>
-      ) : (
-        <button className="btn btn-secondary btn-sm" onClick={() => window.__nav('docs')}>
-          <Icon name="book" size={12} />
-          Docs
-        </button>
-      )}
-      <button className="btn btn-secondary btn-sm">
-        <Icon name="play" size={12} />
-        Demo
-      </button>
-    </div>
-  </div>
-);
-
-const WorkflowShowcase = ({ featureMap, onPreview }) => (
-  <section className="fx-workflow-section" id="workflows" style={{ scrollMarginTop: 72 }}>
-    <div className="fx-workflow-head">
-      <div>
-        <div className="eyebrow"><span className="dot" />Workflows</div>
-        <h2>Custom pipelines you compose inside a project.</h2>
-      </div>
-      <button className="btn btn-secondary btn-sm">
-        Open builder
-        <Icon name="arrow" size={12} />
-      </button>
-    </div>
-    <p className="fx-workflow-sub">
-      Chain modules into a reusable pipeline scoped to your project. Start from a preset,
-      swap modules in or out, and rerun the flow in minutes.
-    </p>
-
-    <div className="fx-workflow-grid">
-      {WORKFLOW_PRESETS.map((preset, idx) => {
-        const modules = preset.modules.map((id) => featureMap[id]).filter(Boolean);
-        const proCount = modules.filter((m) => m.tier === "Pro").length;
-        return (
-          <article className="fx-workflow-card" key={preset.id}>
-            <div className="fx-workflow-top">
-              <span className="fx-workflow-preset">Preset · {String(idx + 1).padStart(2, "0")}</span>
-            </div>
-            <h4>{preset.name}</h4>
-            <p>{preset.desc}</p>
-
-            <div className="fx-workflow-chain">
-              {modules.map((mod, i) => (
-                <React.Fragment key={mod.id}>
-                  <div className={`fx-workflow-step ${mod.tier === "Pro" ? "pro" : ""}`}>
-                    <Icon name={mod.icon} size={13} />
-                    <span>{MODULE_STEP_LABELS[mod.id] || mod.title.split(" ")[0]}</span>
-                  </div>
-                  {i < modules.length - 1 && <span className="fx-workflow-arrow">→</span>}
-                </React.Fragment>
-              ))}
-            </div>
-
-            <div className="fx-workflow-foot">
-              <div className="fx-workflow-meta">
-                <span>{modules.length} steps</span>
-                <span>{proCount} pro</span>
-                <span>~{modules.length * 4} min</span>
-              </div>
-              <button className="fx-workflow-preview" onClick={() => modules[0] && onPreview(modules[0].id)}>
-                Preview
-                <Icon name="arrow" size={11} />
-              </button>
-            </div>
-          </article>
-        );
-      })}
-    </div>
-  </section>
-);
-
-const FEATURE_ACTS = [
-  {
-    label: "Prepare",
-    title: "Structures cleaned, pockets found",
-    copy: "Import by PDB accession, review detected components, strip waters and alternates, then run pocket finding or draw a custom search box in Å.",
-    steps: ["RCSB fetch", "component review", "cleaning job", "pocket box"],
-  },
-  {
-    label: "Dock",
-    title: "Vina docking against your own library",
-    copy: "SMILES in, 3D out — RDKit descriptors computed on creation. Dock a folder of ligands in one job, then inspect poses and interactions in the Mol* viewer.",
-    steps: ["molecule library", "RDKit 3D", "Vina exhaustiveness", "saved poses"],
-  },
-  {
-    label: "Simulate",
-    title: "Molecular dynamics without the shell scripts",
-    copy: "Pick a complex, a force field and water model, set your parameters, and watch progress stream over a WebSocket until the trajectory is ready to review.",
-    steps: ["force field", "solvation", "live job feed", "trajectory"],
-  },
-  {
-    label: "Free energy",
-    title: "ABFE, RBFE and QC in the same queue",
-    copy: "Build a perturbation network across a series, monitor convergence and cycle closure, and hand quantum chemistry the same molecule record.",
-    steps: ["ABFE protocol", "perturbation network", "convergence", "cycle closure"],
-    pro: true,
-  },
-];
-
-const OrbitMolstar = ({ progress }) => {
-  const hostRef = React.useRef(null);
-  const pluginRef = React.useRef(null);
-  const cameraRef = React.useRef(null);
-  const progressRef = React.useRef(progress);
-  const [state, setState] = React.useState("waiting");
-
-  const applyCamera = React.useCallback((nextProgress) => {
-    const plugin = pluginRef.current;
-    if (!plugin || !plugin.canvas3d) return;
-    const camera = plugin.canvas3d.camera;
-    const current = camera.state;
-    if (!cameraRef.current) {
-      const dx = current.position[0] - current.target[0];
-      const dz = current.position[2] - current.target[2];
-      if (Math.hypot(dx, dz) < 0.001) return;
-      cameraRef.current = {
-        target: [...current.target],
-        dx,
-        dz,
-        y: current.position[1],
-      };
-    }
-    const base = cameraRef.current;
-    const angle = nextProgress * Math.PI * 2;
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    camera.setState({
-      target: base.target,
-      position: [
-        base.target[0] + base.dx * cos - base.dz * sin,
-        base.y,
-        base.target[2] + base.dx * sin + base.dz * cos,
-      ],
-    }, 0);
-  }, []);
-
-  React.useEffect(() => {
-    progressRef.current = progress;
-    applyCamera(progress);
-  }, [progress, applyCamera]);
-
-  React.useEffect(() => {
-    let cancelled = false;
-    const init = async () => {
-      if (cancelled || !hostRef.current || pluginRef.current) return;
-      setState("loading");
-      try {
-        const molstar = await loadMolstar();
-        if (cancelled || !hostRef.current) return;
-        const viewer = await molstar.Viewer.create(hostRef.current, {
-          layoutIsExpanded: false,
-          layoutShowControls: false,
-          layoutShowRemoteState: false,
-          layoutShowSequence: false,
-          layoutShowLog: false,
-          layoutShowLeftPanel: false,
-          viewportShowExpand: false,
-          viewportShowControls: false,
-          viewportShowSettings: false,
-          viewportShowSelectionMode: false,
-          viewportShowAnimation: false,
-          viewportShowTrajectoryControls: false,
-          pdbProvider: "rcsb",
-          emdbProvider: "rcsb",
-        });
-        if (cancelled) {
-          try { viewer.plugin.dispose(); } catch (e) {}
-          return;
-        }
-        pluginRef.current = viewer.plugin;
-        if (viewer.plugin.canvas3d) {
-          viewer.plugin.canvas3d.setProps({
-            transparentBackground: true,
-            camera: { helper: { axes: { name: "off", params: {} } } },
-            renderer: { backgroundColor: 0x070c0b },
-          });
-        }
-        if (viewer.plugin.canvas3dContext) viewer.plugin.canvas3dContext.setProps({ pixelScale: 1.5 });
-        await viewer.loadStructureFromUrl("/ligand-x-assets/molstar/4W52.pdb?v=20260728", "pdb", false);
-        if (cancelled) return;
-        cameraRef.current = null;
-        setState("ready");
-        requestAnimationFrame(() => requestAnimationFrame(() => applyCamera(progressRef.current)));
-      } catch (error) {
-        console.warn("[features] Mol* structure preview unavailable:", error);
-        if (!cancelled) setState("failed");
-      }
-    };
-
-    // Start immediately while the visitor is reading the full-height hero.
-    // Mol* and the structure are both served locally, so the scroll scene is
-    // normally ready before it enters the viewport.
-    init();
-    return () => {
-      cancelled = true;
-      if (pluginRef.current) {
-        try { pluginRef.current.dispose(); } catch (e) {}
-      }
-      pluginRef.current = null;
-    };
-  }, [applyCamera]);
-
-  return <div ref={hostRef} className={`orbit-molstar ${state === "ready" ? "ready" : ""}`} aria-hidden="true" />;
-};
-
-const OrbitStory = () => {
-  const sceneRef = React.useRef(null);
-  const [progress, setProgress] = React.useState(0);
-
-  React.useEffect(() => {
-    let frame = null;
-    const update = () => {
-      frame = null;
-      if (!sceneRef.current) return;
-      const rect = sceneRef.current.getBoundingClientRect();
-      const span = Math.max(1, sceneRef.current.offsetHeight - window.innerHeight + 56);
-      setProgress(Math.min(1, Math.max(0, (56 - rect.top) / span)));
-    };
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (frame) cancelAnimationFrame(frame);
-    };
-  }, []);
-
-  const actProgress = progress * (FEATURE_ACTS.length - 1);
-  const active = Math.min(FEATURE_ACTS.length - 1, Math.max(0, Math.round(actProgress)));
-
+// The single most useful line for someone deciding whether to install: what goes
+// in and what comes out. Rendered as a panel so it reads as a spec, not prose.
+const ModuleIO = ({ module: mod }) => {
+  const { input, output } = splitIO(mod.io);
   return (
-    <section ref={sceneRef} className="orbit-scene" aria-label="Ligand-X workflow">
-      <div className="orbit-sticky">
-        <div className="orbit-aura" />
-        <div className="orbit-viz">
-          <OrbitMolstar progress={progress} />
-        </div>
-        <div className="orbit-acts">
-          {FEATURE_ACTS.map((act, i) => {
-            const local = actProgress - i;
-            const fade = Math.max(0, 1 - Math.abs(local) * 1.35);
-            const eased = fade * fade * (3 - 2 * fade);
-            return (
-              <article
-                className={`orbit-act ${act.pro ? "pro" : ""}`}
-                key={act.label}
-                aria-hidden={eased < 0.1}
-                style={{ opacity: eased, pointerEvents: eased > 0.6 ? "auto" : "none", transform: `translateY(${local * 54}px) rotateX(${-local * 9}deg) scale(${0.96 + eased * 0.04})` }}
-              >
-                <div className="orbit-act-kicker">{String(i + 1).padStart(2, "0")} / {act.label}{act.pro && <span>Pro</span>}</div>
-                <h2>{act.title}</h2>
-                <p>{act.copy}</p>
-                <div className="orbit-steps">
-                  {act.steps.map((step, stepIndex) => <span className={stepIndex === act.steps.length - 1 ? "result" : ""} key={step}>{step}</span>)}
-                </div>
-              </article>
-            );
-          })}
-        </div>
-        <div className="orbit-progress" aria-label={`Workflow stage ${active + 1} of 4`}>
-          {FEATURE_ACTS.map((_, i) => <span className={i === active ? "active" : ""} key={i}>{String(i + 1).padStart(2, "0")}</span>)}
-          <i><b style={{ width: `${progress * 100}%` }} /></i>
-        </div>
+    <div className={`fx-io-panel ${mod.edition === "pro" ? "pro" : ""}`}>
+      <div className="fx-io-row">
+        <span className="fx-io-label">Input</span>
+        <span className="fx-io-value">{input}</span>
       </div>
-    </section>
+      <div className="fx-io-mid" aria-hidden="true">
+        <span className="fx-io-node"><Icon name={mod.icon} size={16} /></span>
+        <span className="fx-io-rule" />
+        <Icon name="arrow" size={14} />
+      </div>
+      <div className="fx-io-row">
+        <span className="fx-io-label">Output</span>
+        <span className="fx-io-value">{output}</span>
+      </div>
+      <div className="fx-io-tools">
+        {mod.tools.map((t) => <span className="tool-pill" key={t}>{t}</span>)}
+      </div>
+    </div>
   );
 };
 
-const ToolBanner = () => {
-  const renderTools = (duplicate = false) => (
+const Spotlight = ({ module: mod, index }) => (
+  <Reveal className={`fx-spot ${index % 2 ? "flip" : ""}`} i={index}>
+    <div className="fx-spot-copy">
+      <div className="fx-spot-kicker">
+        <span className="mono">{String(index + 1).padStart(2, "0")}</span>
+        <span className="mono">{CATEGORY_LABEL[mod.category] || mod.category}</span>
+        <EditionChip module={mod} />
+      </div>
+      <h3>{mod.name}</h3>
+      <p className="fx-spot-summary">{mod.summary}</p>
+      <ul className="fx-bullet-list">
+        {mod.details.slice(0, 4).map((d) => <li key={d}>{d}</li>)}
+      </ul>
+      <div className="fx-spot-actions">
+        <a className="fx-spot-link" href={`#${mod.id}`}>
+          Full detail <Icon name="arrow" size={13} />
+        </a>
+        {mod.guide && (
+          <button className="fx-spot-link ghost" onClick={() => window.__nav("docs")}>
+            <Icon name="book" size={13} /> Guide
+          </button>
+        )}
+      </div>
+    </div>
+    <div className="fx-spot-viz"><ModuleIO module={mod} /></div>
+  </Reveal>
+);
+
+// Hero and reel are one band, not two sections. The half-height hero read as a
+// compressed full-bleed one; folding the reel in gives the page a single opening
+// moment and hands straight off to real content.
+const HeroReel = () => {
+  const copy = SITE_COPY.features;
+
+  const renderTrack = (duplicate = false) => (
     <div className="orbit-tool-track" aria-hidden={duplicate ? "true" : undefined}>
-      {FEATURES.map((feature) => (
-        <div className={`orbit-tool ${feature.tier === "Pro" ? "pro" : ""}`} key={`${duplicate ? "copy-" : ""}${feature.id}`}>
-          <span className="orbit-tool-icon"><Icon name={feature.icon} size={16} /></span>
+      {MODULES.map((mod) => (
+        <a
+          className={`orbit-tool ${mod.edition === "pro" ? "pro" : ""}`}
+          key={`${duplicate ? "copy-" : ""}${mod.id}`}
+          href={`#${mod.id}`}
+          tabIndex={duplicate ? -1 : undefined}
+        >
+          <span className="orbit-tool-icon"><Icon name={mod.icon} size={16} /></span>
           <span className="orbit-tool-copy">
-            <strong>{feature.title}</strong>
-            <small>{feature.tier}</small>
+            <strong>{mod.name}</strong>
+            <small>{mod.maturity === "preview" ? "Preview" : mod.edition === "pro" ? "Pro" : "Free"}</small>
           </span>
-        </div>
+        </a>
       ))}
     </div>
   );
 
   return (
-    <section className="orbit-tool-banner" aria-labelledby="orbit-tool-title">
-      <div className="orbit-tool-banner-head">
-        <span className="orbit-tool-count">Integrated discovery toolkit</span>
-        <h2 id="orbit-tool-title">One workbench. The whole discovery loop.</h2>
-        <p>From structure preparation to generative design, every tool shares the same projects, molecules, and results.</p>
+    <section className="fx-lede">
+      <div className="fx-lede-inner">
+        <div className="orbit-badge"><span />{copy.eyebrow}</div>
+        <h1>{copy.h1Parts[0]}<br />{copy.h1Parts[1]}<em>{copy.h1Em}</em></h1>
+        <p>{copy.lede}</p>
+        <div className="fx-lede-actions">
+          <button className="btn btn-primary" onClick={() => window.__nav("download")}>{CTA.download}</button>
+          <a className="btn btn-secondary" href="#all-modules">Browse all modules</a>
+        </div>
       </div>
-      <div className="orbit-tool-marquee">
-        <div className="orbit-tool-reel">
-          {renderTools()}
-          {renderTools(true)}
+
+      <div className="fx-lede-reel">
+        <span className="fx-lede-reel-label mono">Everything in the box</span>
+        <div className="orbit-tool-marquee">
+          <div className="orbit-tool-reel">
+            {renderTrack()}
+            {renderTrack(true)}
+          </div>
         </div>
       </div>
     </section>
   );
 };
 
-const FeaturesPage = () => (
-  <div className="page-fade features-orbit-page">
-    <section className="orbit-hero">
-      <div className="orbit-hero-inner">
-        <div className="orbit-badge"><span />Self-hosted CADD workbench</div>
-        <h1>The whole pipeline,<br />on <em>your</em> hardware.</h1>
-        <p>Prepare proteins, edit ligands, dock, simulate, and compute free energies in one workbench. Every structure, job, and result stays on machines you control.</p>
-        <div className="orbit-hero-actions">
-          <button className="btn btn-primary" onClick={() => window.__nav("download")}>Download launcher</button>
-          <button className="btn btn-secondary" onClick={() => window.__nav("docs")}>Read the docs</button>
-        </div>
-        <div className="orbit-tech"><span>AutoDock Vina · OpenMM</span><span>Mol* viewer</span><span>PolyForm Noncommercial</span></div>
+// Presets show how modules compose — the thing you cannot get from 14 separate
+// tools. Each chain is labelled with how much of it is free.
+const PipelineStrip = () => (
+  <section className="fx-pipes">
+    <div className="container-wide">
+      <div className="fx-pipes-head">
+        <div className="eyebrow"><span className="dot" />Common pipelines</div>
+        <h2>Modules chain into a workflow, not a folder of scripts.</h2>
       </div>
-      <div className="orbit-scroll-cue"><span>Scroll</span><Icon name="arrowDown" size={14} /></div>
-    </section>
-
-    <OrbitStory />
-
-    <ToolBanner />
-
-    <section className="orbit-leverage">
-      <div className="container-wide">
-        <div className="orbit-leverage-head">
-          <div className="eyebrow"><span className="dot" />Built for scientific leverage</div>
-          <h2>Spend your time on the question, not the plumbing.</h2>
-          <p>Ligand-X turns a fragmented computational workflow into one continuous scientific workspace—from the first structure to the evidence behind a decision.</p>
-        </div>
-        <div className="orbit-outcomes">
-          {[
-            {
-              index: "01",
-              label: "Continuity",
-              title: "Keep the scientific context intact.",
-              copy: "Structures, ligands, poses, trajectories, and calculations live in the same project record. Every result remains connected to the inputs and choices that produced it.",
-              note: "One project · traceable artefacts · reusable inputs",
-            },
-            {
-              index: "02",
-              label: "Iteration",
-              title: "Move from hypothesis to comparison faster.",
-              copy: "Prepare a target once, test a ligand series, inspect poses, and push the strongest candidates into simulation or free-energy workflows without rebuilding the setup.",
-              note: "Prepare → dock → simulate → compare",
-            },
-            {
-              index: "03",
-              label: "Control",
-              title: "Use serious compute without surrendering your data.",
-              copy: "Run locally, use the hardware you already control, and keep proprietary structures and results inside your network while workers handle long-running jobs.",
-              note: "Self-hosted · GPU-aware · private by default",
-            },
-          ].map((outcome) => (
-            <article className="orbit-outcome" key={outcome.index}>
-              <div className="orbit-outcome-meta"><span>{outcome.index}</span><span>{outcome.label}</span></div>
-              <h3>{outcome.title}</h3>
-              <p>{outcome.copy}</p>
-              <div className="orbit-outcome-note">{outcome.note}</div>
+      <div className="fx-pipes-grid">
+        {WORKFLOW_PRESETS.map((preset) => {
+          const mods = preset.modules.map(moduleById).filter(Boolean);
+          const freeCount = mods.filter((m) => m.edition === "free").length;
+          return (
+            <article className="fx-pipe" key={preset.id}>
+              <h3>{preset.name}</h3>
+              <p>{preset.desc}</p>
+              <div className="fx-pipe-chain">
+                {mods.map((m, i) => (
+                  <React.Fragment key={m.id}>
+                    {i > 0 && <span className="fx-pipe-arrow" aria-hidden="true">→</span>}
+                    <a className={`fx-pipe-step ${m.edition === "pro" ? "pro" : ""}`} href={`#${m.id}`}>
+                      <Icon name={m.icon} size={12} />{m.short || m.name}
+                    </a>
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="fx-pipe-foot mono">
+                {freeCount === mods.length
+                  ? "Entirely free"
+                  : `${freeCount} of ${mods.length} modules free`}
+              </div>
             </article>
-          ))}
-        </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+);
 
-        <div className="orbit-capability-index">
-          <div className="orbit-capability-intro">
-            <span className="mono">Capability index</span>
-            <h3>Use the workflow you need today. Extend it tomorrow.</h3>
+// Full record for one module. Anchor id is the bare module id so /features/#docking
+// resolves. Replaces the never-wired FeatureDetail (which called an undefined
+// toTagLabel and would have thrown on first render).
+const ModuleCard = ({ module: mod }) => {
+  const { input, output } = splitIO(mod.io);
+  return (
+    <article className="fx-detail" id={mod.id} style={{ scrollMarginTop: 76 }}>
+      <div className="fx-detail-head">
+        <div className={`fx-detail-icon ${mod.edition === "pro" ? "pro" : ""}`}>
+          <Icon name={mod.icon} size={24} />
+        </div>
+        <div>
+          <div className="fx-detail-meta">
+            <EditionChip module={mod} />
+            <span className="fx-detail-tag">{CATEGORY_LABEL[mod.category] || mod.category}</span>
           </div>
-          <div className="orbit-capability-groups">
-            <div>
-              <span className="orbit-capability-label">Open Core</span>
-              <div className="orbit-capability-list">
-                {FEATURES.filter((feature) => feature.tier === "Open Core").map((feature) => (
-                  <span key={feature.id}><Icon name={feature.icon} size={13} />{feature.title}</span>
-                ))}
-              </div>
-            </div>
-            <div className="pro">
-              <span className="orbit-capability-label">Pro compute</span>
-              <div className="orbit-capability-list">
-                {FEATURES.filter((feature) => feature.tier === "Pro").map((feature) => (
-                  <span key={feature.id}><Icon name={feature.icon} size={13} />{feature.title}</span>
-                ))}
-              </div>
-            </div>
+          <h3>{mod.name}</h3>
+        </div>
+      </div>
+
+      <p className="fx-detail-summary">{mod.summary}</p>
+
+      <div className="fx-detail-grid">
+        <div>
+          <h5>Capabilities</h5>
+          <ul className="fx-bullet-list">
+            {mod.details.map((d) => <li key={d}>{d}</li>)}
+          </ul>
+        </div>
+        <div>
+          <h5>Tools</h5>
+          <div className="tools">
+            {mod.tools.map((t) => <span className="tool-pill" key={t}>{t}</span>)}
+          </div>
+          <h5 style={{ marginTop: 18 }}>Input → Output</h5>
+          <div className="fx-io-list">
+            <span>{input}</span>
+            <span>{output}</span>
           </div>
         </div>
       </div>
-    </section>
 
-    <section className="orbit-final">
-      <div><h2>Run it on the box under your desk.</h2><p>One launcher, one container stack, no data leaving your network.</p><button className="btn btn-primary" onClick={() => window.__nav("download")}>Download launcher</button></div>
+      {mod.maturity === "preview" && (
+        <p className="fx-preview-note">
+          Preview module — shipped but disabled by default, and not yet recommended for production work.
+        </p>
+      )}
+    </article>
+  );
+};
+
+const ModuleReference = () => {
+  const [category, setCategory] = React.useState("all");
+  const [edition, setEdition] = React.useState("any");
+
+  const shown = MODULES.filter((m) => matchesModuleFilter(m, category, edition));
+
+  return (
+    <section className="fx-reference" id="all-modules">
+      <div className="container-wide">
+        <div className="fx-reference-head">
+          <div className="eyebrow"><span className="dot" />Full reference</div>
+          <h2>Every module, and what it actually does.</h2>
+          <p>Filter by stage or edition. Each entry lists the tools behind it and exactly what it takes in and hands back.</p>
+        </div>
+
+        <div className="fx-filter-row" role="group" aria-label="Filter modules by stage">
+          {MODULE_CATEGORIES.map((c) => (
+            <button
+              key={c.id}
+              className={`fx-filter-pill ${category === c.id ? "active" : ""}`}
+              aria-pressed={category === c.id}
+              onClick={() => setCategory(c.id)}
+            >
+              {c.label}
+            </button>
+          ))}
+          <span className="fx-filter-sep" aria-hidden="true" />
+          {EDITION_FILTERS.map((e) => (
+            <button
+              key={e.id}
+              className={`fx-filter-pill ${edition === e.id ? "active" : ""}`}
+              aria-pressed={edition === e.id}
+              onClick={() => setEdition(e.id)}
+            >
+              {e.label}
+            </button>
+          ))}
+          <span className="fx-filter-count mono" role="status">
+            {shown.length} of {MODULES.length}
+          </span>
+        </div>
+
+        <div className="fx-reference-grid">
+          {shown.map((m) => <ModuleCard module={m} key={m.id} />)}
+        </div>
+        {shown.length === 0 && <p className="fx-empty">No modules match that combination.</p>}
+      </div>
     </section>
-  </div>
-);
+  );
+};
+
+const FeaturesPage = () => {
+  const spotlights = SPOTLIGHT_IDS.map(moduleById).filter(Boolean);
+
+  return (
+    <div className="page-fade features-orbit-page">
+      <HeroReel />
+
+      <section className="fx-spots">
+        <div className="container-wide">
+          <div className="fx-spots-head">
+            <div className="eyebrow"><span className="dot" />Free to run</div>
+            <h2>{CLAIMS.freeCore}</h2>
+          </div>
+          {spotlights.map((mod, i) => <Spotlight module={mod} index={i} key={mod.id} />)}
+        </div>
+      </section>
+
+      <PipelineStrip />
+
+      <ModuleReference />
+
+      <section className="fx-pro-note">
+        <div className="container-wide">
+          <div>
+            <h2>Seven more modules when the science needs them.</h2>
+            <p>ADMET, Boltz-2 affinity, binding free energy, quantum chemistry, and generative design are Pro. {CLAIMS.academic}</p>
+          </div>
+          <button className="btn btn-secondary" onClick={() => window.__nav("pro")}>{CTA.editions}</button>
+        </div>
+      </section>
+
+      <section className="fx-final">
+        <div>
+          <h2>Run it on the box under your desk.</h2>
+          <p>{CLAIMS.singleUser}</p>
+          <button className="btn btn-primary" onClick={() => window.__nav("download")}>{CTA.download}</button>
+        </div>
+      </section>
+    </div>
+  );
+};
 
 Object.assign(window, { FeaturesPage });

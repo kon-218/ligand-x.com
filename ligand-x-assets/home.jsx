@@ -27,46 +27,35 @@ const HOME_PRO_MODULES = [
   { name: "GenAI", decision: "Explore and optimize new chemotypes" },
 ];
 
-const STORY_STAGES = [
+// Four acts of the scroll story. Three are free — that ordering is the pitch:
+// you can do real work before anything asks for a license.
+const WORKFLOW_ACTS = [
   {
-    n: "01",
-    eyebrow: "Create a project",
-    title: "One project workspace, not another folder tree.",
-    text: "Import proteins, ligands, structures, and generated molecules into a single project. Files, jobs, and outputs stay linked from the first import.",
-    points: ["Project-scoped proteins, molecules, pockets, jobs, and outputs", "Ketcher editing with SMILES, SDF, and PDB import/export", "Mol* review for proteins, complexes, pockets, and poses"],
-    annotType: "files",
-    annotValue: "project.json · 1M17.pdb · leads.sdf",
-    cli: "lx new && lx import …",
+    label: "Prepare",
+    title: "Structures cleaned, pockets found",
+    copy: "Fetch a target by PDB accession, review what came with it, strip waters and alternates, then detect candidate pockets or draw your own search box in Å.",
+    steps: ["PDB fetch", "component review", "cleanup job", "pocket box"],
+    free: true,
   },
   {
-    n: "02",
-    eyebrow: "Prepare the target",
-    title: "Clean up raw structures before you dock or simulate.",
-    text: "Strip unwanted components, handle waters and cofactors, find pockets, and align sequences before you run calculations.",
-    points: ["PDB, mmCIF, SDF, and SMILES-to-3D handling", "Protein cleanup and component detection", "Pocket finding plus pairwise and multiple-sequence alignment"],
-    annotType: "outputs",
-    annotValue: "cleaned.pdb · pockets[] · alignment",
-    cli: "lx prep --align --pockets",
+    label: "Dock",
+    title: "Dock a library, not one ligand at a time",
+    copy: "SMILES in, 3D out, with RDKit descriptors computed on creation. Dock a whole folder in a single job, then compare ranked poses and their interactions in the viewer.",
+    steps: ["molecule library", "RDKit 3D", "Vina docking", "ranked poses"],
+    free: true,
   },
   {
-    n: "03",
-    eyebrow: "Screen and simulate",
-    title: "Go from docked poses to MD in the same app.",
-    text: "Dock ligands, compare poses, inspect interactions, run MD, and follow job progress in one workspace.",
-    points: ["AutoDock Vina docking with receptor and ligand preparation", "Batch results, affinity scores, interactions, and pose downloads", "OpenMM minimization, equilibration, trajectories, checkpoints, and analytics"],
-    annotType: "outputs",
-    annotValue: "poses[] · scores · trajectory.dcd",
-    cli: "lx dock && lx md",
+    label: "Simulate",
+    title: "Molecular dynamics without the shell scripts",
+    copy: "Pick a complex, choose a force field and water model, set your parameters, and watch progress stream over a WebSocket until the trajectory is ready to review.",
+    steps: ["force field", "solvation", "live job feed", "trajectory"],
+    free: true,
   },
   {
-    n: "04",
-    eyebrow: "Prioritize with Pro",
-    title: "Add Pro modules when you need deeper analysis.",
-    text: "Pro adds QC, ADMET, Boltz-2, binding free energies, and generative design on top of the same project.",
-    points: ["QC and ADMET for developability screening", "Boltz-2, ABFE, and RBFE for ranking binders", "GenAI for exploring analogs"],
-    annotType: "inputs",
-    annotValue: "license key · target.pdb · ligand.sdf",
-    cli: "lx pro boltz · lx pro abfe",
+    label: "Go further",
+    title: "Free energy and quantum chemistry, same project",
+    copy: "When ranking matters, add ABFE and RBFE networks, ORCA quantum chemistry, ADMET screening, and generative design — against the same molecule records you already built.",
+    steps: ["ABFE / RBFE", "QC & ADMET", "generative design", "one project"],
     pro: true,
   },
 ];
@@ -97,7 +86,8 @@ const USE_CASES = [
 
 // Hero viewer uses the real Mol* engine (same library + representation
 // recipe as the Ligand-X app). 1M17 = EGFR kinase with erlotinib (AQ4).
-const HERO_PDB_URL = 'https://files.rcsb.org/download/1M17.pdb';
+// Vendored locally (like 4W52) so the hero never waits on an RCSB round-trip.
+const HERO_PDB_URL = '/ligand-x-assets/molstar/1M17.pdb?v=20260731a';
 const HERO_CARBON  = 0x2a9d8f; // brand teal for ligand carbons (element-symbol theme)
 const HERO_CHAIN   = 'A';
 const HERO_RESI    = [696, 944]; // kinase domain core — crops the floppy terminal tails
@@ -594,62 +584,206 @@ const PainValueSection = () => (
   </section>
 );
 
-const WorkflowSection = () => (
-  <section className="section workflow-table-section">
-    <div className="container">
-      <div className="section-head" style={{ marginBottom: 48 }}>
-        <div>
-          <div className="eyebrow"><span className="dot" />Main workflow</div>
-          <h2>From target setup to picking your next compound.</h2>
+// Scroll-scrubbed structure behind the acts. `armed` is set by OrbitStory's
+// IntersectionObserver: the hero owns the main thread during first paint, and
+// this only builds once the scene is within ~1.5 viewports.
+const OrbitMolstar = ({ progress, armed }) => {
+  const hostRef = React.useRef(null);
+  const pluginRef = React.useRef(null);
+  const cameraRef = React.useRef(null);
+  const progressRef = React.useRef(progress);
+  const [state, setState] = React.useState("waiting");
+
+  const applyCamera = React.useCallback((nextProgress) => {
+    const plugin = pluginRef.current;
+    if (!plugin || !plugin.canvas3d) return;
+    const camera = plugin.canvas3d.camera;
+    const current = camera.state;
+    if (!cameraRef.current) {
+      const dx = current.position[0] - current.target[0];
+      const dz = current.position[2] - current.target[2];
+      if (Math.hypot(dx, dz) < 0.001) return;
+      cameraRef.current = {
+        target: [...current.target],
+        dx,
+        dz,
+        y: current.position[1],
+      };
+    }
+    const base = cameraRef.current;
+    const angle = nextProgress * Math.PI * 2;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    camera.setState({
+      target: base.target,
+      position: [
+        base.target[0] + base.dx * cos - base.dz * sin,
+        base.y,
+        base.target[2] + base.dx * sin + base.dz * cos,
+      ],
+    }, 0);
+  }, []);
+
+  React.useEffect(() => {
+    progressRef.current = progress;
+    applyCamera(progress);
+  }, [progress, applyCamera]);
+
+  React.useEffect(() => {
+    if (!armed) return undefined;
+    let cancelled = false;
+    const init = async () => {
+      if (cancelled || !hostRef.current || pluginRef.current) return;
+      setState("loading");
+      try {
+        const molstar = await loadMolstar();
+        if (cancelled || !hostRef.current) return;
+        const viewer = await molstar.Viewer.create(hostRef.current, {
+          layoutIsExpanded: false,
+          layoutShowControls: false,
+          layoutShowRemoteState: false,
+          layoutShowSequence: false,
+          layoutShowLog: false,
+          layoutShowLeftPanel: false,
+          viewportShowExpand: false,
+          viewportShowControls: false,
+          viewportShowSettings: false,
+          viewportShowSelectionMode: false,
+          viewportShowAnimation: false,
+          viewportShowTrajectoryControls: false,
+          pdbProvider: "rcsb",
+          emdbProvider: "rcsb",
+        });
+        if (cancelled) {
+          try { viewer.plugin.dispose(); } catch (e) {}
+          return;
+        }
+        pluginRef.current = viewer.plugin;
+        if (viewer.plugin.canvas3d) {
+          const dark = document.documentElement.getAttribute("data-theme") === "dark";
+          viewer.plugin.canvas3d.setProps({
+            transparentBackground: true,
+            camera: { helper: { axes: { name: "off", params: {} } } },
+            // Depth fog fades geometry toward the background colour. Against black
+            // that reads as depth; against near-white it just erases the far half
+            // of the protein, so light mode turns it off.
+            cameraFog: dark ? { name: "on", params: { intensity: 15 } } : { name: "off", params: {} },
+            // Fallback only — transparentBackground lets the themed section
+            // colour show through, so this just avoids a flash of the wrong one.
+            renderer: { backgroundColor: dark ? 0x070c0b : 0xf9f9f8 },
+          });
+        }
+        if (viewer.plugin.canvas3dContext) viewer.plugin.canvas3dContext.setProps({ pixelScale: 1.5 });
+        await viewer.loadStructureFromUrl("/ligand-x-assets/molstar/4W52.pdb?v=20260728", "pdb", false);
+        if (cancelled) return;
+        cameraRef.current = null;
+        setState("ready");
+        requestAnimationFrame(() => requestAnimationFrame(() => applyCamera(progressRef.current)));
+      } catch (error) {
+        console.warn("[home] Mol* scroll scene unavailable:", error);
+        if (!cancelled) setState("failed");
+      }
+    };
+
+    init();
+    return () => {
+      cancelled = true;
+      if (pluginRef.current) {
+        try { pluginRef.current.dispose(); } catch (e) {}
+      }
+      pluginRef.current = null;
+    };
+  }, [armed, applyCamera]);
+
+  return <div ref={hostRef} className={`orbit-molstar ${state === "ready" ? "ready" : ""}`} aria-hidden="true" />;
+};
+
+const OrbitStory = () => {
+  const sceneRef = React.useRef(null);
+  const [progress, setProgress] = React.useState(0);
+  const [armed, setArmed] = React.useState(false);
+
+  // Build the scene shortly before it is needed, never during the hero's paint.
+  React.useEffect(() => {
+    const node = sceneRef.current;
+    if (!node) return undefined;
+    if (typeof IntersectionObserver === "undefined") { setArmed(true); return undefined; }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setArmed(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: "150% 0px" });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  React.useEffect(() => {
+    let frame = null;
+    const update = () => {
+      frame = null;
+      if (!sceneRef.current) return;
+      const rect = sceneRef.current.getBoundingClientRect();
+      const span = Math.max(1, sceneRef.current.offsetHeight - window.innerHeight + 56);
+      setProgress(Math.min(1, Math.max(0, (56 - rect.top) / span)));
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  const actProgress = progress * (WORKFLOW_ACTS.length - 1);
+  const active = Math.min(WORKFLOW_ACTS.length - 1, Math.max(0, Math.round(actProgress)));
+
+  return (
+    <section ref={sceneRef} id="workflow" className="orbit-scene" aria-label="The Ligand-X workflow">
+      <div className="orbit-sticky">
+        <div className="orbit-aura" />
+        <div className="orbit-viz">
+          <OrbitMolstar progress={progress} armed={armed} />
+        </div>
+        <div className="orbit-acts">
+          {WORKFLOW_ACTS.map((act, i) => {
+            const local = actProgress - i;
+            const fade = Math.max(0, 1 - Math.abs(local) * 1.35);
+            const eased = fade * fade * (3 - 2 * fade);
+            return (
+              <article
+                className={`orbit-act ${act.pro ? "pro" : ""}`}
+                key={act.label}
+                aria-hidden={eased < 0.1}
+                style={{ opacity: eased, pointerEvents: eased > 0.6 ? "auto" : "none", transform: `translateY(${local * 54}px) rotateX(${-local * 9}deg) scale(${0.96 + eased * 0.04})` }}
+              >
+                <div className="orbit-act-kicker">
+                  {String(i + 1).padStart(2, "0")} / {act.label}
+                  {act.free && <span>Free</span>}
+                  {act.pro && <span>Pro</span>}
+                </div>
+                <h2>{act.title}</h2>
+                <p>{act.copy}</p>
+                <div className="orbit-steps">
+                  {act.steps.map((step, stepIndex) => <span className={stepIndex === act.steps.length - 1 ? "result" : ""} key={step}>{step}</span>)}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+        <div className="orbit-progress" aria-label={`Workflow stage ${active + 1} of ${WORKFLOW_ACTS.length}`}>
+          {WORKFLOW_ACTS.map((_, i) => <span className={i === active ? "active" : ""} key={i}>{String(i + 1).padStart(2, "0")}</span>)}
+          <i><b style={{ width: `${progress * 100}%` }} /></i>
         </div>
       </div>
-      <div>
-        {STORY_STAGES.map((stage, i) => (
-          <WorkflowRow key={stage.n} stage={stage} first={i === 0} index={i} />
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
-const WorkflowRow = ({ stage, first, index = 0 }) => (
-  <Reveal className="workflow-row-grid" i={index} style={{
-    display: 'grid',
-    gridTemplateColumns: '72px 1fr 1fr',
-    gap: '0 32px',
-    padding: '40px 0',
-    borderTop: `1px solid ${first ? 'var(--ink-2, #444)' : 'var(--border)'}`,
-    alignItems: 'start',
-  }}>
-    <div>
-      <div style={{
-        fontSize: 30, fontWeight: 600, lineHeight: 1,
-        color: stage.pro ? 'var(--pro-accent)' : 'var(--accent)',
-        fontFamily: 'var(--font-mono)',
-      }}>{stage.n}</div>
-      <div style={{
-        marginTop: 10, fontSize: 10, fontFamily: 'var(--font-mono)',
-        color: 'var(--muted-2)', letterSpacing: '0.1em', textTransform: 'uppercase',
-      }}>{stage.eyebrow}</div>
-    </div>
-    <div>
-      <h3 style={{ margin: 0, fontSize: 20, lineHeight: 1.25, fontWeight: 600, letterSpacing: '-0.01em', color: 'var(--ink)' }}>{stage.title}</h3>
-      <p style={{ marginTop: 12, fontSize: 14, lineHeight: 1.65, color: 'var(--ink-2)', margin: '12px 0 0' }}>{stage.text}</p>
-    </div>
-    <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-      {stage.points.map((b) => (
-        <li key={b} style={{
-          display: 'flex', gap: 10, padding: '8px 0',
-          borderTop: '1px solid var(--border)',
-          fontSize: 14, color: 'var(--ink-2)', alignItems: 'baseline',
-        }}>
-          <span style={{ fontFamily: 'var(--font-mono)', color: stage.pro ? 'var(--pro-accent)' : 'var(--accent)', flexShrink: 0 }}>→</span>
-          {b}
-        </li>
-      ))}
-    </ul>
-  </Reveal>
-);
+    </section>
+  );
+};
 
 const OpenCoreProSection = () => (
   <section className="section capability-map-section">
@@ -819,7 +953,7 @@ const HomePage = () => (
     <HeroShowcase />
     <CredibilityBand />
     <PainValueSection />
-    <WorkflowSection />
+    <OrbitStory />
     <OpenCoreProSection />
     <ArchitectureProofSection />
     <UseCasesSection />
