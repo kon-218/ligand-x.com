@@ -1699,7 +1699,11 @@ img { max-width: 100%; display: block; }
   .topnav-inner          { gap: 12px; }
   .nav-links             { display: none; }
   .topnav-inner          { height: auto; min-height: 48px; padding: 8px 0 6px; align-items: center; }
-  .brand                 { position: static; height: 40px; padding: 0 16px; }
+  /* position:static puts the brand into the flex row, where it was being
+     shrunk until "Ligand-X" broke across two lines. Never wrap the wordmark;
+     the Download button gives up its padding instead (see the 400px tier). */
+  .brand                 { position: static; height: 40px; padding: 0 16px; flex: 0 0 auto; white-space: nowrap; }
+  .brand span            { white-space: nowrap; }
   .nav-right             { margin-left: auto; gap: 6px; padding: 0 12px 0 0; }
   .nav-right .ver        { display: none; }
   .nav-right .btn-ghost[title="Search"] { display: none; }
@@ -1720,6 +1724,22 @@ img { max-width: 100%; display: block; }
   .docs-side             { display: none; }
   .os-grid               { grid-template-columns: 1fr; }
   .foot-inner            { grid-template-columns: 1fr; }
+}
+
+/* Narrow phones. The wordmark is now fixed width, so the header buys space
+   from everything to its right: the Download button drops its label to the
+   icon alone and the brand tightens its padding. Threshold measured, not
+   guessed — with the label shown the row fits at 375 and 360, clips the menu
+   toggle at 344, and loses it entirely at 320. 374px keeps the label for
+   375-wide phones and degrades below them. */
+@media (max-width: 374px) {
+  .brand                 { padding: 0 10px; gap: 6px; }
+  .brand small           { font-size: 8px; padding: 1px 4px; }
+  .nav-right             { gap: 3px; padding: 0 8px 0 0; }
+  .nav-right .btn-sm     { padding: 4px 7px; }
+  .nav-right .btn-primary { padding: 5px 8px; }
+  .nav-right .btn-primary .btn-label { display: none; }
+  .btn.nav-toggle        { padding: 5px 5px; }
 }
 
 /* ── Story home refresh ── */

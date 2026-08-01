@@ -80,9 +80,16 @@ const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => {
           <Icon name="github" size={14} />
           Star
         </button>
-        <a className="btn btn-primary btn-sm" href="/download/" onClick={(event) => onNav('download', event)}>
+        {/* .btn-label is dropped below 400px so the wordmark never has to wrap;
+            aria-label keeps the button named once the text is gone. */}
+        <a
+          className="btn btn-primary btn-sm"
+          href="/download/"
+          aria-label="Download Ligand-X"
+          onClick={(event) => onNav('download', event)}
+        >
           <Icon name="download" size={13} />
-          Download
+          <span className="btn-label">Download</span>
         </a>
         <button
           className="btn btn-ghost btn-sm nav-toggle"
