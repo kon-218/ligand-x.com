@@ -197,7 +197,9 @@ const App = () => {
   const getPathPage = () => {
     const path = window.location.pathname.replace(/\/+$/, "") || "/";
     const route = ROUTES.find((candidate) => candidate.path.replace(/\/+$/, "") === path);
-    return route ? route.id : "home";
+    if (route) return route.id;
+    if (path.startsWith("/docs/")) return "docs";
+    return "home";
   };
   const [page, setPage] = React.useState(getPathPage);
 

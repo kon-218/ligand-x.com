@@ -33,23 +33,20 @@ const WORKFLOW_ACTS = [
   {
     label: "Prepare",
     title: "Structures cleaned, pockets found",
-    copy: "Fetch a target by PDB accession, review what came with it, strip waters and alternates, then detect candidate pockets or draw your own search box in Å.",
-    steps: ["PDB fetch", "component review", "cleanup job", "pocket box"],
-    free: true,
+    copy: "Fetch a target by PDB, review the structure, strip waters and alternates, then detect pockets or draw your own search box",
+    steps: ["PDB fetch", "component review", "cleanup job", "simulation-ready"],
   },
   {
-    label: "Dock",
-    title: "Dock a library, not one ligand at a time",
+    label: "Screen",
+    title: "Create or import a library, dock it, and compare poses",
     copy: "SMILES in, 3D out, with RDKit descriptors computed on creation. Dock a whole folder in a single job, then compare ranked poses and their interactions in the viewer.",
     steps: ["molecule library", "RDKit 3D", "Vina docking", "ranked poses"],
-    free: true,
   },
   {
     label: "Simulate",
     title: "Molecular dynamics without the shell scripts",
     copy: "Pick a complex, choose a force field and water model, set your parameters, and watch progress stream over a WebSocket until the trajectory is ready to review.",
     steps: ["force field", "solvation", "live job feed", "trajectory"],
-    free: true,
   },
   {
     label: "Go further",
@@ -85,139 +82,38 @@ const USE_CASES = [
 ];
 
 // Hero viewer uses the real Mol* engine (same library + representation
-// recipe as the Ligand-X app). 1M17 = EGFR kinase with erlotinib (AQ4).
-// Vendored locally (like 4W52) so the hero never waits on an RCSB round-trip.
-const HERO_PDB_URL = '/ligand-x-assets/molstar/1M17.pdb?v=20260731a';
+// recipe as the Ligand-X app). Erlotinib (AQ4), the ligand from 1M17 (EGFR
+// kinase). The hero shows the LIGAND ONLY — the protein already appears in the
+// OrbitStory viewer further down the page, so this keeps the two distinct.
+//
+// The vendored PDB is pre-trimmed to the 29 AQ4 atoms plus their CONECT
+// records (252KB → 5.9KB). It used to carry the whole kinase and get filtered
+// in the browser on every load; there is nothing left to filter, so the fetch
+// is handed straight to Mol*. CONECT survives the trim, so bond orders come
+// from the file rather than distance inference.
+const HERO_PDB_URL = '/ligand-x-assets/molstar/1M17.pdb?v=20260801a';
 const HERO_CARBON  = 0x2a9d8f; // brand teal for ligand carbons (element-symbol theme)
-const HERO_CHAIN   = 'A';
-const HERO_RESI    = [696, 944]; // kinase domain core — crops the floppy terminal tails
-const HERO_LIGAND  = 'AQ4';      // erlotinib
-
-// Keep only the folded kinase core (chain A, 696-944) + the ligand, dropping
-// waters, ions, other chains, and the disordered termini that read as
-// "unfolded" trailing strands. Mirrors the prior 3Dmol hero crop.
-function cleanHeroPdb(text) {
-  const [lo, hi] = HERO_RESI;
-  const out = [];
-  for (const line of text.split('\n')) {
-    const rec = line.slice(0, 6);
-    if (rec === 'ATOM  ') {
-      const chain = line[21];
-      const resSeq = parseInt(line.slice(22, 26), 10);
-      if (chain === HERO_CHAIN && resSeq >= lo && resSeq <= hi) out.push(line);
-    } else if (rec === 'HETATM') {
-      if (line.slice(17, 20).trim() === HERO_LIGAND) out.push(line);
-    } else if (rec.startsWith('CRYST') || rec.startsWith('SCALE')) {
-      out.push(line);
-    }
-  }
-  out.push('END');
-  return out.join('\n');
-}
-
-const HERO_STRUCTURES = [
-  { label: 'Protein · EGFR · 1M17',     short: 'Protein', key: 'protein' },
-  { label: 'Complex · erlotinib · 1M17', short: 'Complex', key: 'complex' },
-  { label: 'Ligand · erlotinib',         short: 'Ligand', key: 'ligand'  },
-];
-const HERO_DEFAULT = 1;
-
-const StructureGlyph = ({ kind }) => {
-  if (kind === 'protein') {
-    return (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M4 6c2 0 2 3 4 3s2-3 4-3 2 3 4 3 2-3 4-3" />
-        <path d="M4 12c2 0 2 3 4 3s2-3 4-3 2 3 4 3 2-3 4-3" opacity="0.85" />
-        <path d="M4 18c2 0 2 3 4 3s2-3 4-3 2 3 4 3 2-3 4-3" opacity="0.7" />
-      </svg>
-    );
-  }
-  if (kind === 'complex') {
-    return (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M3 7c2 0 2 3 4 3s2-3 4-3" />
-        <path d="M3 14c2 0 2 3 4 3s2-3 4-3" opacity="0.85" />
-        <circle cx="17" cy="9" r="1.4" fill="currentColor" stroke="none" />
-        <circle cx="20.5" cy="12" r="1.4" fill="currentColor" stroke="none" />
-        <circle cx="17" cy="15" r="1.4" fill="currentColor" stroke="none" />
-        <path d="M17 9l3.5 3M20.5 12L17 15M17 9v6" strokeWidth="1.3" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M8 6l4 2 4-2M8 6v5M16 6v5M8 11l-3 3M16 11l3 3M8 11l4 3 4-3M12 14v5" />
-      <circle cx="8" cy="6" r="1.6" fill="currentColor" stroke="none" />
-      <circle cx="16" cy="6" r="1.6" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="8" r="1.6" fill="currentColor" stroke="none" />
-      <circle cx="5" cy="14" r="1.6" fill="currentColor" stroke="none" />
-      <circle cx="19" cy="14" r="1.6" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="14" r="1.6" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none" />
-    </svg>
-  );
-};
+const HERO_LABEL   = 'Ligand · erlotinib';
 
 const HeroShowcase = () => {
   const viewerRef    = React.useRef(null);   // Mol* canvas container
   const pluginRef    = React.useRef(null);   // Mol* PluginContext
-  const sceneRef     = React.useRef(null);   // { molstar, polymer, ligand, *Data }
-  const appliedViewRef = React.useRef(null);
   const idleTimer    = React.useRef(null);
   const touched      = React.useRef(false);
   const lastSpinDirection = React.useRef(1);
   const dragSample = React.useRef(null);
-  const [current, setCurrent] = React.useState(HERO_DEFAULT);
   const [loading, setLoading] = React.useState(true);
   const [failed,  setFailed]  = React.useState(false);
   const [hintOn,  setHintOn]  = React.useState(true);
   const [promptOn, setPromptOn] = React.useState(false);
 
-  // Show / hide representations and reframe only when entering or leaving ligand-only mode.
-  // Visibility is driven by representation opacity (alpha 0/1), the same
-  // mechanism the app's toggleComponentVisibility uses.
-  const applyState = (index) => {
-    const plugin = pluginRef.current;
-    const scene  = sceneRef.current;
-    if (!plugin || !scene) return;
-
-    const previous = appliedViewRef.current;
-    if (previous === index) return;
-
-    const showPolymer = index !== 2;  // protein + complex
-    const showLigand  = index !== 0;  // complex + ligand
-    const previousShowPolymer = previous !== null && previous !== 2;
-    const previousShowLigand  = previous !== null && previous !== 0;
-
-    try {
-      const b = plugin.state.data.build();
-      let changed = false;
-      const setAlpha = (sel, show) => {
-        if (!sel) return;
-        b.to(sel).update((old) => ({
-          ...old,
-          type: { ...old.type, params: { ...(old.type && old.type.params), alpha: show ? 1 : 0 } },
-        }));
-        changed = true;
-      };
-      if (previous === null || previousShowPolymer !== showPolymer) setAlpha(scene.polymer, showPolymer);
-      if (previous === null || previousShowLigand !== showLigand) setAlpha(scene.ligand, showLigand);
-      if (changed) b.commit();
-    } catch (e) {
-      console.warn('[hero] representation toggle failed:', e);
-    }
-
-    const keepCamera = (previous === 0 && index === 1) || (previous === 1 && index === 0);
-    appliedViewRef.current = index;
-    if (keepCamera) return;
-
-    let sphere = scene.structureData && scene.structureData.boundary && scene.structureData.boundary.sphere;
-    if (index === 2 && scene.ligandData && scene.ligandData.boundary) sphere = scene.ligandData.boundary.sphere;
-    else if (index === 0 && scene.polymerData && scene.polymerData.boundary) sphere = scene.polymerData.boundary.sphere;
-
+  // Frame the ligand. Matches the extraRadius the old ligand-only view used, so
+  // the molecule sits at the same scale in the panel as it did before.
+  const frameLigand = (plugin, ligandData) => {
+    const sphere = ligandData && ligandData.boundary && ligandData.boundary.sphere;
     const cam = plugin.managers && plugin.managers.camera;
     if (sphere && cam && cam.focusSphere) {
-      try { cam.focusSphere(sphere, { durationMs: 420, extraRadius: index === 2 ? 3 : 1 }); return; } catch (e) { /* fall through */ }
+      try { cam.focusSphere(sphere, { durationMs: 0, extraRadius: 3 }); return; } catch (e) { /* fall through */ }
     }
     if (plugin.canvas3d) plugin.canvas3d.requestCameraReset();
   };
@@ -302,31 +198,22 @@ const HeroShowcase = () => {
         plugin.canvas3dContext.setProps({ pixelScale: 2 });
       }
 
-      // Build the structure manually so we keep refs for the switcher
-      // (mirrors the app's MiniMolstarViewer recipe: fetch text + rawData).
+      // Built manually rather than via loadStructureFromUrl so the ligand
+      // component is addressable for camera framing (mirrors the app's
+      // MiniMolstarViewer recipe: fetch text + rawData).
       const pdbText = await fetch(HERO_PDB_URL).then((r) => {
         if (!r.ok) throw new Error('PDB fetch failed: ' + r.status);
         return r.text();
       });
       if (cancelled) { try { plugin.dispose(); } catch (e) {} return; }
-      const data = await plugin.builders.data.rawData({ data: cleanHeroPdb(pdbText), label: '1M17' });
+      const data = await plugin.builders.data.rawData({ data: pdbText, label: '1M17' });
       const trajectory = await plugin.builders.structure.parseTrajectory(data, 'pdb');
       const model = await plugin.builders.structure.createModel(trajectory);
       const structure = await plugin.builders.structure.createStructure(model);
 
-      const polymer = await plugin.builders.structure.tryCreateComponentStatic(structure, 'polymer');
-      let polymerRepr = null;
-      if (polymer) {
-        polymerRepr = await plugin.builders.structure.representation.addRepresentation(polymer, {
-          type: 'cartoon',
-          color: 'chain-id',
-        });
-      }
-
       const ligand = await plugin.builders.structure.tryCreateComponentStatic(structure, 'ligand');
-      let ligandRepr = null;
       if (ligand) {
-        ligandRepr = await plugin.builders.structure.representation.addRepresentation(ligand, {
+        await plugin.builders.structure.representation.addRepresentation(ligand, {
           type: 'ball-and-stick',
           color: 'element-symbol',
           colorParams: { carbonColor: { name: 'uniform', params: { value: HERO_CARBON } } },
@@ -336,16 +223,7 @@ const HeroShowcase = () => {
 
       if (cancelled) { try { plugin.dispose(); } catch (e) {} return; }
 
-      sceneRef.current = {
-        molstar,
-        polymer: polymerRepr,
-        ligand: ligandRepr,
-        polymerData: polymer && polymer.data,
-        ligandData: ligand && ligand.data,
-        structureData: structure && structure.data,
-      };
-
-      applyState(current);
+      frameLigand(plugin, ligand && ligand.data);
 
       // Disable click-to-select and click-to-focus. Both behaviors subscribe
       // to plugin.behaviors.interaction.click (an RxJS Subject). Patching
@@ -441,12 +319,6 @@ const HeroShowcase = () => {
     };
   }, []);
 
-  // React to switcher changes once the scene is live.
-  React.useEffect(() => {
-    if (loading || failed) return;
-    applyState(current);
-  }, [current, loading, failed]);
-
   const ready = !loading && !failed;
   const waiting = !ready;
 
@@ -455,7 +327,6 @@ const HeroShowcase = () => {
       <div className="container">
         <div className="hero-grid">
           <div className="hero-copy">
-            <div className="eyebrow"><span className="dot" /> Official Ligand-X website</div>
             <h1><em>Ligand-X.</em><br />Integrated.<br />Self-hosted.<br />Reliable.</h1>
             <p className="hero-lede">
               A free desktop app for computational drug discovery. Dock, simulate,
@@ -505,31 +376,8 @@ const HeroShowcase = () => {
               )}
 
               {ready && (
-                <div className="hero-struct-badge">
-                  {HERO_STRUCTURES[current].label}
-                </div>
+                <div className="hero-struct-badge">{HERO_LABEL}</div>
               )}
-            </div>
-
-            <div className="hero-switcher">
-              <div className="hero-switcher-track" role="tablist" aria-label="Structure view">
-                {HERO_STRUCTURES.map((s, i) => (
-                  <button
-                    key={s.key}
-                    className={"hero-glyph-btn" + (i === current ? " active" : "")}
-                    onClick={() => {
-                      setPromptOn(false);
-                      setCurrent(i);
-                    }}
-                    aria-label={s.label}
-                    aria-selected={i === current}
-                    role="tab"
-                    title={s.short}
-                  >
-                    <StructureGlyph kind={s.key} />
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
         </div>

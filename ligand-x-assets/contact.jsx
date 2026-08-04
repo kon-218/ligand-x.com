@@ -11,7 +11,20 @@ const CONTACT_TOPICS = [
   "Training or collaboration",
 ];
 
-const ContactPage = () => (
+// /pro/ routes three different buyers here through one form, so it sets
+// window.__contactTopic before navigating and we open on the right option.
+// Read once and cleared, so a later visit from the nav starts neutral.
+const takeContactTopic = () => {
+  const topic = typeof window !== "undefined" && window.__contactTopic;
+  if (typeof window !== "undefined") window.__contactTopic = null;
+  return CONTACT_TOPICS.includes(topic) ? topic : "Commercial Pro modules";
+};
+
+const ContactPage = () => {
+  // Lazy initializer: read the incoming topic exactly once, on mount.
+  const [topic] = React.useState(takeContactTopic);
+
+  return (
   <div className="page-fade">
     <section style={{ padding: 'var(--sp-8) 0 var(--sp-5)', borderBottom: '1px solid var(--border)' }}>
       <div className="container">
@@ -54,8 +67,8 @@ const ContactPage = () => (
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--ink-2)', marginTop: 14 }}>
                 What do you need?
-                <select name="topic" defaultValue="Commercial Pro modules" required style={{ padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit', background: 'var(--surface)' }}>
-                  {CONTACT_TOPICS.map((topic) => <option key={topic} value={topic}>{topic}</option>)}
+                <select name="topic" defaultValue={topic} required style={{ padding: '11px 12px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', font: 'inherit', background: 'var(--surface)' }}>
+                  {CONTACT_TOPICS.map((option) => <option key={option} value={option}>{option}</option>)}
                 </select>
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13, color: 'var(--ink-2)', marginTop: 14 }}>
@@ -78,7 +91,7 @@ const ContactPage = () => (
             <div className="mono" style={{ color: 'var(--accent-strong)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Useful context</div>
             <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--ink-2)', fontSize: 14, lineHeight: 1.6 }}>
               <li>License type: Academic or Commercial Pro</li>
-              <li>Modules needed: QC, ADMET, Boltz-2, ABFE/RBFE, REINVENT</li>
+              <li>Modules needed: {proModules().map((mod) => mod.short || mod.name).join(", ")}</li>
               <li>Deployment target: desktop, workstation, server, or private cluster</li>
               <li>GPU availability and expected molecule/project scale</li>
             </ul>
@@ -93,6 +106,7 @@ const ContactPage = () => (
       </div>
     </section>
   </div>
-);
+  );
+};
 
 Object.assign(window, { ContactPage });
