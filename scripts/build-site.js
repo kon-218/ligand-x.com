@@ -84,25 +84,25 @@ const pages = [
   {
     id: "pro",
     path: "/pro/",
-    title: "Ligand-X Pro — Advanced local computational chemistry modules",
+    title: "Ligand-X editions and Pro licensing",
     description:
-      "Add local quantum chemistry, ADMET, Boltz-2 affinity prediction, ABFE, RBFE, and generative molecular design modules to Ligand-X.",
-    eyebrow: "Ligand-X Pro",
-    heading: "Advanced calculations in the same private workspace.",
+      "Compare the free, academic, and commercial Pro editions of Ligand-X, see which modules each unlocks, and find out how to request a license.",
+    eyebrow: "Editions & licensing",
+    heading: "Which edition of Ligand-X do you need?",
     intro:
-      "Ligand-X Pro adds licensed computational chemistry and molecular-design modules to the same self-hosted interface used for structure preparation, docking, and simulation.",
+      "The workbench is free forever. Academic licenses unlock every Pro module at no cost. Commercial Pro licenses cover the modules in your agreement.",
     sections: [
       [
-        "Affinity and free-energy workflows",
-        "Run Boltz-2 binding-affinity prediction and licensed absolute or relative binding free-energy calculations without moving project data into a separate system.",
+        "Free \u2014 the open-core workbench",
+        "Structure preparation, pocket finding, molecular docking, molecular dynamics, the molecule library, and alignment tools are free with no license file and no account.",
       ],
       [
-        "Property and electronic analysis",
-        "Add ADMET screening and quantum chemistry workflows for geometry, charge, reactivity, and other molecular properties.",
+        "Academic \u2014 every module, no cost",
+        "A signed academic license entitles you to all Pro modules: ADMET, quantum chemistry, Boltz-2, binding free energy, and generative design.",
       ],
       [
-        "Local deployment",
-        "Private module containers integrate with an existing Ligand-X installation so sensitive structures, ligands, and results stay on infrastructure you control.",
+        "Commercial Pro \u2014 licensed per module",
+        "A commercial license unlocks the modules listed in your agreement. Private container images integrate with an existing installation so sensitive structures, ligands, and results stay on infrastructure you control.",
       ],
     ],
   },
@@ -154,6 +154,81 @@ const pages = [
   },
 ];
 
+const benchmarkPages = [
+  {
+    id: "docs",
+    primary: false,
+    path: "/docs/benchmarks/",
+    title: "Benchmarks and validation — Ligand-X documentation",
+    description:
+      "Browse reproducible Ligand-X benchmark studies by computational method, including datasets, protocols, results, and limitations.",
+    eyebrow: "Documentation · Benchmarks and validation",
+    heading: "Scientific benchmarks, method by method.",
+    intro:
+      "Each study records the dataset, pinned protocol, evaluation metrics, results, limitations, and the materials needed to reproduce the analysis.",
+    sections: [
+      [
+        "Molecular docking",
+        "A worked Astex Diverse redocking example compares AutoDock Vina and Vinardo across 85 protein–ligand complexes.",
+      ],
+      [
+        "Planned method pages",
+        "Molecular dynamics, binding affinity, free energy, and quantum chemistry pages are scaffolded for future audited results.",
+      ],
+    ],
+  },
+  {
+    id: "docs",
+    primary: false,
+    path: "/docs/benchmarks/docking/",
+    title: "Vina vs Vinardo docking benchmark — Ligand-X",
+    description:
+      "Controlled Astex Diverse redocking benchmark comparing AutoDock Vina and Vinardo pose accuracy across 85 protein–ligand complexes.",
+    eyebrow: "Benchmark · Molecular docking · Draft",
+    heading: "AutoDock Vina versus Vinardo on Astex Diverse.",
+    intro:
+      "With preparation, search space, seed, and exhaustiveness held constant, Vinardo generated more sub-ångström poses but did not improve top-ranked pose success.",
+    sections: [
+      [
+        "Controlled comparison",
+        "Both scoring functions were evaluated across the same 85 Astex Diverse complexes using an identical ligand-extent-plus-4-ångström search box, seed 20260720, exhaustiveness 32, and ten output modes.",
+      ],
+      [
+        "Primary result",
+        "Vina achieved 62.4% top-1 success at 2 Å versus 60.0% for Vinardo; Vinardo improved sub-1 Å success from 36.5% to 45.9% and median RMSD from 1.27 Å to 1.17 Å.",
+      ],
+      [
+        "Interpretation",
+        "Both methods sampled a correct pose in more than 84% of cases. The remaining accuracy reserve is primarily a pose-ranking problem rather than a pose-generation problem.",
+      ],
+    ],
+  },
+  ...[
+    ["molecular-dynamics", "Molecular dynamics"],
+    ["binding-affinity", "Binding affinity"],
+    ["free-energy", "Free-energy calculations"],
+    ["quantum-chemistry", "Quantum chemistry"],
+  ].map(([slug, title]) => ({
+    id: "docs",
+    primary: false,
+    path: `/docs/benchmarks/${slug}/`,
+    title: `${title} benchmark — Ligand-X documentation`,
+    description: `Planned Ligand-X ${title.toLowerCase()} benchmark page. Audited results and reproducibility materials will be added after the protocol is locked.`,
+    eyebrow: "Documentation · Benchmark planned",
+    heading: `${title} benchmark.`,
+    intro:
+      "This page is reserved for a complete, audited benchmark. Results will be published here only after the dataset, protocol, metrics, and reproducibility package are locked.",
+    sections: [
+      [
+        "Benchmark in preparation",
+        "No scientific results are reported on this page yet. The future study will document methods, results, uncertainty, limitations, and reproducibility materials.",
+      ],
+    ],
+  })),
+];
+
+pages.push(...benchmarkPages);
+
 const escapeHtml = (value) =>
   value
     .replace(/&/g, "&amp;")
@@ -165,7 +240,7 @@ const pageUrl = (page) => `${ORIGIN}${page.path}`;
 
 const navigation = (currentId) =>
   pages
-    .filter((page) => page.id !== "contact")
+    .filter((page) => page.primary !== false && page.id !== "contact")
     .map(
       (page) =>
         `<a href="${page.path}"${page.id === currentId ? ' aria-current="page"' : ""}>${page.id === "home" ? "Home" : page.id[0].toUpperCase() + page.id.slice(1)}</a>`,

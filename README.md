@@ -5,11 +5,21 @@ Standalone static microsite for `www.ligand-x.com`.
 ## Local preview
 
 ```bash
-npm run build
-python3 -m http.server 8080 --directory dist
+npm run dev
 ```
 
 Open `http://127.0.0.1:8080/`.
+
+The development server rebuilds the site and refreshes the browser whenever
+`index.html`, `ligand-x-assets/`, or the build metadata changes. It uses only
+Node.js, so there are no packages to install.
+
+For a one-time production build and a preview without automatic refresh, run:
+
+```bash
+npm run build
+python3 -m http.server 8080 --directory dist
+```
 
 The build emits crawlable HTML for the homepage and each primary product page,
 along with the sitemap, structured data, `robots.txt`, and the GitHub Pages

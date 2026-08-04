@@ -342,6 +342,334 @@ const GUIDES = [
 ];
 
 // ============================================================
+// Benchmarks & validation
+// ============================================================
+
+const BENCHMARKS = [
+  {
+    id: "benchmark-overview",
+    navTitle: "Overview",
+    title: "Benchmarks & validation",
+    path: "/docs/benchmarks/",
+    eyebrow: "Documentation · Scientific validation",
+    desc: "Method-specific studies with pinned protocols, complete denominators, limitations, and reproducibility notes.",
+    status: "index",
+    sections: [
+      { id: "scope", title: "Scope" },
+      { id: "studies", title: "Studies" },
+      { id: "publication", title: "Publication" },
+    ],
+  },
+  {
+    id: "benchmark-docking",
+    navTitle: "Molecular docking",
+    title: "Vina vs Vinardo on Astex Diverse",
+    path: "/docs/benchmarks/docking/",
+    eyebrow: "Benchmark · Molecular docking",
+    desc: "A controlled 85-complex redocking comparison separates pose generation from pose ranking.",
+    status: "draft",
+    sections: [
+      { id: "finding", title: "Finding" },
+      { id: "results", title: "Results" },
+      { id: "methods", title: "Methods" },
+      { id: "interpretation", title: "Interpretation" },
+      { id: "limitations", title: "Limitations" },
+      { id: "reproduce", title: "Reproduce" },
+    ],
+  },
+  {
+    id: "benchmark-molecular-dynamics",
+    navTitle: "Molecular dynamics",
+    title: "Molecular dynamics",
+    path: "/docs/benchmarks/molecular-dynamics/",
+    eyebrow: "Benchmark · Molecular dynamics",
+    desc: "A reserved page for audited stability, reproducibility, and performance studies.",
+    status: "planned",
+    sections: [{ id: "status", title: "Status" }],
+  },
+  {
+    id: "benchmark-binding-affinity",
+    navTitle: "Binding affinity",
+    title: "Binding affinity",
+    path: "/docs/benchmarks/binding-affinity/",
+    eyebrow: "Benchmark · Binding affinity",
+    desc: "A reserved page for audited affinity-prediction studies.",
+    status: "planned",
+    sections: [{ id: "status", title: "Status" }],
+  },
+  {
+    id: "benchmark-free-energy",
+    navTitle: "Free-energy calculations",
+    title: "Free-energy calculations",
+    path: "/docs/benchmarks/free-energy/",
+    eyebrow: "Benchmark · Free energy",
+    desc: "A reserved page for audited absolute and relative binding free-energy studies.",
+    status: "planned",
+    sections: [{ id: "status", title: "Status" }],
+  },
+  {
+    id: "benchmark-quantum-chemistry",
+    navTitle: "Quantum chemistry",
+    title: "Quantum chemistry",
+    path: "/docs/benchmarks/quantum-chemistry/",
+    eyebrow: "Benchmark · Quantum chemistry",
+    desc: "A reserved page for audited electronic-structure and molecular-property studies.",
+    status: "planned",
+    sections: [{ id: "status", title: "Status" }],
+  },
+];
+
+const benchmarkViewFromPath = () => {
+  const path = window.location.pathname.replace(/\/+$/, "") + "/";
+  const benchmark = BENCHMARKS.find((candidate) => candidate.path === path);
+  return benchmark ? benchmark.id : "getting-started";
+};
+
+const BenchmarkStatus = ({ status }) => (
+  <span className={`benchmark-status benchmark-status-${status}`}>
+    {status === "draft" ? "Pre-publication draft" : status}
+  </span>
+);
+
+const BenchmarkMetric = ({ label, vina, vinardo, note }) => (
+  <div className="benchmark-metric">
+    <span className="benchmark-metric-label">{label}</span>
+    <div className="benchmark-metric-values">
+      <span><small>Vina</small><strong>{vina}</strong></span>
+      <span><small>Vinardo</small><strong>{vinardo}</strong></span>
+    </div>
+    <p>{note}</p>
+  </div>
+);
+
+const BenchmarkView = ({ benchmark, benchmarkRefs, onSelect }) => {
+  if (benchmark.status === "index") {
+    return (
+      <>
+        <h2 id="scope" ref={(node) => benchmarkRefs.current.scope = node} style={{ marginTop: 0 }}>
+          Scope
+        </h2>
+        <p>
+          These pages document scientific validation separately from product guides. A benchmark is
+          published here only with a named dataset, a pinned protocol, an explicit denominator,
+          quantitative metrics, limitations, and enough provenance to reproduce the analysis.
+        </p>
+        <div className="callout benchmark-principle">
+          Performance, predictive accuracy, and workflow reproducibility are different claims. Each
+          study reports only the claims its protocol can support.
+        </div>
+
+        <h2 id="studies" ref={(node) => benchmarkRefs.current.studies = node}>Studies</h2>
+        <div className="benchmark-study-grid">
+          {BENCHMARKS.filter((item) => item.status !== "index").map((item) => (
+            <button key={item.id} className="benchmark-study-card" onClick={() => onSelect(item.id)}>
+              <span>
+                <strong>{item.navTitle}</strong>
+                <BenchmarkStatus status={item.status} />
+              </span>
+              <p>{item.desc}</p>
+              <span className="benchmark-study-link">
+                {item.status === "draft" ? "Read study" : "View planned page"}
+                <Icon name="arrow" size={12} />
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <h2 id="publication" ref={(node) => benchmarkRefs.current.publication = node}>Publication</h2>
+        <p>
+          The paper citation, arXiv record, supplementary materials, and versioned result archives
+          will be linked here when the preprint is public. Until then, the docking page is labelled
+          as a pre-publication draft.
+        </p>
+      </>
+    );
+  }
+
+  if (benchmark.status === "planned") {
+    return (
+      <>
+        <h2 id="status" ref={(node) => benchmarkRefs.current.status = node} style={{ marginTop: 0 }}>
+          Benchmark in preparation
+        </h2>
+        <div className="benchmark-placeholder">
+          <BenchmarkStatus status="planned" />
+          <h3>No results are reported here yet.</h3>
+          <p>
+            This page will be completed after the dataset, protocol, acceptance criteria, and
+            reproducibility package have been locked. It will include methods, quantitative
+            results, uncertainty, limitations, and downloadable supporting material.
+          </p>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <h2 id="finding" ref={(node) => benchmarkRefs.current.finding = node} style={{ marginTop: 0 }}>
+        Finding
+      </h2>
+      <div className="benchmark-finding">
+        <span className="mono">85 paired redocking cases</span>
+        <p>
+          Vinardo generated more precise poses than Vina, improving the sub-1 Å success rate and
+          median RMSD. It did not improve top-1 success at the conventional 2 Å threshold. Both
+          methods sampled a correct pose much more often than they ranked one first, identifying
+          pose ranking—not pose generation—as the principal remaining limitation.
+        </p>
+      </div>
+
+      <h2 id="results" ref={(node) => benchmarkRefs.current.results = node}>Results</h2>
+      <div className="benchmark-metric-grid">
+        <BenchmarkMetric
+          label="Top-1 RMSD ≤ 2 Å"
+          vina="62.4%"
+          vinardo="60.0%"
+          note="Vina retained a small top-ranked-pose advantage."
+        />
+        <BenchmarkMetric
+          label="Top-1 RMSD ≤ 1 Å"
+          vina="36.5%"
+          vinardo="45.9%"
+          note="Vinardo produced substantially more sub-ångström top poses."
+        />
+        <BenchmarkMetric
+          label="Best-of-10 RMSD ≤ 2 Å"
+          vina="84.7%"
+          vinardo="87.1%"
+          note="Both scoring functions usually generated a correct pose."
+        />
+        <BenchmarkMetric
+          label="Median top-1 RMSD"
+          vina="1.27 Å"
+          vinardo="1.17 Å"
+          note="Vinardo improved the median pose geometry."
+        />
+      </div>
+
+      <div className="benchmark-table-wrap">
+        <table className="port-table benchmark-table">
+          <thead>
+            <tr>
+              <th>Scoring function</th>
+              <th>Top-1 ≤ 2 Å</th>
+              <th>Top-1 ≤ 1 Å</th>
+              <th>Best-of-10 ≤ 2 Å</th>
+              <th>Median RMSD</th>
+              <th>Ranking efficiency</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Vina</strong></td>
+              <td>62.4%</td>
+              <td>36.5%</td>
+              <td>84.7%</td>
+              <td>1.27 Å</td>
+              <td>74%</td>
+            </tr>
+            <tr>
+              <td><strong>Vinardo</strong></td>
+              <td>60.0%</td>
+              <td>45.9%</td>
+              <td>87.1%</td>
+              <td>1.17 Å</td>
+              <td>69%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="benchmark-caption">
+        Ranking efficiency is top-1 success divided by best-of-10 success: the share of sampled
+        correct poses promoted to rank one. Paired top-1 changes were +6 cases gained and −8 lost
+        for Vinardo relative to Vina.
+      </p>
+
+      <h2 id="methods" ref={(node) => benchmarkRefs.current.methods = node}>Methods</h2>
+      <p>
+        The study used all 85 protein–ligand complexes in the Astex Diverse subset distributed with
+        the PoseBusters benchmark archive. Each supplied generated conformer was redocked into its
+        receptor; the crystal ligand was retained only as the fixed-frame RMSD reference.
+      </p>
+      <dl className="benchmark-methods">
+        <div><dt>Design</dt><dd>Paired, controlled redocking; scoring function was the only changed variable</dd></div>
+        <div><dt>Dataset</dt><dd>Astex Diverse / PoseBusters, 85 of 85 complexes</dd></div>
+        <div><dt>Preparation</dt><dd>Identical archived receptor and ligand PDBQT inputs for both arms</dd></div>
+        <div><dt>Search box</dt><dd>Crystal-ligand extent plus 4 Å, identical in both arms</dd></div>
+        <div><dt>Docking</dt><dd>Seed 20260720, exhaustiveness 32, CPU auto, 10 output modes</dd></div>
+        <div><dt>Pose metric</dt><dd>Symmetry-aware, fixed-frame RDKit CalcRMS after removing all hydrogens</dd></div>
+      </dl>
+      <p>
+        Preparation was held constant by reusing each archived run package’s
+        <code> prepared-receptor.pdbqt</code> and <code>prepared-ligand.pdbqt</code>. The analysis
+        harness reproduced the archived per-mode RMSD values for all 81 originally scorable cases
+        and corrected four hydrogen-handling failures before this comparison was interpreted.
+      </p>
+      <p>
+        Dataset source:{" "}
+        <a href="https://zenodo.org/records/8278563" target="_blank" rel="noopener noreferrer">
+          PoseBusters benchmark archive, Zenodo record 8278563
+        </a>.
+      </p>
+
+      <h2 id="interpretation" ref={(node) => benchmarkRefs.current.interpretation = node}>
+        Interpretation
+      </h2>
+      <p>
+        A direct switch from Vina to Vinardo is not a free top-1 accuracy improvement. Vinardo
+        produces a larger and more precise pool of correct poses, but converts less of that
+        sampling headroom into a rank-one result. Neither method promotes more than roughly
+        three-quarters of its sampled correct poses to the top rank.
+      </p>
+      <div className="callout">
+        The useful result is the decomposition: residual error on this benchmark is dominated by
+        pose ranking. Increasing exhaustiveness alone is unlikely to close a gap when a correct
+        pose is already present in more than 84% of ten-pose outputs.
+      </div>
+
+      <h2 id="limitations" ref={(node) => benchmarkRefs.current.limitations = node}>Limitations</h2>
+      <ul>
+        <li>
+          This is native-ligand-informed redocking, not blind docking. The box uses both the crystal
+          ligand centroid and its extent, leaking native position and size information.
+        </li>
+        <li>
+          Results describe one 85-complex benchmark and should not be generalized to every target
+          class, ligand chemistry, or prospective screening workflow.
+        </li>
+        <li>
+          The comparison measures RMSD-based pose recovery. PoseBusters validity was part of the
+          archived release audit but is not reported as a Vina–Vinardo outcome in this scoring arm.
+        </li>
+        <li>
+          Crystallographic waters were not included. The energy range and ten-mode output also make
+          best-of-N results protocol-specific.
+        </li>
+      </ul>
+
+      <h2 id="reproduce" ref={(node) => benchmarkRefs.current.reproduce = node}>Reproduce</h2>
+      <p>
+        The audit keeps experiment code separate from analysis. Tables can be regenerated from the
+        saved per-case JSON without running docking again.
+      </p>
+      <CodeBlock
+        label="analysis"
+        copyText={"cd scripts/benchmarks/astex_audit\n../../../.pixi/envs/base/bin/python analyse_score.py"}
+      >
+        <Cmd><Fn>cd</Fn> scripts/benchmarks/astex_audit</Cmd>{"\n"}
+        <Cmd>../../../.pixi/envs/base/bin/python analyse_score.py</Cmd>
+      </CodeBlock>
+      <p className="benchmark-caption">
+        This is a pre-publication example derived from the August 2, 2026 audit. Versioned source,
+        raw results, the paper citation, and supplementary material links should replace this note
+        when the public release package is frozen.
+      </p>
+    </>
+  );
+};
+
+// ============================================================
 // VideoPlaceholder — shown until real walkthrough videos exist
 // ============================================================
 
@@ -499,10 +827,18 @@ const GuideView = ({ guide, guideRefs, activeGuideSection }) => {
 
 const DocsPage = () => {
   const [activeSection, setActiveSection] = React.useState("overview");
-  const [docView, setDocView] = React.useState("getting-started");
+  const [docView, setDocView] = React.useState(benchmarkViewFromPath);
   const [activeGuideSection, setActiveGuideSection] = React.useState("prereqs");
+  const [activeBenchmarkSection, setActiveBenchmarkSection] = React.useState("scope");
   const sectionRefs = React.useRef({});
   const guideRefs = React.useRef({});
+  const benchmarkRefs = React.useRef({});
+
+  const setDocsPath = (path) => {
+    if (window.location.pathname !== path) {
+      window.history.pushState({ page: "docs" }, "", path);
+    }
+  };
 
   // Expose a helper so the footer "API reference" link can navigate here directly
   React.useEffect(() => {
@@ -510,26 +846,43 @@ const DocsPage = () => {
       setDocView(view || "getting-started");
       window.scrollTo({ top: 0, behavior: 'instant' });
     };
-    return () => { delete window.__navDocs; };
+    const onPopState = () => setDocView(benchmarkViewFromPath());
+    window.addEventListener("popstate", onPopState);
+    return () => {
+      delete window.__navDocs;
+      window.removeEventListener("popstate", onPopState);
+    };
   }, []);
 
   const isApiRef = docView === "api-reference";
-  const currentGuide = (!isApiRef && docView !== "getting-started")
+  const currentBenchmark = BENCHMARKS.find((benchmark) => benchmark.id === docView) || null;
+  const currentGuide = (!isApiRef && !currentBenchmark && docView !== "getting-started")
     ? GUIDES.find((g) => g.id === docView)
     : null;
 
   const switchToGuide = (id) => {
+    setDocsPath("/docs/");
     setDocView(id);
     setActiveGuideSection("prereqs");
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   const switchToApiRef = () => {
+    setDocsPath("/docs/");
     setDocView("api-reference");
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
+  const switchToBenchmark = (id) => {
+    const benchmark = BENCHMARKS.find((candidate) => candidate.id === id) || BENCHMARKS[0];
+    setDocsPath(benchmark.path);
+    setDocView(benchmark.id);
+    setActiveBenchmarkSection(benchmark.sections[0].id);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
   const switchToGettingStarted = (sectionId) => {
+    setDocsPath("/docs/");
     setDocView("getting-started");
     if (sectionId) {
       setActiveSection(sectionId);
@@ -579,6 +932,22 @@ const DocsPage = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, [currentGuide]);
 
+  // Scroll-spy for benchmark pages
+  React.useEffect(() => {
+    if (!currentBenchmark) return;
+    const onScroll = () => {
+      const top = window.scrollY + 120;
+      let current = currentBenchmark.sections[0].id;
+      for (const section of currentBenchmark.sections) {
+        const element = benchmarkRefs.current[section.id];
+        if (element && element.offsetTop <= top) current = section.id;
+      }
+      setActiveBenchmarkSection(current);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [currentBenchmark]);
+
   const scrollTo = (id) => {
     const el = sectionRefs.current[id];
     if (el) {
@@ -597,6 +966,15 @@ const DocsPage = () => {
     }
   };
 
+  const scrollToBenchmarkSection = (id) => {
+    const element = benchmarkRefs.current[id];
+    if (element) {
+      const top = element.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: "smooth" });
+      setActiveBenchmarkSection(id);
+    }
+  };
+
   return (
     <div className="page-fade">
       {/* API Reference — rendered as a self-contained view */}
@@ -607,7 +985,29 @@ const DocsPage = () => {
       {/* Header — only shown for getting-started and guide views */}
       {!isApiRef && <section style={{ padding: 'var(--sp-8) 0 var(--sp-5)', borderBottom: '1px solid var(--border)' }}>
         <div className="container-wide">
-          {currentGuide ? (
+          {currentBenchmark ? (
+            <>
+              <button
+                onClick={() => currentBenchmark.status === "index"
+                  ? switchToGettingStarted(null)
+                  : switchToBenchmark("benchmark-overview")}
+                className="docs-back"
+              >
+                ← {currentBenchmark.status === "index" ? "Docs" : "Benchmarks & validation"}
+              </button>
+              <div className="eyebrow">
+                <span className="dot" />{currentBenchmark.eyebrow}
+              </div>
+              <h1 className="benchmark-title">{currentBenchmark.title}</h1>
+              <p className="benchmark-deck">{currentBenchmark.desc}</p>
+              <div className="benchmark-header-meta">
+                <BenchmarkStatus status={currentBenchmark.status} />
+                {currentBenchmark.status === "draft" && (
+                  <span className="tag">Astex Diverse · n = 85</span>
+                )}
+              </div>
+            </>
+          ) : currentGuide ? (
             <>
               <button
                 onClick={() => switchToGettingStarted(null)}
@@ -707,6 +1107,24 @@ const DocsPage = () => {
                 ))}
               </ul>
 
+              <h6>Benchmarks & validation</h6>
+              <ul>
+                {BENCHMARKS.map((benchmark) => (
+                  <li key={benchmark.id}>
+                    <button
+                      className={docView === benchmark.id ? "active" : ""}
+                      onClick={() => switchToBenchmark(benchmark.id)}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}
+                    >
+                      <span>{benchmark.navTitle}</span>
+                      {benchmark.status === "draft" && (
+                        <span className="benchmark-nav-status">DRAFT</span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
               <h6>Reference</h6>
               <ul>
                 <li><button onClick={() => window.__nav('features')}>Capability reference</button></li>
@@ -732,7 +1150,13 @@ const DocsPage = () => {
 
             {/* MAIN */}
             <main className="docs-main">
-              {currentGuide ? (
+              {currentBenchmark ? (
+                <BenchmarkView
+                  benchmark={currentBenchmark}
+                  benchmarkRefs={benchmarkRefs}
+                  onSelect={switchToBenchmark}
+                />
+              ) : currentGuide ? (
                 <GuideView
                   guide={currentGuide}
                   guideRefs={guideRefs}
@@ -896,7 +1320,21 @@ const DocsPage = () => {
             {/* RIGHT TOC */}
             <aside className="docs-toc">
               <h6>On this page</h6>
-              {currentGuide ? (
+              {currentBenchmark ? (
+                <ul>
+                  {currentBenchmark.sections.map((section) => (
+                    <li key={section.id}>
+                      <a
+                        className={activeBenchmarkSection === section.id ? "active" : ""}
+                        onClick={() => scrollToBenchmarkSection(section.id)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        {section.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : currentGuide ? (
                 <ul>
                   {currentGuide.sections.map((s) => (
                     <li key={s.id}>

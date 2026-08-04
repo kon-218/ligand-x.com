@@ -22,10 +22,9 @@ const splitIO = (io) => {
   return { input: (parts[0] || "").trim(), output: (parts[1] || "").trim() };
 };
 
-const EditionChip = ({ module: mod }) => {
-  if (mod.maturity === "preview") return <span className="fx-chip preview">Preview</span>;
-  return <span className={`fx-chip ${mod.edition}`}>{mod.edition === "pro" ? "Pro" : "Free"}</span>;
-};
+const EditionChip = ({ module: mod }) => (
+  <span className={`fx-chip ${mod.edition}`}>{mod.edition === "pro" ? "Pro" : "Free"}</span>
+);
 
 // The single most useful line for someone deciding whether to install: what goes
 // in and what comes out. Rendered as a panel so it reads as a spec, not prose.
@@ -99,7 +98,7 @@ const HeroReel = () => {
           <span className="orbit-tool-icon"><Icon name={mod.icon} size={16} /></span>
           <span className="orbit-tool-copy">
             <strong>{mod.name}</strong>
-            <small>{mod.maturity === "preview" ? "Preview" : mod.edition === "pro" ? "Pro" : "Free"}</small>
+            <small>{mod.edition === "pro" ? "Pro" : "Free"}</small>
           </span>
         </a>
       ))}
@@ -109,7 +108,6 @@ const HeroReel = () => {
   return (
     <section className="fx-lede">
       <div className="fx-lede-inner">
-        <div className="orbit-badge"><span />{copy.eyebrow}</div>
         <h1>{copy.h1Parts[0]}<br />{copy.h1Parts[1]}<em>{copy.h1Em}</em></h1>
         <p>{copy.lede}</p>
         <div className="fx-lede-actions">
@@ -131,7 +129,7 @@ const HeroReel = () => {
   );
 };
 
-// Presets show how modules compose — the thing you cannot get from 14 separate
+// Presets show how modules compose — the thing you cannot get from a dozen separate
 // tools. Each chain is labelled with how much of it is free.
 const PipelineStrip = () => (
   <section className="fx-pipes">
@@ -212,12 +210,6 @@ const ModuleCard = ({ module: mod }) => {
           </div>
         </div>
       </div>
-
-      {mod.maturity === "preview" && (
-        <p className="fx-preview-note">
-          Preview module — shipped but disabled by default, and not yet recommended for production work.
-        </p>
-      )}
     </article>
   );
 };
@@ -297,7 +289,7 @@ const FeaturesPage = () => {
       <section className="fx-pro-note">
         <div className="container-wide">
           <div>
-            <h2>Seven more modules when the science needs them.</h2>
+            <h2>{proModules().length} more modules when the science needs them.</h2>
             <p>ADMET, Boltz-2 affinity, binding free energy, quantum chemistry, and generative design are Pro. {CLAIMS.academic}</p>
           </div>
           <button className="btn btn-secondary" onClick={() => window.__nav("pro")}>{CTA.editions}</button>

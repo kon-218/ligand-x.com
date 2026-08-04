@@ -35,8 +35,10 @@
     { id: "pro", label: "Pro" },
   ];
 
-  // Ordered as the discovery loop runs, so the reference reads as a pipeline.
-  const MODULES = [
+  // Full registry mirror, ordered as the discovery loop runs so the reference
+  // reads as a pipeline. Includes preview modules — but see the MODULES
+  // projection below: nothing on the site renders from this array directly.
+  const REGISTRY_MODULES = [
     // ---------------------------------------------------------- prepare
     {
       id: "structure",
@@ -358,6 +360,14 @@
     },
   ];
 
+  // What the site is allowed to advertise. `maturity: "preview"` means the
+  // module ships disabled by default and is not in a stable release, so it must
+  // not appear anywhere public — no cards, no matrix rows, no counts. Every page
+  // and helper below reads this projection, never REGISTRY_MODULES, so a module
+  // becomes visible on the site the moment (and only when) the registry marks it
+  // stable.
+  const MODULES = REGISTRY_MODULES.filter((m) => m.maturity === "stable");
+
   // Named pipelines — shows how modules compose, which single cards cannot.
   const WORKFLOW_PRESETS = [
     {
@@ -391,7 +401,6 @@
   const moduleById = (id) => MODULES.find((m) => m.id === id);
   const freeModules = () => MODULES.filter((m) => m.edition === "free");
   const proModules = () => MODULES.filter((m) => m.edition === "pro");
-  const shippingModules = () => MODULES.filter((m) => m.maturity === "stable");
 
   const matchesModuleFilter = (module, category, edition) => {
     if (category !== "all" && module.category !== category) return false;
@@ -407,7 +416,6 @@
     moduleById,
     freeModules,
     proModules,
-    shippingModules,
     matchesModuleFilter,
   };
 
