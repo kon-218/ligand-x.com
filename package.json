@@ -2,7 +2,8 @@
   "name": "ligand-x-website",
   "private": true,
   "scripts": {
-    "build": "node scripts/build-site.js",
+    "check:docs": "node scripts/check-documentation.js",
+    "build": "npm run check:docs && node scripts/build-site.js",
     "dev": "node scripts/dev-server.js"
   }
 }

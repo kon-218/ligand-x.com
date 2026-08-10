@@ -70,7 +70,14 @@ const Spotlight = ({ module: mod, index }) => (
           Full detail <Icon name="arrow" size={13} />
         </a>
         {mod.guide && (
-          <button className="fx-spot-link ghost" onClick={() => window.__nav("docs")}>
+          <button
+            className="fx-spot-link ghost"
+            onClick={() => {
+              const guide = GUIDES.find((g) => g.id === mod.guide);
+              const path = guide && guide.path ? guide.path : "/docs/";
+              window.__nav("docs", null, { path });
+            }}
+          >
             <Icon name="book" size={13} /> Guide
           </button>
         )}
@@ -137,6 +144,10 @@ const PipelineStrip = () => (
       <div className="fx-pipes-head">
         <div className="eyebrow"><span className="dot" />Common pipelines</div>
         <h2>Modules chain into a workflow, not a folder of scripts.</h2>
+        <p style={{ marginTop: 12, maxWidth: 640, color: "var(--muted)" }}>
+          The free structure-based loop — prep, dock, simulate — is documented on the{" "}
+          <a href="/docking-to-md/" onClick={(e) => window.__nav("docking-to-md", e)}>docking to MD</a> page.
+        </p>
       </div>
       <div className="fx-pipes-grid">
         {WORKFLOW_PRESETS.map((preset) => {
@@ -208,6 +219,29 @@ const ModuleCard = ({ module: mod }) => {
             <span>{input}</span>
             <span>{output}</span>
           </div>
+          {mod.id === "docking" && (
+            <a className="fx-spot-link" href="/molecular-docking/" onClick={(e) => window.__nav("molecular-docking", e)} style={{ marginTop: 14, display: "inline-flex" }}>
+              Molecular docking overview <Icon name="arrow" size={13} />
+            </a>
+          )}
+          {mod.id === "md" && (
+            <a className="fx-spot-link" href="/molecular-dynamics/" onClick={(e) => window.__nav("molecular-dynamics", e)} style={{ marginTop: 14, display: "inline-flex" }}>
+              Molecular dynamics overview <Icon name="arrow" size={13} />
+            </a>
+          )}
+          {mod.guide && (
+            <button
+              className="fx-spot-link ghost"
+              style={{ marginTop: 10 }}
+              onClick={() => {
+                const guide = GUIDES.find((g) => g.id === mod.guide);
+                const path = guide && guide.path ? guide.path : "/docs/";
+                window.__nav("docs", null, { path });
+              }}
+            >
+              <Icon name="book" size={13} /> Guide
+            </button>
+          )}
         </div>
       </div>
     </article>

@@ -12,11 +12,32 @@
 (function () {
   const SITE_ROUTES = [
     { id: "home", label: "Home", path: "/", primary: true },
-    { id: "features", label: "Capabilities", path: "/features/", primary: true },
+    { id: "features", label: "Features", path: "/features/", primary: true },
     { id: "docs", label: "Docs", path: "/docs/", primary: true },
     { id: "pro", label: "Editions", path: "/pro/", primary: true },
     { id: "download", label: "Download", path: "/download/", primary: true },
     { id: "contact", label: "Request license", path: "/contact/", primary: false },
+    {
+      id: "molecular-docking",
+      label: "Molecular docking",
+      path: "/molecular-docking/",
+      primary: false,
+      landing: true,
+    },
+    {
+      id: "molecular-dynamics",
+      label: "Molecular dynamics",
+      path: "/molecular-dynamics/",
+      primary: false,
+      landing: true,
+    },
+    {
+      id: "docking-to-md",
+      label: "Docking to MD",
+      path: "/docking-to-md/",
+      primary: false,
+      landing: true,
+    },
   ];
 
   const routeFor = (id) => SITE_ROUTES.find((route) => route.id === id) || SITE_ROUTES[0];

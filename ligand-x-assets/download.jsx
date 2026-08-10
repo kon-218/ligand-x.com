@@ -12,9 +12,11 @@ const OS_OPTIONS = [
       { arch: "x86_64", file: "ligandx-windows-amd64.exe", url: "https://github.com/kon-218/ligand-x-launcher/releases/latest/download/ligandx-windows-amd64.exe" },
     ],
     notes: [
-      "Recommended path for non-terminal users",
-      "GPU acceleration requires WSL 2 GPU passthrough and NVIDIA Container Toolkit for WSL 2",
+      "Install Docker Desktop with the WSL 2 backend before opening the launcher",
+      "Portable .exe — if SmartScreen warns, choose More info → Run anyway",
+      "GPU acceleration needs WSL 2 GPU passthrough and the NVIDIA Container Toolkit for WSL 2",
     ],
+    dockerUrl: "https://docs.docker.com/desktop/setup/install/windows-install/",
   },
   {
     id: "macos",
@@ -25,9 +27,12 @@ const OS_OPTIONS = [
       { arch: "Universal (M1/M2/M3 & Intel)", file: "ligandx-darwin-universal.dmg", url: "https://github.com/kon-218/ligand-x-launcher/releases/latest/download/ligandx-darwin-universal.dmg" },
     ],
     notes: [
+      "Install Docker Desktop before opening the launcher",
       "Drag the app from the DMG into Applications",
-      "On unsigned builds, right-click the app and choose Open on first launch",
+      "Unsigned build: right-click the app → Open on first launch (or allow under Privacy & Security)",
+      "Preview / lightly tested — NVIDIA GPU modules are not available on macOS",
     ],
+    dockerUrl: "https://docs.docker.com/desktop/setup/install/mac-install/",
   },
   {
     id: "linux",
@@ -38,20 +43,23 @@ const OS_OPTIONS = [
       { arch: "x86_64", file: "ligandx-linux-amd64.AppImage", url: "https://github.com/kon-218/ligand-x-launcher/releases/latest/download/ligandx-linux-amd64.AppImage" },
     ],
     notes: [
-      "Make the AppImage executable before running it",
+      "Install Docker Engine + Compose v2, then chmod +x the AppImage before running it",
+      "Add your user to the docker group (then sign out/in) so the launcher can talk to Docker",
       "Install NVIDIA Container Toolkit for GPU services on Linux",
     ],
+    dockerUrl: "https://docs.docker.com/engine/install/",
   },
 ];
 
 const INSTALL_PATHS = [
   {
     title: "Desktop launcher",
-    desc: "Downloads runtime files, imports a license when available, pulls selected images, and starts Ligand-X.",
+    desc: "Downloads runtime files, imports a license when available, pulls selected images, then starts Ligand-X.",
     code: `# Recommended desktop path
-# 1. Pick your OS above
-# 2. Download the launcher
-# 3. Open it and click Install & Start
+# 1. Install Docker and keep it running
+# 2. Pick your OS above and download the launcher
+# 3. Open it → account → license → services
+# 4. Download & continue → Start services → Open Ligand-X
 
 # Linux only, after download
 chmod +x ligandx-linux-amd64.AppImage
@@ -154,37 +162,54 @@ const EDITIONS = [
 ];
 
 const CONTAINER_GROUPS = [
-  { group: "Open core", items: ["structure", "docking", "md", "alignment", "msa", "ketcher", "pocket-finder", "projects"] },
+  { group: "Core / Free", items: ["structure", "docking", "md", "alignment", "msa", "ketcher", "pocket-finder", "projects"] },
   { group: "Pro images", items: ["licensing", "admet", "qc", "boltz2", "reinvent", "abfe", "rbfe"] },
   { group: "Pro workers", items: ["worker-qc", "worker-gpu-long", "worker-reinvent"] },
 ];
 
 const RELEASE_NOTES = [
-  { v: "0.1.0", date: "2026-02-27", tag: "current repo", items: ["Initial public release", "Desktop launcher flow", "Open-core services with licensed Pro modules", "Next.js 16 / React 19 frontend"] },
+  { v: "2026.08.06", date: "2026-08-07", tag: "latest release", items: ["Public desktop launcher for Windows, macOS, and Linux", "Signed runtime bundle with verified install", "Core/Free services with licensed Pro modules", "Account → license → services → Start → Open Ligand-X flow"] },
+];
+
+const AFTER_DOWNLOAD = [
+  {
+    title: "Requirements",
+    desc: "Confirm Docker, disk, GPU, and free ports before you pull images.",
+    href: "/docs/requirements/",
+    page: "docs",
+    path: "/docs/requirements/",
+  },
+  {
+    title: "First launch",
+    desc: "Account, license, Download & continue, Start services, then Open Ligand-X.",
+    href: "/docs/first-launch/",
+    page: "docs",
+    path: "/docs/first-launch/",
+  },
+  {
+    title: "Install Docker",
+    desc: "Docker Desktop or Engine must be installed and running before the launcher can start.",
+    href: "https://docs.docker.com/get-docker/",
+    external: true,
+  },
 ];
 
 const DownloadPage = () => {
   const [selectedOS, setSelectedOS] = React.useState("windows");
-  const [copiedText, setCopiedText] = React.useState(null);
   const active = OS_OPTIONS.find((o) => o.id === selectedOS);
-
-  const copyText = (text) => {
-    navigator.clipboard?.writeText(text).catch(() => {});
-    setCopiedText(text);
-    setTimeout(() => setCopiedText(null), 1400);
-  };
 
   return (
     <div className="page-fade">
       <section style={{ padding: 'var(--sp-8) 0 var(--sp-5)', borderBottom: '1px solid var(--border)' }}>
         <div className="container">
-          <div className="eyebrow"><span className="dot" />Download · current repository</div>
+          <div className="eyebrow"><span className="dot" />Download · GitHub Releases</div>
           <h1 style={{ fontSize: 'clamp(34px, 4vw, 52px)', margin: '12px 0 16px', lineHeight: 1.1, letterSpacing: '-0.02em', fontWeight: 600 }}>
             Get Ligand-X with the desktop launcher.
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: 17, maxWidth: 720, margin: 0 }}>
-            The current install path is launcher-first. The launcher pulls selected open-core and licensed Pro
-            container images, writes local configuration, and opens the app at localhost:3000.
+            The install path is launcher-first. The launcher pulls selected Core/Free and licensed Pro
+            container images, writes local configuration, then opens the app at localhost:8080
+            (APP_PORT) when you choose Open Ligand-X.
           </p>
         </div>
       </section>
@@ -197,7 +222,11 @@ const DownloadPage = () => {
               <h2>Pick your OS.</h2>
             </div>
             <p className="sub">
-              Assets are published on the GitHub Releases page. Docker must already be installed and running.
+              Assets are published on the GitHub Releases page.{" "}
+              <a href="https://docs.docker.com/get-docker/" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-strong)' }}>
+                Docker must already be installed and running
+              </a>
+              {" "}before you open the launcher.
             </p>
           </div>
 
@@ -261,7 +290,62 @@ const DownloadPage = () => {
               <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: 'var(--ink-2)' }}>
                 {active.notes.map((n, i) => <li key={i} style={{ marginBottom: 4 }}>{n}</li>)}
               </ul>
+              {active.dockerUrl && (
+                <a
+                  href={active.dockerUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-secondary btn-sm"
+                  style={{ marginTop: 14, display: 'inline-flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}
+                >
+                  Install Docker for {active.name}
+                  <Icon name="external" size={11} />
+                </a>
+              )}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <div className="section-head">
+            <div>
+              <div className="eyebrow"><span className="dot" />After you download</div>
+              <h2>What to do next.</h2>
+            </div>
+            <p className="sub">
+              Do not stop at the binary. Confirm prerequisites, then follow first launch through Open Ligand-X.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+            {AFTER_DOWNLOAD.map((item) => (
+              <a
+                key={item.title}
+                href={item.href}
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noreferrer' : undefined}
+                onClick={item.external ? undefined : (event) => {
+                  event.preventDefault();
+                  window.__nav && window.__nav(item.page, event, { path: item.path });
+                }}
+                style={{
+                  display: 'block',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: 'var(--sp-4)',
+                  textDecoration: 'none',
+                  color: 'inherit',
+                }}
+              >
+                <h3 style={{ margin: '0 0 8px', fontSize: 17, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {item.title}
+                  {item.external ? <Icon name="external" size={12} style={{ color: 'var(--muted)' }} /> : null}
+                </h3>
+                <p style={{ margin: 0, color: 'var(--muted)', fontSize: 13.5, lineHeight: 1.5 }}>{item.desc}</p>
+              </a>
+            ))}
           </div>
         </div>
       </section>
@@ -286,10 +370,10 @@ const DownloadPage = () => {
           <div className="section-head">
             <div>
               <div className="eyebrow"><span className="dot" />Licensing</div>
-              <h2>Open core with licensed Pro modules.</h2>
+              <h2>Core/Free with licensed Pro modules.</h2>
             </div>
             <p className="sub">
-              The public repository is PolyForm Noncommercial. Commercial use and Pro modules require a Ligand-X Pro license.
+              Ligand-X source is licensed under PolyForm Noncommercial. Commercial use and Pro modules require a Ligand-X Pro license.
             </p>
           </div>
           <table className="src-table">
@@ -337,7 +421,7 @@ const DownloadPage = () => {
           <div className="section-head">
             <div>
               <div className="eyebrow"><span className="dot" />Release notes</div>
-              <h2>Current local baseline.</h2>
+              <h2>Latest launcher release.</h2>
             </div>
             <a href="https://github.com/kon-218/ligand-x-launcher/releases" target="_blank" style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--accent-strong)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               Full changelog <Icon name="external" size={12} />

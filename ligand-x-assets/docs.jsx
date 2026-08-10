@@ -3,343 +3,16 @@
 // ============================================================
 
 const DOCS_SECTIONS = [
-  { id: "overview",     title: "Overview" },
-  { id: "requirements", title: "System requirements" },
-  { id: "install",      title: "Installation" },
-  { id: "first-run",    title: "First run" },
-  { id: "config",       title: "Configuration" },
-  { id: "dev-mode",     title: "Development mode" },
-  { id: "ports",        title: "Service ports" },
-  { id: "next",         title: "Next steps" },
+  { id: "overview",  title: "Overview" },
+  { id: "prereqs",   title: "Before you install" },
+  { id: "install",   title: "Installation" },
+  { id: "first-run", title: "First run" },
+  { id: "next",      title: "Next steps" },
 ];
 
-const GUIDES = [
-  {
-    id: "protein-cleaning",
-    title: "Protein cleaning",
-    eyebrow: "Guide · Target preparation",
-    time: "5 min",
-    desc: "Import a raw PDB structure, remove unwanted components, add hydrogens, and produce a modeling-ready receptor.",
-    isPro: false,
-    prereqs: [
-      "A raw PDB file or PDB accession code (e.g. 4W52)",
-      "A project already created in Ligand-X",
-    ],
-    steps: [
-      {
-        title: "Open or create a project",
-        body: "From the Ligand-X dashboard, click New project and give it a name. Your proteins, molecules, pockets, and job results will all live inside this project.",
-      },
-      {
-        title: "Import your protein",
-        body: "In the project sidebar, click Proteins → Import. Paste a PDB accession code to fetch directly from the RCSB, or upload a local .pdb or .cif file. Ligand-X parses the structure and lists all detected components (chains, waters, ions, metals, co-crystallised ligands).",
-      },
-      {
-        title: "Review detected components",
-        body: "The component panel shows every non-protein entity. Check which waters, ions, and co-ligands you want to keep or remove. Hover any component to highlight it in the Mol* viewer.",
-      },
-      {
-        title: "Configure cleaning options",
-        body: "Click Clean protein to open the job form. Toggle the options you need: Remove waters, Remove ions, Add missing hydrogens, Fix missing residues (PDBFixer), Remove original ligands. You can keep co-crystallised metals when they are part of the active site.",
-      },
-      {
-        title: "Submit the job",
-        body: "Click Run cleaning. The job is dispatched to the FastAPI gateway and processed by the protein-prep worker. A progress banner appears in the top bar; the job is also listed under Jobs in the sidebar.",
-      },
-      {
-        title: "Review and use the output",
-        body: "When the job completes, the cleaned structure appears in the Mol* viewer. Check the summary panel for a diff of removed/added atoms. Click Download to save cleaned.pdb, or click Find pockets to proceed directly to pocket detection.",
-      },
-    ],
-    outputs: [
-      "cleaned.pdb — hydrogens added, unwanted components stripped",
-      "Job record with input/output metadata in the project",
-    ],
-    tips: [
-      "If residues are missing from a loop, enable Fix missing residues before docking — gaps cause steric clashes.",
-      "Keep crystallographic waters in the binding site if they mediate key contacts; disable Remove waters selectively per-residue.",
-    ],
-    sections: [
-      { id: "prereqs",    title: "Prerequisites" },
-      { id: "walkthrough", title: "Walkthrough" },
-      { id: "outputs",    title: "Expected outputs" },
-      { id: "tips",       title: "Tips" },
-    ],
-  },
-  {
-    id: "docking",
-    title: "Molecular docking",
-    eyebrow: "Guide · Screening",
-    time: "10 min",
-    desc: "Prepare a receptor and one or more ligands, define the binding site search box, run AutoDock Vina, and review ranked poses.",
-    isPro: false,
-    prereqs: [
-      "A cleaned protein in your project (see the Protein cleaning guide)",
-      "At least one ligand — SMILES string, SDF file, or drawn in Ketcher",
-    ],
-    steps: [
-      {
-        title: "Add a ligand to the molecule library",
-        body: "Go to Molecules → Import. Paste a SMILES string (e.g. CC1=CC=CC=C1) or upload an SDF file. For a new structure, click Edit in Ketcher to draw the molecule from scratch. Ligand-X generates a 3D conformer automatically using RDKit.",
-      },
-      {
-        title: "Run pocket finding (or define a custom box)",
-        body: "From your cleaned protein, click Find pockets. The pocket finder (fpocket) ranks candidate binding sites by druggability score and marks each with a transparent surface in the viewer. Select the pocket you want to target, or click Manual box to drag a custom search volume directly in the viewer.",
-      },
-      {
-        title: "Open the docking job form",
-        body: "With a pocket selected, click Dock. The form pre-fills the receptor path, search box coordinates, and box size from the pocket. Verify they look correct in the preview panel.",
-      },
-      {
-        title: "Select ligands and configure Vina",
-        body: "Choose one or more ligands from your molecule library for this run. Under Vina parameters, set exhaustiveness (default 8), max poses (default 9), and energy range. Higher exhaustiveness is slower but finds more diverse poses.",
-      },
-      {
-        title: "Submit the docking job",
-        body: "Click Run docking. Each ligand is prepared with Meeko (adds charges, sets rotatable bonds) and docked independently. Job progress streams to the jobs panel.",
-      },
-      {
-        title: "Review poses and interactions",
-        body: "When complete, click Results. Poses are ranked by Vina affinity score (kcal/mol). Click any pose to load it in the Mol* viewer. The interactions panel lists predicted hydrogen bonds, hydrophobics, and pi contacts. Use the pose switcher to compare conformations.",
-      },
-      {
-        title: "Export and continue",
-        body: "Download a pose as .sdf for external analysis, or click Send to MD to use this docked complex as the starting structure for a molecular dynamics simulation.",
-      },
-    ],
-    outputs: [
-      "Ranked pose list with Vina affinity scores",
-      "SDF files for each pose",
-      "Interaction summary (H-bonds, hydrophobics, pi contacts)",
-    ],
-    tips: [
-      "If scores are all worse than −5 kcal/mol, the search box may be misplaced — try increasing box size or running pocket finding again.",
-      "For fragment screening, set exhaustiveness to 4 to increase throughput; for lead optimisation, use 16+.",
-    ],
-    sections: [
-      { id: "prereqs",    title: "Prerequisites" },
-      { id: "walkthrough", title: "Walkthrough" },
-      { id: "outputs",    title: "Expected outputs" },
-      { id: "tips",       title: "Tips" },
-    ],
-  },
-  {
-    id: "molecular-dynamics",
-    title: "Molecular dynamics",
-    eyebrow: "Guide · Simulation",
-    time: "15 min setup",
-    desc: "Solvate a protein-ligand complex, run energy minimization and equilibration, then produce an MD trajectory with live progress tracking.",
-    isPro: false,
-    prereqs: [
-      "A docked complex or a cleaned protein in your project",
-      "At least 16 GB RAM (32 GB recommended); GPU optional but strongly recommended for long runs",
-    ],
-    steps: [
-      {
-        title: "Select the system to simulate",
-        body: "From your project, open the docked complex you want to simulate (or just the cleaned receptor for apo-protein MD). Click Start MD to open the simulation form.",
-      },
-      {
-        title: "Choose a force field and water model",
-        body: "Select a force field for the protein (AMBER ff14SB is the default). For the ligand, GAFF2 parameters are generated automatically via OpenFF. Choose a water model (TIP3P default) and set the solvent box padding (1.2 nm recommended).",
-      },
-      {
-        title: "Set simulation parameters",
-        body: "Configure: total simulation time (ns), timestep (2 fs default), temperature (310 K default), pressure coupling (NPT for production). For a first run, 10–50 ns is a reasonable target; you can extend or restart from a checkpoint later.",
-      },
-      {
-        title: "Submit and monitor",
-        body: "Click Run MD. The system is built (solvation, ionisation, force field assignment), then minimised, equilibrated in NVT then NPT, and finally run in production. A live chart shows energy, RMSD, and temperature as they update via WebSocket. Each phase checkpoint is saved so you can resume if the job is interrupted.",
-      },
-      {
-        title: "Review the trajectory",
-        body: "When production is complete, click View trajectory. The trajectory player streams frames into the Mol* viewer. Use the timeline scrubber to jump to any frame. The analytics panel shows RMSD, RMSF, radius of gyration, and ligand contact plots.",
-      },
-      {
-        title: "Download outputs",
-        body: "Download the trajectory (.dcd), final frame (.pdb), and energy CSV. These can be used directly with MDAnalysis, VMD, or as input for ABFE/RBFE calculations.",
-      },
-    ],
-    outputs: [
-      "trajectory.dcd — full production trajectory",
-      "final_frame.pdb — last snapshot",
-      "energy.csv — potential/kinetic/total energy over time",
-      "RMSD and RMSF plots",
-    ],
-    tips: [
-      "Check the RMSD plot for the first 5–10 ns — if the protein is still drifting, allow longer equilibration before interpreting results.",
-      "Use the checkpoint resume feature if a long simulation is interrupted; you do not need to restart from the beginning.",
-    ],
-    sections: [
-      { id: "prereqs",    title: "Prerequisites" },
-      { id: "walkthrough", title: "Walkthrough" },
-      { id: "outputs",    title: "Expected outputs" },
-      { id: "tips",       title: "Tips" },
-    ],
-  },
-  {
-    id: "abfe",
-    title: "Absolute binding free energy",
-    eyebrow: "Guide · Pro · Free energy",
-    time: "30 min setup",
-    desc: "Calculate the absolute binding free energy ΔG for a single ligand using alchemical decoupling with Boresch restraints.",
-    isPro: true,
-    prereqs: [
-      "A docked ligand pose in your project",
-      "Access to the private Pro module image",
-      "GPU strongly recommended (each lambda window is an independent MD run)",
-    ],
-    steps: [
-      {
-        title: "Select the ligand and complex",
-        body: "From your project, select the docked pose you want to calculate ΔG for. Click Calculate ABFE to open the job form. The receptor and ligand structures are pre-filled from your project.",
-      },
-      {
-        title: "Review the binding pose",
-        body: "The form shows the ligand in the binding site. Inspect the pose in the Mol* viewer. If the pose looks unreasonable, go back and select a better-ranked docking pose first.",
-      },
-      {
-        title: "Configure the ABFE protocol",
-        body: "Set the number of lambda windows (12 for a fast estimate, 20 for production), equilibration time per window, and production time per window. Boresch restraints are applied automatically to the ligand to maintain its orientation during decoupling. The default protocol is a good starting point.",
-      },
-      {
-        title: "Submit the calculation",
-        body: "Click Run ABFE. Ligand-X dispatches one Celery worker per lambda window. The jobs panel shows all windows with individual progress bars. Total wall-clock time depends on GPU availability and the number of windows.",
-      },
-      {
-        title: "Monitor convergence",
-        body: "As windows complete, the free-energy estimate and its uncertainty update in real time. Watch for the ΔG error bar to shrink below 0.5 kcal/mol — if it stays high, extend the production time per window.",
-      },
-      {
-        title: "Review the result",
-        body: "The results page reports ΔG (kcal/mol) with uncertainty, computed via MBAR across all lambda windows. A per-window overlap matrix plot helps diagnose insufficient sampling. The corresponding Kd estimate is shown alongside.",
-      },
-    ],
-    outputs: [
-      "ΔG (kcal/mol) with MBAR uncertainty estimate",
-      "Corresponding Kd estimate",
-      "Per-window overlap matrix",
-      "Per-window trajectory files",
-    ],
-    tips: [
-      "Run a short test with 8 windows and 1 ns/window to verify the setup is correct before committing to a full production run.",
-      "If the overlap matrix shows poor overlap between adjacent windows, increase the number of lambda windows.",
-    ],
-    sections: [
-      { id: "prereqs",    title: "Prerequisites" },
-      { id: "walkthrough", title: "Walkthrough" },
-      { id: "outputs",    title: "Expected outputs" },
-      { id: "tips",       title: "Tips" },
-    ],
-  },
-  {
-    id: "rbfe",
-    title: "Relative binding free energy",
-    eyebrow: "Guide · Pro · Free energy",
-    time: "30 min setup",
-    desc: "Calculate relative ΔΔG values across a series of congeneric ligands using a perturbation network generated by LOMAP.",
-    isPro: true,
-    prereqs: [
-      "Two or more docked ligands sharing a common scaffold",
-      "Access to the private Pro module image",
-      "GPU strongly recommended",
-    ],
-    steps: [
-      {
-        title: "Select your ligand series",
-        body: "From the molecule library, select two or more ligands with a common scaffold. Click Calculate RBFE. Ligand-X builds a perturbation network automatically using LOMAP, which scores pairs by structural similarity and plans the most efficient set of edges.",
-      },
-      {
-        title: "Review the perturbation network",
-        body: "The network viewer shows ligands as nodes and planned perturbations as edges, colour-coded by LOMAP score. High-score edges (green) will give reliable ΔΔG estimates. You can add or remove edges manually before submitting.",
-      },
-      {
-        title: "Configure the RBFE protocol",
-        body: "Set lambda windows per edge, equilibration time, and production time. The soft-core potentials used for non-bonded interactions are pre-configured with proven defaults. For each edge, Ligand-X runs both a complex leg (protein-bound) and a solvent leg (free ligand) to compute ΔΔG.",
-      },
-      {
-        title: "Submit the calculation",
-        body: "Click Run RBFE. Each edge dispatches multiple independent lambda-window jobs. The total number of workers scales with the number of edges and windows. Monitor progress in the jobs panel.",
-      },
-      {
-        title: "Review results and cycle closure",
-        body: "When all edges complete, the results page shows ΔΔG for every pair, plus cycle-closure error for any closed loops in the network. Low cycle-closure error (< 1 kcal/mol) indicates good convergence. Ligand-X ranks ligands by predicted relative binding affinity.",
-      },
-    ],
-    outputs: [
-      "ΔΔG (kcal/mol) per perturbation edge",
-      "Relative ligand ranking",
-      "Cycle-closure error for closed network loops",
-      "Per-edge trajectory files",
-    ],
-    tips: [
-      "Include at least one closed cycle in the network to get cycle-closure error as a convergence check.",
-      "If a LOMAP score is below 0.3, consider excluding that edge — poor-overlap perturbations have high variance.",
-    ],
-    sections: [
-      { id: "prereqs",    title: "Prerequisites" },
-      { id: "walkthrough", title: "Walkthrough" },
-      { id: "outputs",    title: "Expected outputs" },
-      { id: "tips",       title: "Tips" },
-    ],
-  },
-  {
-    id: "quantum-chemistry",
-    title: "Quantum chemistry",
-    eyebrow: "Guide · Pro · QC",
-    time: "5–30 min",
-    desc: "Run semiempirical or DFT calculations on a ligand to obtain optimised geometry, partial charges, Fukui indices, or vibrational frequencies.",
-    isPro: true,
-    prereqs: [
-      "A ligand in your molecule library (SMILES or 3D SDF)",
-      "Access to the private Pro module image",
-      "ORCA installed at the path configured in .env.production (for DFT calculations)",
-    ],
-    steps: [
-      {
-        title: "Select a molecule",
-        body: "From the molecule library, click a ligand and then click Calculate QC. The molecule's current 3D conformer is used as the starting geometry. If only a SMILES is stored, Ligand-X generates a 3D conformer first.",
-      },
-      {
-        title: "Choose the calculation type",
-        body: "Select one of: Geometry optimisation (find the minimum-energy structure), Single point energy (energy at the current geometry), Frequency (vibrational modes and thermochemistry), or Fukui indices (reactivity and charge analysis).",
-      },
-      {
-        title: "Select the method",
-        body: "For fast approximate results, choose GFN2-xTB (semiempirical, runs in seconds). For higher accuracy, choose a DFT functional such as B3LYP-D3 or ωB97X-D. Set the basis set (def2-SVP for optimisation, def2-TZVP for single-point accuracy). Set the charge and multiplicity to match your molecule.",
-      },
-      {
-        title: "Set the solvent (optional)",
-        body: "Enable the CPCM implicit solvation model and select a solvent (water, DMSO, chloroform) to include solvent effects in the calculation.",
-      },
-      {
-        title: "Submit the job",
-        body: "Click Run QC. GFN2-xTB jobs complete in seconds; DFT jobs may take minutes to hours depending on molecule size and basis set. Progress is streamed to the jobs panel.",
-      },
-      {
-        title: "Review results",
-        body: "The results page shows: optimised geometry (viewable in Mol*), orbital energies, partial charges (Mulliken and RESP), Fukui indices mapped onto the molecular surface, and vibrational frequencies with a simulated IR spectrum if a frequency calculation was run.",
-      },
-    ],
-    outputs: [
-      "Optimised geometry (.xyz)",
-      "Partial charges (Mulliken / RESP)",
-      "Frontier molecular orbital energies (HOMO, LUMO, gap)",
-      "Fukui f+ / f− indices",
-      "Vibrational frequencies and IR spectrum (frequency jobs)",
-    ],
-    tips: [
-      "For charge generation before docking, use GFN2-xTB — it is fast and gives good partial charges for most drug-like molecules.",
-      "If a DFT job fails with SCF convergence errors, try increasing the SCF iterations or switching to a smaller basis set for the initial optimisation.",
-    ],
-    sections: [
-      { id: "prereqs",    title: "Prerequisites" },
-      { id: "walkthrough", title: "Walkthrough" },
-      { id: "outputs",    title: "Expected outputs" },
-      { id: "tips",       title: "Tips" },
-    ],
-  },
-];
+// GUIDES / GETTING_STARTED_PAGES live in shared plain scripts (also used by the build).
+const GUIDES = window.GUIDES;
+const GETTING_STARTED_PAGES = window.GETTING_STARTED_PAGES || [];
 
 // ============================================================
 // Benchmarks & validation
@@ -419,10 +92,15 @@ const BENCHMARKS = [
   },
 ];
 
-const benchmarkViewFromPath = () => {
+const docsViewFromPath = () => {
   const path = window.location.pathname.replace(/\/+$/, "") + "/";
+  const gettingStarted = GETTING_STARTED_PAGES.find((candidate) => candidate.path === path);
+  if (gettingStarted) return gettingStarted.id;
+  const guide = GUIDES.find((candidate) => candidate.path === path);
+  if (guide) return guide.id;
   const benchmark = BENCHMARKS.find((candidate) => candidate.path === path);
-  return benchmark ? benchmark.id : "getting-started";
+  if (benchmark) return benchmark.id;
+  return "getting-started";
 };
 
 const BenchmarkStatus = ({ status }) => (
@@ -670,47 +348,6 @@ const BenchmarkView = ({ benchmark, benchmarkRefs, onSelect }) => {
 };
 
 // ============================================================
-// VideoPlaceholder — shown until real walkthrough videos exist
-// ============================================================
-
-const VideoPlaceholder = ({ title }) => (
-  <div style={{
-    background: 'var(--surface)',
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-lg)',
-    aspectRatio: '16 / 9',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 14,
-    marginBottom: 32,
-    position: 'relative',
-    overflow: 'hidden',
-  }}>
-    <div style={{
-      position: 'absolute', inset: 0,
-      background: 'radial-gradient(ellipse at 50% 50%, color-mix(in oklch, var(--accent) 8%, transparent), transparent 70%)',
-      pointerEvents: 'none',
-    }} />
-    <div style={{
-      width: 52, height: 52, borderRadius: '50%',
-      background: 'var(--accent)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      opacity: 0.9,
-    }}>
-      <Icon name="play" size={22} style={{ color: '#fff', marginLeft: 4 }} />
-    </div>
-    <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
-      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>{title} — walkthrough</div>
-      <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 5, fontFamily: 'var(--font-mono)' }}>
-        video coming soon
-      </div>
-    </div>
-  </div>
-);
-
-// ============================================================
 // Guide video embeds
 // ============================================================
 
@@ -822,17 +459,590 @@ const GuideView = ({ guide, guideRefs, activeGuideSection }) => {
 };
 
 // ============================================================
+// Getting Started shared helpers + page views
+// ============================================================
+
+const DocsPageLink = ({ pageId, children }) => (
+  <button
+    type="button"
+    className="docs-page-link"
+    onClick={() => window.__navDocs && window.__navDocs(pageId)}
+  >
+    {children}
+  </button>
+);
+
+const DocsStepList = ({ steps }) =>
+  steps.map((step, index) => (
+    <div
+      key={step.title}
+      style={{
+        display: "grid",
+        gridTemplateColumns: "36px 1fr",
+        gap: "0 16px",
+        marginBottom: 28,
+        alignItems: "start",
+      }}
+    >
+      <div
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: "50%",
+          background: "color-mix(in oklch, var(--accent) 15%, transparent)",
+          border: "1px solid color-mix(in oklch, var(--accent) 30%, transparent)",
+          color: "var(--accent-strong)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 12,
+          fontWeight: 700,
+          fontFamily: "var(--font-mono)",
+          flexShrink: 0,
+        }}
+      >
+        {String(index + 1).padStart(2, "0")}
+      </div>
+      <div>
+        <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 6, color: "var(--ink)" }}>
+          {step.title}
+        </div>
+        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.65, color: "var(--ink-2)" }}>
+          {step.body}
+        </p>
+      </div>
+    </div>
+  ));
+
+const RequirementsView = ({ page, sectionRefs }) => {
+  const setRef = (id) => (node) => {
+    sectionRefs.current[id] = node;
+  };
+
+  return (
+    <>
+      <h2 id="overview" ref={setRef("overview")} style={{ marginTop: 0 }}>Overview</h2>
+      {page.overview.map((paragraph, index) => (
+        <p key={index}>{paragraph}</p>
+      ))}
+      <div className="callout" style={{ marginBottom: 20 }}>
+        Already installed? Continue with{" "}
+        <DocsPageLink pageId="first-launch">First launch</DocsPageLink>
+        {" "}for the wizard, or{" "}
+        <DocsPageLink pageId="configuration">Configuration</DocsPageLink>
+        {" "}for <code>.env.production</code> tuning.
+      </div>
+
+      <h2 id="hardware" ref={setRef("hardware")}>Hardware</h2>
+      <table className="port-table">
+        <thead>
+          <tr><th>Component</th><th>Minimum</th><th>Recommended</th></tr>
+        </thead>
+        <tbody>
+          {page.hardwareRows.map(([component, minimum, recommended]) => (
+            <tr key={component}>
+              <td>{component}</td>
+              <td>{minimum}</td>
+              <td>{recommended}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h2 id="software" ref={setRef("software")}>Software</h2>
+      {page.software.map((item) => (
+        <React.Fragment key={item.title}>
+          <h3>{item.title}</h3>
+          <p>{item.body}</p>
+          {item.links && item.links.length > 0 && (
+            <ul style={{ paddingLeft: 18, marginTop: 0, marginBottom: 16, lineHeight: 1.7 }}>
+              {item.links.map((link) => (
+                <li key={link.href}>
+                  <a href={link.href} target="_blank" rel="noreferrer" style={{ color: "var(--accent-strong)" }}>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </React.Fragment>
+      ))}
+      <CodeBlock
+        label="check"
+        copyText={`docker version\ndocker compose version`}
+      >
+        <Cmd><Fn>docker</Fn> version</Cmd>{"\n"}
+        <Cmd><Fn>docker</Fn> compose version</Cmd>
+      </CodeBlock>
+
+      <h2 id="gpu" ref={setRef("gpu")}>GPU</h2>
+      <p>{page.gpuIntro}</p>
+      <table className="port-table">
+        <thead>
+          <tr><th>Need</th><th>Modules</th></tr>
+        </thead>
+        <tbody>
+          {page.gpuRows.map(([need, modules]) => (
+            <tr key={need}>
+              <td>{need}</td>
+              <td>{modules}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {page.gpuPlatforms.map((item) => (
+        <React.Fragment key={item.title}>
+          <h3>{item.title}</h3>
+          <p>{item.body}</p>
+        </React.Fragment>
+      ))}
+
+      <h2 id="disk" ref={setRef("disk")}>Disk and downloads</h2>
+      <p>{page.diskIntro}</p>
+      <table className="port-table">
+        <thead>
+          <tr><th>Service group</th><th>Edition</th><th>Approx. size</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          {page.diskRows.map(([name, edition, size, notes]) => (
+            <tr key={name}>
+              <td>{name}</td>
+              <td>{edition}</td>
+              <td className="mono">{size}</td>
+              <td>{notes}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h2 id="network" ref={setRef("network")}>Network and ports</h2>
+      <p>{page.networkIntro}</p>
+      <table className="port-table">
+        <thead>
+          <tr><th>Default port</th><th>Env key</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          {page.portRows.map(([port, envKey, purpose]) => (
+            <tr key={`${port}-${envKey}`}>
+              <td className="mono">{port}</td>
+              <td className="mono">{envKey}</td>
+              <td>{purpose}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="callout">{page.portNote}</div>
+
+      <h2 id="platforms" ref={setRef("platforms")}>Platform notes</h2>
+      {page.platforms.map((item) => (
+        <React.Fragment key={item.title}>
+          <h3>{item.title}</h3>
+          <p>{item.body}</p>
+        </React.Fragment>
+      ))}
+
+      <h2 id="optional" ref={setRef("optional")}>Optional Pro tools</h2>
+      {page.optional.map((item) => (
+        <React.Fragment key={item.title}>
+          <h3>{item.title}</h3>
+          <p>{item.body}</p>
+        </React.Fragment>
+      ))}
+
+      {page.tips.map((tip, index) => (
+        <div key={index} className="callout" style={{ marginBottom: 12 }}>
+          {tip}
+        </div>
+      ))}
+
+      <h2 id="next" ref={setRef("next")}>Next steps</h2>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
+        <NextCard
+          title="Installation guide"
+          desc="Download the launcher or use the headless Compose path."
+          icon="book"
+          onClick={() => window.__navDocs && window.__navDocs("getting-started")}
+        />
+        <NextCard
+          title="First launch"
+          desc="Account, license, Download & continue, Start services, and Open Ligand-X."
+          icon="network"
+          onClick={() => window.__navDocs && window.__navDocs("first-launch")}
+        />
+        <NextCard
+          title="Configuration"
+          desc="Find .env.production and understand what Start preserves or rewrites."
+          icon="book"
+          onClick={() => window.__navDocs && window.__navDocs("configuration")}
+        />
+        <NextCard
+          title="Download Ligand-X"
+          desc="Get the Windows, macOS, or Linux launcher build."
+          icon="target"
+          onClick={() => window.__nav("download")}
+        />
+      </div>
+    </>
+  );
+};
+
+const FirstLaunchView = ({ page, sectionRefs }) => {
+  const setRef = (id) => (node) => {
+    sectionRefs.current[id] = node;
+  };
+
+  return (
+    <>
+      <h2 id="overview" ref={setRef("overview")} style={{ marginTop: 0 }}>Overview</h2>
+      {page.overview.map((paragraph, index) => (
+        <p key={index}>{paragraph}</p>
+      ))}
+      <div className="callout" style={{ marginBottom: 20 }}>
+        Need hardware, Docker, GPU, or disk planning first? See <DocsPageLink pageId="requirements">Requirements</DocsPageLink>.
+        {" "}For <code>.env.production</code> and advanced Start behaviour, see <DocsPageLink pageId="configuration">Configuration</DocsPageLink>.
+      </div>
+
+      <h2 id="wizard" ref={setRef("wizard")}>First-run setup</h2>
+      <p>
+        On first launch the launcher walks through account, license, and services.
+        Use Back to return to earlier steps without discarding progress.
+      </p>
+      <DocsStepList steps={page.wizardSteps} />
+
+      <h2 id="download" ref={setRef("download")}>Downloading images</h2>
+      <p>
+        Choosing <strong>Download &amp; continue</strong> (or <strong>Continue</strong> when images
+        are already present) runs the following sequence. Progress appears in the download log.
+      </p>
+      <DocsStepList steps={page.pullSteps} />
+
+      <h2 id="start" ref={setRef("start")}>Start and open</h2>
+      <p>
+        Image download installs and configures; it does not leave containers running by itself.
+        Finish with:
+      </p>
+      <ol style={{ paddingLeft: 20, lineHeight: 1.7, color: "var(--ink-2)" }}>
+        {page.startSteps.map((step, index) => (
+          <li key={index} style={{ marginBottom: 8 }}>{step}</li>
+        ))}
+      </ol>
+
+      <h2 id="files" ref={setRef("files")}>Where files live</h2>
+      <p>{page.filesIntro}</p>
+      <table className="port-table">
+        <thead>
+          <tr><th>Platform</th><th>Default runtime path</th></tr>
+        </thead>
+        <tbody>
+          {page.filesPathRows.map(([platform, path]) => (
+            <tr key={platform}>
+              <td>{platform}</td>
+              <td className="mono">{path}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        Full file inventory, editor workflow, and path overrides are in{" "}
+        <DocsPageLink pageId="configuration">Configuration</DocsPageLink>.
+      </p>
+
+      {page.tips.map((tip, index) => (
+        <div key={index} className="callout" style={{ marginBottom: 12 }}>
+          {tip}
+        </div>
+      ))}
+
+      <h2 id="next" ref={setRef("next")}>Next steps</h2>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
+        <NextCard
+          title="Configuration"
+          desc="Edit .env.production and see what Start preserves, rewrites, or reconciles."
+          icon="book"
+          onClick={() => window.__navDocs && window.__navDocs("configuration")}
+        />
+        <NextCard
+          title="Run your first docking job"
+          desc="Prepare a receptor and ligand, configure the search box, and review ranked poses."
+          icon="target"
+          onClick={() => window.__navDocs && window.__navDocs("docking")}
+        />
+        <NextCard
+          title="Clean a protein structure"
+          desc="Import a raw PDB, strip unwanted components, and produce a modeling-ready receptor."
+          icon="flask"
+          onClick={() => window.__navDocs && window.__navDocs("protein-cleaning")}
+        />
+        <NextCard
+          title="Browse editions"
+          desc="Compare Free, Academic, and Pro and request a license when you need advanced modules."
+          icon="network"
+          onClick={() => window.__nav("pro")}
+        />
+      </div>
+    </>
+  );
+};
+
+const CustomConfigurationView = ({ page, sectionRefs }) => {
+  const setRef = (id) => (node) => {
+    sectionRefs.current[id] = node;
+  };
+
+  return (
+    <>
+      <h2 id="overview" ref={setRef("overview")} style={{ marginTop: 0 }}>Overview</h2>
+      {page.overview.map((paragraph, index) => (
+        <p key={index}>{paragraph}</p>
+      ))}
+      <div className="callout" style={{ marginBottom: 20 }}>
+        Still on first run? Start with <DocsPageLink pageId="first-launch">First launch</DocsPageLink>.
+        {" "}Prerequisites: <DocsPageLink pageId="requirements">Requirements</DocsPageLink>.
+      </div>
+
+      <h2 id="files" ref={setRef("files")}>Find your files</h2>
+      <p>{page.filesIntro}</p>
+      {page.filesUi.map((item) => (
+        <React.Fragment key={item.title}>
+          <h3>{item.title}</h3>
+          <p>{item.body}</p>
+        </React.Fragment>
+      ))}
+      <p>{page.filesPathsIntro}</p>
+      <table className="port-table">
+        <thead>
+          <tr><th>Platform</th><th>Default runtime path</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          {page.filesPathRows.map(([platform, path, notes]) => (
+            <tr key={platform}>
+              <td>{platform}</td>
+              <td className="mono">{path}</td>
+              <td>{notes}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <h3>Important paths</h3>
+      <table className="port-table">
+        <thead>
+          <tr><th>Path (relative)</th><th>What it is</th></tr>
+        </thead>
+        <tbody>
+          {page.filesImportant.map(([path, purpose]) => (
+            <tr key={path}>
+              <td className="mono">{path}</td>
+              <td>{purpose}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <CodeBlock
+        label="overrides"
+        copyText={`# Optional: relocate runtime or launcher config before starting the app\nexport LIGANDX_RUNTIME_DIR=/data/ligand-x/runtime\nexport LIGANDX_LAUNCHER_CONFIG_DIR=/data/ligand-x/launcher-config`}
+      >
+        <Comment># Optional: relocate runtime or launcher config before starting the app</Comment>{"\n"}
+        <Cmd><Kw>export</Kw> LIGANDX_RUNTIME_DIR=/data/ligand-x/runtime</Cmd>{"\n"}
+        <Cmd><Kw>export</Kw> LIGANDX_LAUNCHER_CONFIG_DIR=/data/ligand-x/launcher-config</Cmd>
+      </CodeBlock>
+
+      <h2 id="customise" ref={setRef("customise")}>Customise .env.production</h2>
+      <p>{page.customiseIntro}</p>
+      {page.customiseGroups.map((group) => (
+        <React.Fragment key={group.title}>
+          <h3>{group.title}</h3>
+          <table className="port-table">
+            <thead>
+              <tr><th>Variable</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+              {group.rows.map(([name, purpose]) => (
+                <tr key={name}>
+                  <td className="mono">{name}</td>
+                  <td>{purpose}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </React.Fragment>
+      ))}
+
+      <h2 id="env-on-start" ref={setRef("env-on-start")}>What Start does to a customised .env.production</h2>
+      <p>{page.envOnStartIntro}</p>
+
+      <h3>Preserved (only filled when still a placeholder)</h3>
+      <p>{page.envOnStartPreserved}</p>
+      <ul style={{ paddingLeft: 20, lineHeight: 1.7, color: "var(--ink-2)" }}>
+        {page.envOnStartPreservedKeys.map((item) => (
+          <li key={item} style={{ marginBottom: 6 }}>{item}</li>
+        ))}
+      </ul>
+
+      <h3>Rewritten or adjusted on every Start</h3>
+      {page.envOnStartRewritten.map((item) => (
+        <div key={item.title} style={{ marginBottom: 16 }}>
+          <p style={{ margin: "0 0 6px", fontWeight: 600, color: "var(--ink)" }}>{item.title}</p>
+          <p style={{ margin: 0 }}>{item.body}</p>
+        </div>
+      ))}
+
+      <h3>Credential reconciliation</h3>
+      <p>{page.envOnStartReconcile}</p>
+
+      <h3>Warnings the launcher may log</h3>
+      {page.envOnStartWarnings.map((warning, index) => (
+        <div key={index} className="callout" style={{ marginBottom: 12 }}>
+          {warning}
+        </div>
+      ))}
+
+      <h2 id="ports" ref={setRef("ports")}>Ports and networking</h2>
+      <p>{page.portsIntro}</p>
+      <table className="port-table">
+        <thead>
+          <tr><th>Variable</th><th>Default</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          {page.portRows.map(([name, fallback, purpose]) => (
+            <tr key={name}>
+              <td className="mono">{name}</td>
+              <td className="mono">{fallback}</td>
+              <td>{purpose}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="callout">{page.bindNote}</div>
+
+      <h2 id="workers" ref={setRef("workers")}>Workers and resources</h2>
+      <p>{page.workersIntro}</p>
+      <table className="port-table">
+        <thead>
+          <tr><th>Variable</th><th>Default</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          {page.workerRows.map(([name, fallback, purpose]) => (
+            <tr key={name}>
+              <td className="mono">{name}</td>
+              <td className="mono">{fallback}</td>
+              <td>{purpose}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p>
+        Resource ceilings such as <code>WORKER_CPU_CPU_LIMIT</code> and matching memory limits live in
+        the same file. Raise them on a larger workstation after the first start; the launcher only
+        lowers limits that would prevent Docker from creating containers.
+      </p>
+
+      <h2 id="advanced" ref={setRef("advanced")}>Advanced options</h2>
+      {page.advanced.map((item) => (
+        <React.Fragment key={item.title}>
+          <h3>{item.title}</h3>
+          <p>{item.body}</p>
+        </React.Fragment>
+      ))}
+
+      <h3>Useful environment overrides</h3>
+      <CodeBlock
+        label="shell"
+        copyText={`# Relocate the runtime directory before starting the launcher\nexport LIGANDX_RUNTIME_DIR=/data/ligand-x/runtime`}
+      >
+        <Comment># Relocate the runtime directory before starting the launcher</Comment>{"\n"}
+        <Cmd><Kw>export</Kw> LIGANDX_RUNTIME_DIR=/data/ligand-x/runtime</Cmd>
+      </CodeBlock>
+
+      {page.tips.map((tip, index) => (
+        <div key={index} className="callout" style={{ marginBottom: 12 }}>
+          {tip}
+        </div>
+      ))}
+
+      <h2 id="next" ref={setRef("next")}>Next steps</h2>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
+        <NextCard
+          title="First launch"
+          desc="Account, license, Download & continue, Start services, and Open Ligand-X."
+          icon="network"
+          onClick={() => window.__navDocs && window.__navDocs("first-launch")}
+        />
+        <NextCard
+          title="Requirements"
+          desc="Confirm Docker, disk, GPU, and free ports while troubleshooting Start."
+          icon="book"
+          onClick={() => window.__navDocs && window.__navDocs("requirements")}
+        />
+        <NextCard
+          title="Run your first docking job"
+          desc="Prepare a receptor and ligand, configure the search box, and review ranked poses."
+          icon="target"
+          onClick={() => window.__navDocs && window.__navDocs("docking")}
+        />
+        <NextCard
+          title="Installation guide"
+          desc="Desktop downloads and the headless Compose path."
+          icon="flask"
+          onClick={() => window.__navDocs && window.__navDocs("getting-started")}
+        />
+      </div>
+    </>
+  );
+};
+
+const GettingStartedHubView = ({ page, sectionRefs }) => {
+  const setRef = (id) => (node) => {
+    sectionRefs.current[id] = node;
+  };
+
+  return (
+    <>
+      <h2 id="overview" ref={setRef("overview")} style={{ marginTop: 0 }}>Choose a guide</h2>
+      {page.overview.map((paragraph, index) => (
+        <p key={index}>{paragraph}</p>
+      ))}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
+        {page.hubCards.map((card) => (
+          <NextCard
+            key={card.id}
+            title={card.title}
+            desc={card.desc}
+            icon={card.id === "first-launch" ? "network" : "book"}
+            onClick={() => window.__navDocs && window.__navDocs(card.id)}
+          />
+        ))}
+      </div>
+    </>
+  );
+};
+
+const GettingStartedView = ({ page, sectionRefs }) => {
+  if (page.kind === "hub") {
+    return <GettingStartedHubView page={page} sectionRefs={sectionRefs} />;
+  }
+  if (page.id === "requirements") {
+    return <RequirementsView page={page} sectionRefs={sectionRefs} />;
+  }
+  if (page.id === "configuration") {
+    return <CustomConfigurationView page={page} sectionRefs={sectionRefs} />;
+  }
+  return <FirstLaunchView page={page} sectionRefs={sectionRefs} />;
+};
+
+// ============================================================
 // DocsPage
 // ============================================================
 
 const DocsPage = () => {
   const [activeSection, setActiveSection] = React.useState("overview");
-  const [docView, setDocView] = React.useState(benchmarkViewFromPath);
+  const [docView, setDocView] = React.useState(docsViewFromPath);
   const [activeGuideSection, setActiveGuideSection] = React.useState("prereqs");
   const [activeBenchmarkSection, setActiveBenchmarkSection] = React.useState("scope");
+  const [activeGettingStartedSection, setActiveGettingStartedSection] = React.useState("overview");
   const sectionRefs = React.useRef({});
   const guideRefs = React.useRef({});
   const benchmarkRefs = React.useRef({});
+  const gettingStartedRefs = React.useRef({});
 
   const setDocsPath = (path) => {
     if (window.location.pathname !== path) {
@@ -843,10 +1053,20 @@ const DocsPage = () => {
   // Expose a helper so the footer "API reference" link can navigate here directly
   React.useEffect(() => {
     window.__navDocs = (view) => {
-      setDocView(view || "getting-started");
+      if (view === "api-reference") {
+        setDocsPath("/docs/");
+        setDocView("api-reference");
+      } else {
+        const gettingStarted = GETTING_STARTED_PAGES.find((candidate) => candidate.id === view);
+        const guide = GUIDES.find((candidate) => candidate.id === view);
+        if (gettingStarted && gettingStarted.path) setDocsPath(gettingStarted.path);
+        else if (guide && guide.path) setDocsPath(guide.path);
+        else setDocsPath("/docs/");
+        setDocView(view || "getting-started");
+      }
       window.scrollTo({ top: 0, behavior: 'instant' });
     };
-    const onPopState = () => setDocView(benchmarkViewFromPath());
+    const onPopState = () => setDocView(docsViewFromPath());
     window.addEventListener("popstate", onPopState);
     return () => {
       delete window.__navDocs;
@@ -854,14 +1074,60 @@ const DocsPage = () => {
     };
   }, []);
 
+  React.useEffect(() => {
+    if (typeof applyPageSeo !== "function") return;
+    const gettingStarted = GETTING_STARTED_PAGES.find((page) => page.id === docView);
+    if (gettingStarted) {
+      applyPageSeo({
+        title: gettingStarted.seoTitle || `${gettingStarted.title} — Ligand-X documentation`,
+        description: gettingStarted.seoDescription || gettingStarted.desc,
+        path: gettingStarted.path,
+      });
+      return;
+    }
+    const guide = GUIDES.find((g) => g.id === docView);
+    if (guide) {
+      applyPageSeo({
+        title: `${guide.title} guide — Ligand-X documentation`,
+        description: `${guide.desc} Free self-hosted Ligand-X walkthrough.`,
+        path: guide.path,
+      });
+      return;
+    }
+    const benchmark = BENCHMARKS.find((b) => b.id === docView);
+    if (benchmark) {
+      applyPageSeo({
+        title: `${benchmark.title} — Ligand-X documentation`,
+        description: benchmark.desc,
+        path: benchmark.path,
+      });
+      return;
+    }
+    if (docView === "api-reference") {
+      applyPageSeo({
+        title: "API reference — Ligand-X documentation",
+        description: SITE_COPY.docs.seo.description,
+        path: "/docs/",
+      });
+      return;
+    }
+    applyPageSeo({
+      title: SITE_COPY.docs.seo.title,
+      description: SITE_COPY.docs.seo.description,
+      path: "/docs/",
+    });
+  }, [docView]);
+
   const isApiRef = docView === "api-reference";
+  const currentGettingStarted = GETTING_STARTED_PAGES.find((page) => page.id === docView) || null;
   const currentBenchmark = BENCHMARKS.find((benchmark) => benchmark.id === docView) || null;
-  const currentGuide = (!isApiRef && !currentBenchmark && docView !== "getting-started")
+  const currentGuide = (!isApiRef && !currentBenchmark && !currentGettingStarted && docView !== "getting-started")
     ? GUIDES.find((g) => g.id === docView)
     : null;
 
   const switchToGuide = (id) => {
-    setDocsPath("/docs/");
+    const guide = GUIDES.find((candidate) => candidate.id === id);
+    setDocsPath(guide && guide.path ? guide.path : "/docs/");
     setDocView(id);
     setActiveGuideSection("prereqs");
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -879,6 +1145,15 @@ const DocsPage = () => {
     setDocView(benchmark.id);
     setActiveBenchmarkSection(benchmark.sections[0].id);
     window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const switchToGettingStartedPage = (id) => {
+    const page = GETTING_STARTED_PAGES.find((candidate) => candidate.id === id);
+    if (!page) return;
+    setDocsPath(page.path);
+    setDocView(page.id);
+    setActiveGettingStartedSection(page.sections[0].id);
+    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const switchToGettingStarted = (sectionId) => {
@@ -948,6 +1223,22 @@ const DocsPage = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, [currentBenchmark]);
 
+  // Scroll-spy for getting-started sub-pages (e.g. first configuration)
+  React.useEffect(() => {
+    if (!currentGettingStarted) return;
+    const onScroll = () => {
+      const top = window.scrollY + 120;
+      let current = currentGettingStarted.sections[0].id;
+      for (const section of currentGettingStarted.sections) {
+        const element = gettingStartedRefs.current[section.id];
+        if (element && element.offsetTop <= top) current = section.id;
+      }
+      setActiveGettingStartedSection(current);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [currentGettingStarted]);
+
   const scrollTo = (id) => {
     const el = sectionRefs.current[id];
     if (el) {
@@ -972,6 +1263,15 @@ const DocsPage = () => {
       const top = element.getBoundingClientRect().top + window.scrollY - 80;
       window.scrollTo({ top, behavior: "smooth" });
       setActiveBenchmarkSection(id);
+    }
+  };
+
+  const scrollToGettingStartedSection = (id) => {
+    const element = gettingStartedRefs.current[id];
+    if (element) {
+      const top = element.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: "smooth" });
+      setActiveGettingStartedSection(id);
     }
   };
 
@@ -1005,6 +1305,35 @@ const DocsPage = () => {
                 {currentBenchmark.status === "draft" && (
                   <span className="tag">Astex Diverse · n = 85</span>
                 )}
+              </div>
+            </>
+          ) : currentGettingStarted ? (
+            <>
+              <button
+                onClick={() => switchToGettingStarted(null)}
+                style={{
+                  background: "none", border: "none", cursor: "pointer", padding: 0,
+                  display: "flex", alignItems: "center", gap: 6,
+                  color: "var(--muted)", fontSize: 13, marginBottom: 16,
+                  fontFamily: "var(--font-mono)",
+                }}
+              >
+                ← Docs
+              </button>
+              <div className="eyebrow">
+                <span className="dot" />{currentGettingStarted.eyebrow}
+              </div>
+              <h1 style={{ fontSize: "clamp(28px, 4vw, 44px)", margin: "12px 0 12px", lineHeight: 1.1, letterSpacing: "-0.02em", fontWeight: 600 }}>
+                {currentGettingStarted.title}
+              </h1>
+              <p style={{ color: "var(--muted)", fontSize: 16, maxWidth: 680, margin: 0 }}>
+                {currentGettingStarted.desc}
+              </p>
+              <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap", alignItems: "center" }}>
+                <span className="read-time-pill">
+                  <Icon name="clock" size={13} />
+                  <span>{currentGettingStarted.time} read</span>
+                </span>
               </div>
             </>
           ) : currentGuide ? (
@@ -1050,8 +1379,11 @@ const DocsPage = () => {
                 Install Ligand-X with the launcher or CLI.
               </h1>
               <p style={{ color: 'var(--muted)', fontSize: 17, maxWidth: 680, margin: 0 }}>
-                Current setup paths for desktop users, production servers, and developers.
-                The launcher is the recommended route; the CLI is available for headless deployments.
+                Desktop launcher and headless Compose install paths. Check{" "}
+                <DocsPageLink pageId="requirements">Requirements</DocsPageLink> before you download,
+                then <DocsPageLink pageId="first-launch">First launch</DocsPageLink> after the
+                launcher opens. Technical env tuning lives in{" "}
+                <DocsPageLink pageId="configuration">Configuration</DocsPageLink>.
               </p>
               <div style={{ display: 'flex', gap: 10, marginTop: 24, flexWrap: 'wrap' }}>
                 <button className="btn btn-secondary btn-sm" onClick={() => window.open('https://github.com/kon-218/ligand-x-launcher', '_blank')}>
@@ -1084,6 +1416,16 @@ const DocsPage = () => {
                     Installation guide
                   </button>
                 </li>
+                {GETTING_STARTED_PAGES.filter((page) => page.nav !== false).map((page) => (
+                  <li key={page.id}>
+                    <button
+                      className={docView === page.id ? "active" : ""}
+                      onClick={() => switchToGettingStartedPage(page.id)}
+                    >
+                      {page.title}
+                    </button>
+                  </li>
+                ))}
               </ul>
 
               <h6>Guides</h6>
@@ -1156,6 +1498,11 @@ const DocsPage = () => {
                   benchmarkRefs={benchmarkRefs}
                   onSelect={switchToBenchmark}
                 />
+              ) : currentGettingStarted ? (
+                <GettingStartedView
+                  page={currentGettingStarted}
+                  sectionRefs={gettingStartedRefs}
+                />
               ) : currentGuide ? (
                 <GuideView
                   guide={currentGuide}
@@ -1175,39 +1522,52 @@ const DocsPage = () => {
                     The stack runs locally in Docker. A Next.js frontend talks to a FastAPI gateway; jobs are
                     coordinated through PostgreSQL, Redis, RabbitMQ, and Celery workers.
                   </p>
-                  {/* Requirements */}
-                  <h2 id="requirements" ref={(r) => sectionRefs.current.requirements = r}>System requirements</h2>
-                  <table className="port-table">
-                    <thead>
-                      <tr><th>Component</th><th>Minimum</th><th>Recommended</th></tr>
-                    </thead>
-                    <tbody>
-                      <tr><td>OS</td><td className="mono">Linux / macOS / WSL 2</td><td className="mono">Ubuntu 22.04+</td></tr>
-                      <tr><td>Docker</td><td className="mono">20.10</td><td className="mono">Docker Compose v2</td></tr>
-                      <tr><td>RAM</td><td className="mono">16 GB</td><td className="mono">32 GB+ for GPU services</td></tr>
-                      <tr><td>Disk</td><td className="mono">20 GB free</td><td className="mono">50 GB+ for trajectories and Pro images</td></tr>
-                      <tr><td>GPU</td><td className="mono">Optional</td><td className="mono">NVIDIA GPU + Container Toolkit</td></tr>
-                    </tbody>
-                  </table>
+
+                  {/* Before you install */}
+                  <h2 id="prereqs" ref={(r) => sectionRefs.current.prereqs = r}>Before you install</h2>
+                  <p>
+                    You need Docker Compose v2 running, about 16&nbsp;GB RAM, and roughly 20&nbsp;GB free disk for a
+                    minimal Free install. A GPU is optional unless you plan Boltz-2 or binding free-energy work.
+                  </p>
+                  <div className="callout" style={{ marginBottom: 16 }}>
+                    Full hardware tables, image download sizes, free ports, GPU setup, and platform notes: <DocsPageLink pageId="requirements">Requirements</DocsPageLink>.
+                  </div>
 
                   {/* Install */}
                   <h2 id="install" ref={(r) => sectionRefs.current.install = r}>Installation</h2>
                   <p>
                     For desktop use, install the Ligand-X launcher from GitHub Releases. The launcher downloads the
-                    runtime bundle, pulls selected core and Pro images, and starts the app without requiring a git clone.
+                    runtime bundle, pulls selected images, and manages the stack without a git clone.
                   </p>
                   <CodeBlock
                     label="desktop"
-                    copyText={`# Download from https://github.com/kon-218/ligand-x-launcher/releases\n# Windows: ligandx-launcher-windows-amd64-installer.exe\n# macOS: ligandx-launcher-darwin-universal.dmg\n# Linux: ligandx-launcher-linux-amd64.AppImage`}
+                    copyText={`# Download from https://github.com/kon-218/ligand-x-launcher/releases\n# Windows: ligandx-windows-amd64.exe\n# macOS: ligandx-darwin-universal.dmg\n# Linux: ligandx-linux-amd64.AppImage`}
                   >
                     <Comment># Download from https://github.com/kon-218/ligand-x-launcher/releases</Comment>{"\n"}
-                    <Comment># Windows: ligandx-launcher-windows-amd64-installer.exe</Comment>{"\n"}
-                    <Comment># macOS: ligandx-launcher-darwin-universal.dmg</Comment>{"\n"}
-                    <Comment># Linux: ligandx-launcher-linux-amd64.AppImage</Comment>
+                    <Comment># Windows: ligandx-windows-amd64.exe</Comment>{"\n"}
+                    <Comment># macOS: ligandx-darwin-universal.dmg</Comment>{"\n"}
+                    <Comment># Linux: ligandx-linux-amd64.AppImage</Comment>
                   </CodeBlock>
+                  <p style={{ marginTop: 12 }}>
+                    Prefer comparing install options in the browser? See the{" "}
+                    <button
+                      type="button"
+                      onClick={() => window.__nav("download")}
+                      style={{
+                        background: "none", border: "none", padding: 0, cursor: "pointer",
+                        color: "var(--accent-strong)", fontWeight: 600, textDecoration: "underline", font: "inherit",
+                      }}
+                    >
+                      Download page
+                    </button>
+                    .
+                  </p>
 
                   <h3>Production / headless CLI</h3>
-                  <p>For servers, download the public runtime bundle, configure production environment variables, and pull images from GHCR.</p>
+                  <p>
+                    For servers, download the public runtime bundle, edit secrets, and pull images from GHCR.
+                    Confirm prerequisites on the <DocsPageLink pageId="requirements">Requirements</DocsPageLink> page first.
+                  </p>
                   <CodeBlock
                     label="production"
                     copyText={`curl -L https://github.com/kon-218/ligand-x-launcher/releases/latest/download/ligand-x-runtime.zip -o runtime.zip\nunzip runtime.zip -d ligand-x && cd ligand-x\ncp .env.production.template .env.production   # then edit secrets\ndocker compose --env-file .env.production pull\ndocker compose --env-file .env.production up -d`}
@@ -1222,95 +1582,51 @@ const DocsPage = () => {
                   {/* First run */}
                   <h2 id="first-run" ref={(r) => sectionRefs.current['first-run'] = r}>First run</h2>
                   <p>
-                    After startup, verify the containers and health endpoints. Core modules work immediately;
-                    private Pro services are available when configured.
+                    Desktop users: open the launcher, create an account, choose Free or import a license,
+                    select services, then <strong>Download &amp; continue</strong>, <strong>Start services</strong>,
+                    and <strong>Open Ligand-X</strong>. Headless installs can verify Compose health endpoints after{" "}
+                    <code>docker compose up</code>.
                   </p>
+                  <div className="callout" style={{ marginBottom: 16 }}>
+                    First-run walkthrough: <DocsPageLink pageId="first-launch">First launch</DocsPageLink>.
+                    {" "}Ports, <code>.env.production</code>, and Start behaviour: <DocsPageLink pageId="configuration">Configuration</DocsPageLink>.
+                  </div>
                   <CodeBlock
                     label="verify"
-                    copyText={`docker compose ps\ncurl http://localhost:8000/health\ncurl http://localhost:8000/api/services/health\n# open http://localhost:3000`}
+                    copyText={`docker compose --env-file .env.production ps\ncurl http://localhost:8000/health\ncurl http://localhost:8000/api/services/health\n# launcher users: Open Ligand-X (APP_PORT, default 8080)`}
                   >
-                    <Cmd><Fn>docker</Fn> compose ps</Cmd>{"\n"}
+                    <Cmd><Fn>docker</Fn> compose --env-file .env.production ps</Cmd>{"\n"}
                     <Cmd><Fn>curl</Fn> http://localhost:8000/health</Cmd>{"\n"}
                     <Cmd><Fn>curl</Fn> http://localhost:8000/api/services/health</Cmd>{"\n"}
-                    <span style={{ color: 'oklch(0.78 0.10 200)' }}>{"Open http://localhost:3000"}</span>
+                    <span style={{ color: 'oklch(0.78 0.10 200)' }}>{"Launcher users: Open Ligand-X (APP_PORT, default 8080)"}</span>
                   </CodeBlock>
-
-                  {/* Configuration */}
-                  <h2 id="config" ref={(r) => sectionRefs.current.config = r}>Configuration</h2>
-                  <p>
-                    Production configuration is read from <code>.env.production</code>. Required values include
-                    database, RabbitMQ, Flower, QC, API URL, CORS, and optional ORCA path settings.
-                  </p>
-                  <CodeBlock
-                    label=".env.production"
-                    copyText={`POSTGRES_PASSWORD=change-me\nRABBITMQ_PASSWORD=change-me\nFLOWER_PASSWORD=change-me\nQC_SECRET_KEY=generate-a-random-secret\nNEXT_PUBLIC_API_URL=http://localhost:8000\nCORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000\nORCA_HOST_PATH=/opt/orca\nLIGANDX_PRO_IMAGE_PREFIX=ghcr.io/kon-218/ligand-x-pro`}
-                  >
-                    <span style={{ color: 'var(--code-comment)' }}># .env.production - required production settings</span>{"\n"}
-                    <Kw>POSTGRES_PASSWORD</Kw>=<Str>change-me</Str>{"\n"}
-                    <Kw>RABBITMQ_PASSWORD</Kw>=<Str>change-me</Str>{"\n"}
-                    <Kw>FLOWER_PASSWORD</Kw>=<Str>change-me</Str>{"\n"}
-                    <Kw>QC_SECRET_KEY</Kw>=<Str>generate-a-random-secret</Str>{"\n"}
-                    <Kw>NEXT_PUBLIC_API_URL</Kw>=<Str>http://localhost:8000</Str>{"\n"}
-                    <Kw>CORS_ORIGINS</Kw>=<Str>http://localhost:3000,http://127.0.0.1:3000</Str>{"\n"}
-                    <Kw>ORCA_HOST_PATH</Kw>=<Str>/opt/orca</Str>{"\n"}
-                    <Kw>LIGANDX_PRO_IMAGE_PREFIX</Kw>=<Str>ghcr.io/kon-218/ligand-x-pro</Str>
-                  </CodeBlock>
-
-                  {/* Dev mode */}
-                  <h2 id="dev-mode" ref={(r) => sectionRefs.current['dev-mode'] = r}>Development mode</h2>
-                  <p>
-                    Requires source access to the private <code>ligand-x</code> repository (maintainers only).
-                    <code> make dev</code> generates a local <code>.env</code>, mounts source into containers, and starts
-                    the Next.js frontend with hot reload. Partial startup targets are available for focused work.
-                  </p>
-                  <CodeBlock label="dev" copyText="make dev">
-                    <Cmd><Fn>make</Fn> dev</Cmd>{"\n"}
-                    <Cmd><Fn>make</Fn> dev-core</Cmd>{"\n"}
-                    <Cmd><Fn>make</Fn> dev-docking</Cmd>{"\n"}
-                    <Cmd><Fn>make</Fn> dev-free-energy</Cmd>
-                  </CodeBlock>
-
-                  {/* Ports */}
-                  <h2 id="ports" ref={(r) => sectionRefs.current.ports = r}>Service ports</h2>
-                  <table className="port-table">
-                    <thead>
-                      <tr><th>Service</th><th>Port</th><th>Purpose</th></tr>
-                    </thead>
-                    <tbody>
-                      <tr><td>Frontend</td><td className="mono">:3000</td><td>React UI + Mol* viewer</td></tr>
-                      <tr><td>API Gateway</td><td className="mono">:8000</td><td>FastAPI · OpenAPI at <code>/docs</code></td></tr>
-                      <tr><td>PostgreSQL</td><td className="mono">:5432</td><td>Job persistence and blob metadata</td></tr>
-                      <tr><td>RabbitMQ</td><td className="mono">:15672</td><td>Management UI</td></tr>
-                      <tr><td>Flower</td><td className="mono">:5555</td><td>Celery worker dashboard</td></tr>
-                      <tr><td>Redis</td><td className="mono">:6379</td><td>WebSocket pub/sub and cache</td></tr>
-                    </tbody>
-                  </table>
 
                   {/* Next */}
                   <h2 id="next" ref={(r) => sectionRefs.current.next = r}>Next steps</h2>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
                     <NextCard
+                      title="Requirements"
+                      desc="Hardware, Docker, GPU, disk budgets, free ports, and platform notes."
+                      icon="book"
+                      onClick={() => switchToGettingStartedPage("requirements")}
+                    />
+                    <NextCard
+                      title="First launch"
+                      desc="Account, license, Download & continue, Start services, and Open Ligand-X."
+                      icon="network"
+                      onClick={() => switchToGettingStartedPage("first-launch")}
+                    />
+                    <NextCard
+                      title="Configuration"
+                      desc=".env.production, ports, workers, and what Start preserves or rewrites."
+                      icon="book"
+                      onClick={() => switchToGettingStartedPage("configuration")}
+                    />
+                    <NextCard
                       title="Run your first docking job"
-                      desc="Prepare a receptor and ligand, configure the search box, and review ranked poses with interaction analysis."
+                      desc="Prepare a receptor and ligand, configure the search box, and review ranked poses."
                       icon="target"
                       onClick={() => switchToGuide("docking")}
-                    />
-                    <NextCard
-                      title="Clean a protein structure"
-                      desc="Import a raw PDB, remove waters and ions, add hydrogens, and produce a modeling-ready receptor."
-                      icon="flask"
-                      onClick={() => switchToGuide("protein-cleaning")}
-                    />
-                    <NextCard
-                      title="Read the architecture spec"
-                      desc="How the gateway, workers and microservices communicate via Redis and Celery."
-                      icon="network"
-                    />
-                    <NextCard
-                      title="Browse the capability reference"
-                      desc="Full list of methods, parameters, supported file formats and theory links."
-                      icon="book"
-                      onClick={() => window.__nav('features')}
                     />
                   </div>
                 </>
@@ -1327,6 +1643,20 @@ const DocsPage = () => {
                       <a
                         className={activeBenchmarkSection === section.id ? "active" : ""}
                         onClick={() => scrollToBenchmarkSection(section.id)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        {section.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : currentGettingStarted ? (
+                <ul>
+                  {currentGettingStarted.sections.map((section) => (
+                    <li key={section.id}>
+                      <a
+                        className={activeGettingStartedSection === section.id ? "active" : ""}
+                        onClick={() => scrollToGettingStartedSection(section.id)}
                         style={{ cursor: "pointer" }}
                       >
                         {section.title}

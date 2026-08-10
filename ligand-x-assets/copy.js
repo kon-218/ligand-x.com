@@ -10,13 +10,6 @@
 // Loaded as a plain script before the Babel-transpiled pages, and require()d by
 // scripts/build-site.js — hence the dual export footer.
 
-// One verb per action, everywhere on the site. Previously there were four names
-// for the download action alone.
-//
-// Wrapped in an IIFE: a top-level `const` in a classic script claims a name in
-// the global lexical scope, which collides with same-named page constants. These
-// files publish through window / module.exports only.
-
 (function () {
   const CTA = {
     download: "Download Ligand-X",
@@ -27,14 +20,11 @@
     github: "Star on GitHub",
   };
 
-  // Canonical phrasings for claims that recur. Use the constant; do not re-word.
-  // Each page states the self-hosted claim AT MOST ONCE — it previously appeared
-  // eight times in near-identical wording across three pages.
   const CLAIMS = {
     selfHosted: "Every structure, job, and result stays on hardware you control.",
     freeCore:
       "Preparation, pocket finding, docking, and molecular dynamics are free and always will be.",
-    academic: "Academic licenses unlock every Pro module at no cost.",
+    academic: "Academic licenses include every Pro module, free.",
     singleUser:
       "Ligand-X is a single-user workbench. It runs on your machine, bound to localhost by default.",
   };
@@ -42,17 +32,15 @@
   const SITE_COPY = {
     home: {
       eyebrow: "Official Ligand-X website",
-      // h1Parts renders as separate lines; `em` is set in Instrument Serif.
-      h1Parts: ["The whole discovery pipeline,", "on hardware "],
-      h1Em: "you own",
-      h1: "The whole discovery pipeline, on hardware you own.",
+      h1Parts: ["Ligand-X.", "Integrated.", "Self-hosted.", "Reliable."],
+      h1Em: "Ligand-X.",
+      h1: "Ligand-X. Integrated. Self-hosted. Reliable.",
       lede:
-        "A free desktop workbench for computational drug discovery. Prepare targets, dock libraries, run simulations, and keep every structure and result together in one local project.",
+        "A free desktop app for computational drug discovery. Dock, simulate, and keep your structures and results on your own hardware.",
       seo: {
-        title: "Ligand-X | Official computational drug discovery platform",
+        title: "Ligand-X | Free molecular docking and MD on your hardware",
         description:
-          "Official Ligand-X website. Download the free, self-hosted computational drug discovery platform for molecular docking, molecular dynamics, and protein-ligand analysis.",
-        // Keyword-bearing tail appended to the shared lede for the crawler copy.
+          "Free, self-hosted computational drug discovery: AutoDock Vina docking, OpenMM molecular dynamics, and docking-to-MD workflows in one local project. No account required.",
         introTail:
           "Ligand-X — also written Ligand X or LigandX — is free to download for Windows, macOS, and Linux.",
         sections: [
@@ -74,17 +62,15 @@
 
     features: {
       eyebrow: "Capabilities",
-      // Wry and peer-voiced: everyone in this audience has a half-finished
-      // version of this in a repo somewhere. The emphasis lands on "eventually".
       h1Parts: ["The pipeline you were going to", "build "],
       h1Em: "eventually",
       h1: "The pipeline you were going to build eventually.",
       lede:
         "One project, not another messy folder. Preparation, screening, simulation, and design in one place — and everything it takes to get from a raw PDB to a finished trajectory is free.",
       seo: {
-        title: "Features — Ligand-X computational drug discovery software",
+        title: "Features — Ligand-X docking, MD, and discovery modules",
         description:
-          "Complete Ligand-X capability reference: protein preparation, pocket finding, molecular docking, molecular dynamics, ADMET, quantum chemistry, binding free energy, and generative design.",
+          "Ligand-X capabilities: free protein preparation, pocket finding, AutoDock Vina docking, OpenMM molecular dynamics, plus optional ADMET, quantum chemistry, free energy, and generative design.",
         sections: [
           [
             "Prepare structures and binding sites",
@@ -110,11 +96,11 @@
       seo: {
         title: "Documentation — Install and use Ligand-X",
         description:
-          "Ligand-X documentation for installation, configuration, protein preparation, molecular docking, molecular dynamics, API usage, and advanced workflows.",
+          "Ligand-X documentation for system requirements, installation, first launch, configuration, protein preparation, molecular docking, molecular dynamics, and API usage.",
         sections: [
           [
             "Installation and configuration",
-            "Review system requirements, install the desktop launcher or container runtime, configure local services, and start the application on your workstation.",
+            "Check system requirements, install the desktop launcher or container runtime, complete first launch, optionally edit configuration, and start the application on your workstation.",
           ],
           [
             "Scientific walkthroughs",
@@ -139,7 +125,7 @@
           "Compare the free, academic, and commercial Pro editions of Ligand-X, see which modules each unlocks, and find out how to request a license.",
         sections: [
           [
-            "Free — the open-core workbench",
+            "Free — the core workbench",
             "Structure preparation, pocket finding, molecular docking, molecular dynamics, the molecule library, and alignment tools are free with no license file and no account.",
           ],
           [
@@ -156,17 +142,17 @@
 
     download: {
       eyebrow: "Download",
-      h1: "Download Ligand-X for your machine.",
+      h1: "Get Ligand-X with the desktop launcher.",
       lede:
-        "The desktop launcher installs and manages the local containerized services for you. Advanced users can run the same stack directly with Docker Compose.",
+        "The desktop launcher installs and manages the local containerized services for you. Open Ligand-X at localhost:8080 by default. Advanced users can run the same stack directly with Docker Compose.",
       seo: {
         title: "Download Ligand-X for Windows, macOS, and Linux",
         description:
-          "Download the free Ligand-X launcher for Windows, macOS, or Linux and install a self-hosted computational drug discovery workbench.",
+          "Download the free Ligand-X launcher for Windows, macOS, or Linux. Install Docker, complete first launch, then open the app at localhost:8080.",
         sections: [
           [
             "Desktop launcher",
-            "Choose the release for your operating system, install Docker when required, select the modules you need, and start the local Ligand-X application.",
+            "Choose the release for your operating system, install Docker, complete account and module setup, then Start services and Open Ligand-X.",
           ],
           [
             "Command-line installation",
@@ -199,6 +185,141 @@
             "A Pro license unlocks selected module containers while scientific inputs and calculation results remain on your own infrastructure.",
           ],
         ],
+      },
+    },
+
+    landings: {
+      "molecular-docking": {
+        path: "/molecular-docking/",
+        eyebrow: "Molecular docking",
+        h1: "Molecular docking with AutoDock Vina, free on your hardware.",
+        lede:
+          "Prepare receptors, find pockets, dock single ligands or libraries, and inspect ranked poses in one self-hosted workbench — no account, no cloud upload.",
+        seo: {
+          title: "Molecular docking with AutoDock Vina — free, self-hosted — Ligand-X",
+          description:
+            "Free molecular docking software with AutoDock Vina: protein prep, pocket finding, batch docking, pose review, and Send to MD — self-hosted on Windows, macOS, or Linux.",
+        },
+        sections: [
+          [
+            "From raw PDB to ranked poses",
+            "Clean the receptor, detect or draw a search box, prepare ligands with Meeko, and run AutoDock Vina with live job progress.",
+          ],
+          [
+            "Batch screening in one project",
+            "Dock a library against a target, compare affinities and interactions in Mol*, and keep every pose attached to the experiment that produced it.",
+          ],
+          [
+            "Continue into dynamics",
+            "Send a docked complex straight into OpenMM molecular dynamics — the same free workbench, not a second tool chain.",
+          ],
+        ],
+        faqs: [
+          {
+            q: "Is molecular docking free forever?",
+            a: "Yes. Preparation, pocket finding, docking, and molecular dynamics are free and always will be.",
+          },
+          {
+            q: "Do I need an account or internet for docking?",
+            a: "No account is required. Ligand-X runs locally; after images are pulled you can work offline on your own hardware.",
+          },
+          {
+            q: "Which docking engine does Ligand-X use?",
+            a: "AutoDock Vina with Meeko ligand preparation, plus optional Vinardo scoring.",
+          },
+        ],
+        primaryCta: { label: "Download Ligand-X", href: "/download/", nav: "download" },
+        secondaryCta: { label: "Docking guide", href: "/docs/guides/docking/", nav: "docs" },
+      },
+
+      "molecular-dynamics": {
+        path: "/molecular-dynamics/",
+        eyebrow: "Molecular dynamics",
+        h1: "Molecular dynamics with OpenMM, free on your machine.",
+        lede:
+          "Solvate protein–ligand complexes, run minimization and production MD on your CPU or GPU, and review trajectories in the browser — self-hosted, no managed cloud.",
+        seo: {
+          title: "Molecular dynamics with OpenMM — free, self-hosted — Ligand-X",
+          description:
+            "Free molecular dynamics software built on OpenMM and OpenFF: prepare complexes, run GPU MD with live progress, and inspect trajectories — including docked poses sent from Vina.",
+        },
+        sections: [
+          [
+            "Protein–ligand systems without shell scripts",
+            "Choose force field and water model, set temperature and length, and let Ligand-X build, minimize, equilibrate, and run production.",
+          ],
+          [
+            "Live jobs and durable runs",
+            "Watch energy and progress over WebSocket. Checkpoints let long simulations resume if the machine sleeps or the page refreshes.",
+          ],
+          [
+            "Start from a docked pose",
+            "Use Send to MD from docking results, or start from a cleaned receptor — prep and docking are part of the same free core.",
+          ],
+        ],
+        faqs: [
+          {
+            q: "Is molecular dynamics free?",
+            a: "Yes. OpenMM molecular dynamics is part of the free Ligand-X core, along with preparation, pocket finding, and docking.",
+          },
+          {
+            q: "Do I need a GPU?",
+            a: "GPU is optional but strongly recommended for longer production runs. Short systems can run on CPU.",
+          },
+          {
+            q: "Can I run MD offline?",
+            a: "Yes. Ligand-X is self-hosted and bound to localhost by default. Structures and trajectories stay on hardware you control.",
+          },
+        ],
+        primaryCta: { label: "Download Ligand-X", href: "/download/", nav: "download" },
+        secondaryCta: {
+          label: "MD guide",
+          href: "/docs/guides/molecular-dynamics/",
+          nav: "docs",
+        },
+      },
+
+      "docking-to-md": {
+        path: "/docking-to-md/",
+        eyebrow: "Docking → MD",
+        h1: "From docked pose to molecular dynamics in one project.",
+        lede:
+          "Most free tools stop at docking or start at MD. Ligand-X connects protein prep, AutoDock Vina, and OpenMM so you can screen, pick a pose, and press Send to MD — or wire the path on a canvas and run it.",
+        seo: {
+          title: "Docking to MD pipeline — free automated workflow — Ligand-X",
+          description:
+            "Automated docking-to-MD pipeline: prepare a target, dock with AutoDock Vina, send poses to OpenMM molecular dynamics, or run a canvas workflow — free and self-hosted.",
+        },
+        sections: [
+          [
+            "One workbench, not a glue script",
+            "Conversions, job history, and results stay on the project. No hand-copying PDBQT, SDF, and trajectory folders between programs.",
+          ],
+          [
+            "Send to MD or canvas workflows",
+            "Hand off a pose from docking results, or define protein → docking → MD nodes and run the graph as a single job with upstream outputs injected automatically.",
+          ],
+          [
+            "Free where the loop matters",
+            "Preparation, pocket finding, docking, and molecular dynamics are free forever. Optional Pro modules extend the same project when you need free energy or generative design.",
+          ],
+        ],
+        faqs: [
+          {
+            q: "Is the docking → MD path free?",
+            a: "Yes. The structure-based loop from preparation through docking into MD is free with no license file and no account.",
+          },
+          {
+            q: "How is this different from a docking-only GUI?",
+            a: "Docking-only tools leave you to rebuild MD elsewhere. Ligand-X keeps the complex, parameters, and trajectory in the same local project.",
+          },
+          {
+            q: "Can I automate multi-step runs?",
+            a: "Yes. Canvas workflows run directed graphs of modules (including docking and MD) as one job with topological ordering and automatic input injection.",
+          },
+        ],
+        primaryCta: { label: "Download Ligand-X", href: "/download/", nav: "download" },
+        secondaryCta: { label: "See capabilities", href: "/features/", nav: "features" },
       },
     },
   };

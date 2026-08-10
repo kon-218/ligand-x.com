@@ -327,15 +327,17 @@ const HeroShowcase = () => {
       <div className="container">
         <div className="hero-grid">
           <div className="hero-copy">
-            <h1><em>Ligand-X.</em><br />Integrated.<br />Self-hosted.<br />Reliable.</h1>
-            <p className="hero-lede">
-              A free desktop app for computational drug discovery. Dock, simulate,
-              and keep your structures and results on your own hardware.
-            </p>
+            <h1>
+              <em>{SITE_COPY.home.h1Parts[0]}</em><br />
+              {SITE_COPY.home.h1Parts[1]}<br />
+              {SITE_COPY.home.h1Parts[2]}<br />
+              {SITE_COPY.home.h1Parts[3]}
+            </h1>
+            <p className="hero-lede">{SITE_COPY.home.lede}</p>
             <div className="hero-cta">
               <button className="btn btn-primary btn-lg" onClick={() => window.__nav("download")}>
                 <Icon name="download" size={16} />
-                Download Ligand-X
+                {CTA.download}
               </button>
               <button
                 className="btn btn-secondary btn-lg"
@@ -391,7 +393,7 @@ const CredibilityBand = () => (
     <div className="container">
       <div className="hero-meta" style={{ margin: 0, padding: '18px 0', justifyContent: 'center' }}>
         <span>Built with Open Source tools</span>
-        <span>Runs locally on your hardware</span>
+        <span>No account, no cloud dependency</span>
         <span>Always free for Academics</span>
       </div>
     </div>
@@ -434,6 +436,13 @@ const PainValueSection = () => (
         </div>
         <p className="pain-statement">
           None of that is chemistry. Ligand-X handles the conversions, keeps every job and result attached to the project that produced it, and lets you wire protein &rarr; docking &rarr; MD on one canvas and press run. What is left is the actual work &mdash; four moves.
+        </p>
+        <p className="pain-topics">
+          <a href="/molecular-docking/" onClick={(e) => window.__nav("molecular-docking", e)}>Molecular docking</a>
+          <span aria-hidden="true">·</span>
+          <a href="/molecular-dynamics/" onClick={(e) => window.__nav("molecular-dynamics", e)}>Molecular dynamics</a>
+          <span aria-hidden="true">·</span>
+          <a href="/docking-to-md/" onClick={(e) => window.__nav("docking-to-md", e)}>Docking to MD</a>
         </p>
       </div>
     </div>
@@ -641,7 +650,7 @@ const OrbitStory = () => {
   );
 };
 
-const OpenCoreProSection = () => (
+const CoreProSection = () => (
   <section className="section capability-map-section">
     <div className="container">
       <div className="section-head">
@@ -649,12 +658,12 @@ const OpenCoreProSection = () => (
           <h2>Start with the local workbench. Add Pro when you need it.</h2>
         </div>
         <p className="sub">
-          Open Core covers day-to-day prep, docking, and MD. Pro adds property screening, binding prediction, and generative design.
+          Core/Free covers day-to-day prep, docking, and MD. Pro adds property screening, binding prediction, and generative design.
         </p>
       </div>
       <div className="edition-map">
         <Reveal className="edition-card" i={0}>
-          <h3>Open Core</h3>
+          <h3>Core / Free</h3>
           <p>Project setup, target prep, docking, MD, and structure review on your own hardware.</p>
           <div className="capability-cloud">
             {CORE_LABELS.map((item) => <span key={item}>{item}</span>)}
@@ -728,8 +737,8 @@ const UseCasesSection = () => (
 const INSTALL_STEPS = [
   ["01", "Install Docker", "Docker Desktop or Docker Engine + Compose plugin"],
   ["02", "Open the Ligand-X launcher", "Download the launcher for your OS. No terminal needed."],
-  ["03", "Select modules and start", "Enable Free modules, or add licensed Pro modules"],
-  ["04", "Open localhost:3000", "Frontend, gateway, and workers all live"],
+  ["03", "Select modules and download", "Enable Free modules, or add licensed Pro modules"],
+  ["04", "Start services, then Open Ligand-X", "App entry is localhost:8080 by default (APP_PORT)"],
 ];
 
 const QuickStartSection = () => (
@@ -753,14 +762,15 @@ const QuickStartSection = () => (
         tabs={[
           {
             label: "desktop",
-            copy: "Install Docker\nOpen Ligand-X launcher\nSelect modules\nStart",
+            copy: "Install Docker\nOpen Ligand-X launcher\nSelect modules\nDownload & continue\nStart services\nOpen Ligand-X",
             content: (
               <>
                 <Comment># Desktop path</Comment>{"\n"}
                 <Cmd>Install Docker Desktop or Docker Engine</Cmd>{"\n"}
                 <Cmd>Open the Ligand-X launcher</Cmd>{"\n"}
                 <Cmd>Select Free or licensed Pro modules</Cmd>{"\n"}
-                <span style={{ color: "var(--code-success)" }}>ready at http://localhost:3000</span>
+                <Cmd>Download & continue → Start services → Open Ligand-X</Cmd>{"\n"}
+                <span style={{ color: "var(--code-success)" }}>ready at http://localhost:8080</span>
               </>
             ),
           },
@@ -788,7 +798,7 @@ const CTASection = () => (
     <div className="container final-story-inner">
       <h2>Start local. Add Pro when you need it.</h2>
       <p>
-        Run the open-core workbench for projects, structures, docking, and MD. Compare Free and Pro when you need ADMET, binding prediction, or generative design.
+        Run the Core/Free workbench for projects, structures, docking, and MD. Compare Free and Pro when you need ADMET, binding prediction, or generative design.
       </p>
       <div className="hero-cta">
         <button className="btn btn-primary btn-lg" onClick={() => window.__nav('download')}>
@@ -810,7 +820,7 @@ const HomePage = () => (
     <CredibilityBand />
     <PainValueSection />
     <OrbitStory />
-    <OpenCoreProSection />
+    <CoreProSection />
     <ArchitectureProofSection />
     <UseCasesSection />
     <QuickStartSection />

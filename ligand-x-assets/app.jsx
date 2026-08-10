@@ -2,16 +2,14 @@
 // App — top nav, page router, tweaks integration
 // ============================================================
 
-const PAGES = [
-  { id: "home", label: "Home", path: "/" },
-  { id: "features", label: "Features", path: "/features/" },
-  { id: "docs", label: "Docs", path: "/docs/" },
-  { id: "pro", label: "Pro", path: "/pro/" },
-  { id: "download", label: "Download", path: "/download/" },
-];
-
-const ROUTES = [...PAGES, { id: "contact", label: "Request license", path: "/contact/" }];
+const ROUTES = SITE_ROUTES;
+const PAGES = SITE_ROUTES.filter((route) => route.primary);
 const routeFor = (id) => ROUTES.find((route) => route.id === id) || ROUTES[0];
+
+const syncDocumentSeo = (pageId) => {
+  const seo = seoForRoute(pageId);
+  if (seo) applyPageSeo(seo);
+};
 
 // Below 640px `.nav-links` is display:none and there was no replacement, so the
 // only reachable route from the header was Download. The panel renders the same
@@ -19,8 +17,6 @@ const routeFor = (id) => ROUTES.find((route) => route.id === id) || ROUTES[0];
 const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => {
   const [menuOpen, setMenuOpen] = React.useState(false);
 
-  // Navigating is a client-side state change, not a document load, so nothing
-  // else would ever close the panel.
   React.useEffect(() => { setMenuOpen(false); }, [page]);
 
   React.useEffect(() => {
@@ -30,8 +26,6 @@ const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => {
     return () => window.removeEventListener('keydown', onKey);
   }, [menuOpen]);
 
-  // Rotating to landscape crosses the breakpoint: without this the panel stays
-  // mounted underneath a now-visible desktop nav.
   React.useEffect(() => {
     const mq = window.matchMedia('(min-width: 641px)');
     const onChange = () => { if (mq.matches) setMenuOpen(false); };
@@ -80,8 +74,6 @@ const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => {
           <Icon name="github" size={14} />
           Star
         </button>
-        {/* .btn-label is dropped below 400px so the wordmark never has to wrap;
-            aria-label keeps the button named once the text is gone. */}
         <a
           className="btn btn-primary btn-sm"
           href="/download/"
@@ -105,7 +97,7 @@ const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => {
 
     {menuOpen && (
       <nav className="mobile-nav" id="mobile-nav" aria-label="Site">
-        {ROUTES.map((p) => (
+        {ROUTES.filter((p) => p.primary || p.id === "contact").map((p) => (
           <a
             key={p.id}
             href={p.path}
@@ -117,8 +109,6 @@ const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => {
             <Icon name="arrow" size={15} />
           </a>
         ))}
-        {/* .nav-right hides this button below 640px, so the panel is the only
-            place the repo link exists on a phone. */}
         <a
           className="mobile-nav-ext"
           href="https://github.com/kon-218/ligand-x-launcher"
@@ -161,8 +151,16 @@ const Footer = () => (
           </ul>
         </div>
         <div>
-          <h6>Resources</h6>
+          <h6>Topics</h6>
           <ul>
+            <li><a href="/molecular-docking/" onClick={(event) => window.__nav('molecular-docking', event)}>Molecular docking</a></li>
+            <li><a href="/molecular-dynamics/" onClick={(event) => window.__nav('molecular-dynamics', event)}>Molecular dynamics</a></li>
+            <li><a href="/docking-to-md/" onClick={(event) => window.__nav('docking-to-md', event)}>Docking to MD</a></li>
+            <li><a href="/docs/requirements/" onClick={(event) => window.__nav('docs', event, { path: '/docs/requirements/' })}>Requirements</a></li>
+            <li><a href="/docs/first-launch/" onClick={(event) => window.__nav('docs', event, { path: '/docs/first-launch/' })}>First launch</a></li>
+            <li><a href="/docs/configuration/" onClick={(event) => window.__nav('docs', event, { path: '/docs/configuration/' })}>Configuration</a></li>
+            <li><a href="/docs/guides/docking/" onClick={(event) => window.__nav('docs', event, { path: '/docs/guides/docking/' })}>Docking guide</a></li>
+            <li><a href="/docs/guides/molecular-dynamics/" onClick={(event) => window.__nav('docs', event, { path: '/docs/guides/molecular-dynamics/' })}>MD guide</a></li>
             <li><a href="/docs/#api-reference" onClick={(event) => { window.__nav('docs', event); requestAnimationFrame(() => window.__navDocs && window.__navDocs('api-reference')); }}>API reference</a></li>
           </ul>
         </div>
@@ -184,16 +182,11 @@ const Footer = () => (
   </footer>
 );
 
-// ============================================================
-// Page router with hash sync
-// ============================================================
-
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "density": "spacious"
 }/*EDITMODE-END*/;
 
 const App = () => {
-  // Page state from the indexable URL path. Old #page links are migrated below.
   const getPathPage = () => {
     const path = window.location.pathname.replace(/\/+$/, "") || "/";
     const route = ROUTES.find((candidate) => candidate.path.replace(/\/+$/, "") === path);
@@ -202,6 +195,9 @@ const App = () => {
     return "home";
   };
   const [page, setPage] = React.useState(getPathPage);
+  const [docsPathKey, setDocsPathKey] = React.useState(
+    () => window.location.pathname.replace(/\/+$/, "") + "/" || "/docs/",
+  );
 
   const getInitialTheme = () => {
     const stored = window.localStorage && window.localStorage.getItem('ligandx-theme');
@@ -209,23 +205,39 @@ const App = () => {
   };
   const [theme, setTheme] = React.useState(getInitialTheme);
 
-  const onNav = (id, event) => {
+  const onNav = (id, event, options = {}) => {
     if (event) {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
     }
     const route = routeFor(id);
-    if (window.location.pathname !== route.path) {
-      window.history.pushState({ page: id }, '', route.path);
+    const nextPath = options.path || route.path;
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({ page: id }, '', nextPath);
     }
     setPage(id);
+    if (id === "docs") {
+      setDocsPathKey(nextPath.replace(/\/+$/, "") + "/");
+    }
+    if (id === "docs" && options.path && options.path !== "/docs/") {
+      // Docs deep links apply their own title/description inside DocsPage.
+    } else {
+      syncDocumentSeo(id);
+    }
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
   React.useEffect(() => {
     document.documentElement.classList.remove('app-loading');
     window.__nav = onNav;
+    syncDocumentSeo(getPathPage());
     const onPopState = () => {
-      setPage(getPathPage());
+      const next = getPathPage();
+      setPage(next);
+      if (next === "docs") {
+        setDocsPathKey(window.location.pathname.replace(/\/+$/, "") + "/");
+      } else {
+        syncDocumentSeo(next);
+      }
       window.scrollTo({ top: 0, behavior: 'instant' });
     };
     window.addEventListener('popstate', onPopState);
@@ -237,10 +249,8 @@ const App = () => {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
-  // Tweaks (returns [values, setter])
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
 
-  // Apply density and theme to root
   React.useEffect(() => {
     document.documentElement.setAttribute('data-density', tweaks.density);
   }, [tweaks.density]);
@@ -254,9 +264,14 @@ const App = () => {
   switch (page) {
     case "features":  PageComp = <FeaturesPage />; break;
     case "pro":       PageComp = <ProPage />; break;
-    case "docs":      PageComp = <DocsPage />; break;
+    case "docs":      PageComp = <DocsPage key={docsPathKey} />; break;
     case "download":  PageComp = <DownloadPage />; break;
     case "contact":   PageComp = <ContactPage />; break;
+    case "molecular-docking":
+    case "molecular-dynamics":
+    case "docking-to-md":
+      PageComp = <LandingPage landingId={page} />;
+      break;
     default:          PageComp = <HomePage />;
   }
 

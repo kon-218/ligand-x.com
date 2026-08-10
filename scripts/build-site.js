@@ -5,154 +5,117 @@ const ROOT = path.resolve(__dirname, "..");
 const DIST = path.join(ROOT, "dist");
 const ORIGIN = "https://www.ligand-x.com";
 
-const pages = [
-  {
-    id: "home",
-    path: "/",
-    title: "Ligand-X | Official computational drug discovery platform",
-    description:
-      "Official Ligand-X website. Download the free, self-hosted computational drug discovery platform for molecular docking, molecular dynamics, and protein-ligand analysis.",
-    eyebrow: "Official Ligand-X website",
-    heading: "Ligand-X: computational drug discovery on hardware you control.",
-    intro:
-      "Ligand-X—also written Ligand X or LigandX—is a free desktop workbench for computer-aided drug discovery. Prepare proteins, manage ligands, run molecular docking and molecular dynamics, and keep every structure and result connected in one local project.",
-    sections: [
-      [
-        "One integrated scientific workspace",
-        "Import proteins and molecules, find binding pockets, compare docking poses, launch simulations, and review results without rebuilding the workflow across disconnected scripts and folders.",
-      ],
-      [
-        "Private by design",
-        "Ligand-X is self-hosted. Structures, compounds, calculations, and results remain on your own workstation or compute infrastructure.",
-      ],
-      [
-        "Free for academic use",
-        "Install the Ligand-X launcher on Windows, macOS, or Linux and add optional Pro modules when your work requires advanced affinity, quantum chemistry, ADMET, or generative-design workflows.",
-      ],
+const { SITE_COPY, CLAIMS } = require("../ligand-x-assets/copy.js");
+const { SITE_ROUTES } = require("../ligand-x-assets/routes.js");
+const { GUIDES } = require("../ligand-x-assets/guides.js");
+const { GETTING_STARTED_PAGES } = require("../ligand-x-assets/getting-started.js");
+
+const pageFromCopy = (route) => {
+  const block = SITE_COPY[route.id];
+  if (!block || !block.seo) {
+    throw new Error(`SITE_COPY missing seo block for route ${route.id}`);
+  }
+  const intro =
+    route.id === "home"
+      ? `${block.lede} ${block.seo.introTail || ""}`.trim()
+      : block.lede;
+  return {
+    id: route.id,
+    path: route.path,
+    primary: route.primary !== false,
+    title: block.seo.title,
+    description: block.seo.description,
+    eyebrow: block.eyebrow,
+    heading: block.h1,
+    intro,
+    sections: block.seo.sections || [],
+  };
+};
+
+const landingFromCopy = (route) => {
+  const block = SITE_COPY.landings[route.id];
+  if (!block) throw new Error(`SITE_COPY.landings missing ${route.id}`);
+  return {
+    id: route.id,
+    path: block.path,
+    primary: false,
+    landing: true,
+    title: block.seo.title,
+    description: block.seo.description,
+    eyebrow: block.eyebrow,
+    heading: block.h1,
+    intro: block.lede,
+    sections: block.sections,
+    faqs: block.faqs || [],
+    actions: [
+      { href: block.primaryCta.href, label: block.primaryCta.label },
+      { href: block.secondaryCta.href, label: block.secondaryCta.label },
     ],
-  },
-  {
-    id: "features",
-    path: "/features/",
-    title: "Features — Ligand-X computational drug discovery software",
-    description:
-      "Explore Ligand-X features for protein preparation, molecular docking, molecular dynamics, ligand management, pocket finding, free-energy calculations, and more.",
-    eyebrow: "Ligand-X capabilities",
-    heading: "One workbench for the computational discovery loop.",
-    intro:
-      "Ligand-X connects protein and ligand preparation, docking, simulation, and analysis in a single self-hosted computational chemistry workspace.",
-    sections: [
-      [
-        "Prepare structures and binding sites",
-        "Inspect chains, ligands, waters, ions, and metals; clean protein structures; align molecules and structures; and identify candidate binding pockets before calculation.",
-      ],
-      [
-        "Dock, simulate, and compare",
-        "Prepare receptors and ligands for AutoDock Vina, run single or batch docking, inspect ranked poses and interactions, and continue selected complexes into OpenMM molecular dynamics.",
-      ],
-      [
-        "Extend the workflow",
-        "Optional modules support quantum chemistry, ADMET prediction, Boltz-2 affinity prediction, ABFE and RBFE calculations, and REINVENT generative molecular design.",
-      ],
-    ],
-  },
-  {
-    id: "docs",
-    path: "/docs/",
-    title: "Documentation — Install and use Ligand-X",
-    description:
-      "Ligand-X documentation for installation, configuration, protein preparation, molecular docking, molecular dynamics, API usage, and advanced workflows.",
-    eyebrow: "Ligand-X documentation",
-    heading: "Install Ligand-X and run your first workflow.",
-    intro:
-      "Use these guides to install the self-hosted Ligand-X workbench, configure its services, prepare structures, run calculations, and understand the generated outputs.",
-    sections: [
-      [
-        "Installation and configuration",
-        "Review system requirements, install the desktop launcher or container runtime, configure local services, and start the application on your workstation.",
-      ],
-      [
-        "Scientific walkthroughs",
-        "Follow practical guides for protein cleaning, molecular docking, molecular dynamics, absolute and relative binding free energy, and quantum chemistry.",
-      ],
-      [
-        "API reference",
-        "Explore the Ligand-X interfaces for projects, proteins, molecules, poses, pockets, jobs, health checks, authentication, and live job updates.",
-      ],
-    ],
-  },
-  {
-    id: "pro",
-    path: "/pro/",
-    title: "Ligand-X editions and Pro licensing",
-    description:
-      "Compare the free, academic, and commercial Pro editions of Ligand-X, see which modules each unlocks, and find out how to request a license.",
-    eyebrow: "Editions & licensing",
-    heading: "Which edition of Ligand-X do you need?",
-    intro:
-      "The workbench is free forever. Academic licenses unlock every Pro module at no cost. Commercial Pro licenses cover the modules in your agreement.",
-    sections: [
-      [
-        "Free \u2014 the open-core workbench",
-        "Structure preparation, pocket finding, molecular docking, molecular dynamics, the molecule library, and alignment tools are free with no license file and no account.",
-      ],
-      [
-        "Academic \u2014 every module, no cost",
-        "A signed academic license entitles you to all Pro modules: ADMET, quantum chemistry, Boltz-2, binding free energy, and generative design.",
-      ],
-      [
-        "Commercial Pro \u2014 licensed per module",
-        "A commercial license unlocks the modules listed in your agreement. Private container images integrate with an existing installation so sensitive structures, ligands, and results stay on infrastructure you control.",
-      ],
-    ],
-  },
-  {
-    id: "download",
-    path: "/download/",
-    title: "Download Ligand-X for Windows, macOS, and Linux",
-    description:
-      "Download the free Ligand-X launcher for Windows, macOS, or Linux and install a self-hosted computational drug discovery workbench.",
-    eyebrow: "Download Ligand-X",
-    heading: "Run Ligand-X on your own computer.",
-    intro:
-      "Download the Ligand-X desktop launcher for Windows, macOS, or Linux. The launcher installs and manages the local containerized services used by the computational drug discovery workbench.",
-    sections: [
-      [
-        "Desktop launcher",
-        "Choose the release for your operating system, install Docker when required, select the modules you need, and start the local Ligand-X application.",
-      ],
-      [
-        "Command-line installation",
-        "Advanced users can download the runtime bundle, configure environment settings, pull the required containers, and start the stack with Docker Compose.",
-      ],
-      [
-        "Project source and releases",
-        "Release files, changelogs, issue reporting, and installation resources are available from the official Ligand-X launcher repository on GitHub.",
-      ],
-    ],
-  },
-  {
-    id: "contact",
-    path: "/contact/",
-    title: "Contact and request a Ligand-X Pro license",
-    description:
-      "Contact the Ligand-X team to request a Pro license for local advanced computational chemistry and molecular-design modules.",
-    eyebrow: "Contact Ligand-X",
-    heading: "Request access to Ligand-X Pro.",
-    intro:
-      "Tell us about your organization and the advanced Ligand-X modules you need. Pro licensing adds selected private computational services to your local installation.",
-    sections: [
-      [
-        "What to include",
-        "Provide your name, organization, email address, intended use, and the modules or workflows you want to evaluate.",
-      ],
-      [
-        "Keep computation local",
-        "A Pro license unlocks selected module containers while scientific inputs and calculation results remain on your own infrastructure.",
-      ],
-    ],
-  },
+  };
+};
+
+const primaryPages = SITE_ROUTES.filter((route) => !route.landing).map(pageFromCopy);
+const landingPages = SITE_ROUTES.filter((route) => route.landing).map(landingFromCopy);
+
+const CRAWLABLE_GUIDE_IDS = [
+  "protein-cleaning",
+  "docking",
+  "molecular-dynamics",
 ];
+
+const guidePages = GUIDES.filter((guide) => CRAWLABLE_GUIDE_IDS.includes(guide.id)).map(
+  (guide) => ({
+    id: "docs",
+    primary: false,
+    guide: true,
+    path: guide.path,
+    title: `${guide.title} guide — Ligand-X documentation`,
+    description: `${guide.desc} Free self-hosted Ligand-X walkthrough.`,
+    eyebrow: guide.eyebrow,
+    heading: guide.title,
+    intro: guide.desc,
+    sections: [
+      [
+        "Prerequisites",
+        guide.prereqs.join(" "),
+      ],
+      ...guide.steps.map((step, index) => [
+        `Step ${index + 1}: ${step.title}`,
+        step.body,
+      ]),
+      [
+        "Expected outputs",
+        guide.outputs.join(" "),
+      ],
+      [
+        "Tips",
+        guide.tips.join(" "),
+      ],
+    ],
+  }),
+);
+
+const gettingStartedPages = GETTING_STARTED_PAGES.map((page) => ({
+  id: "docs",
+  primary: false,
+  path: page.path,
+  title: page.seoTitle || `${page.title} — Ligand-X documentation`,
+  description: page.seoDescription || page.desc,
+  eyebrow: page.eyebrow,
+  heading: page.title,
+  intro: page.desc,
+  sections: page.seoSections || page.sections.map((section) => [section.title, page.desc]),
+  actions:
+    page.kind === "hub"
+      ? [
+          { href: "/docs/first-launch/", label: "First launch" },
+          { href: "/docs/configuration/", label: "Configuration" },
+        ]
+      : [
+          { href: "/docs/", label: "Installation guide" },
+          { href: "/download/", label: "Download Ligand-X" },
+        ],
+}));
 
 const benchmarkPages = [
   {
@@ -227,10 +190,16 @@ const benchmarkPages = [
   })),
 ];
 
-pages.push(...benchmarkPages);
+const pages = [
+  ...primaryPages,
+  ...landingPages,
+  ...gettingStartedPages,
+  ...guidePages,
+  ...benchmarkPages,
+];
 
 const escapeHtml = (value) =>
-  value
+  String(value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -239,13 +208,38 @@ const escapeHtml = (value) =>
 const pageUrl = (page) => `${ORIGIN}${page.path}`;
 
 const navigation = (currentId) =>
-  pages
-    .filter((page) => page.primary !== false && page.id !== "contact")
+  SITE_ROUTES.filter((route) => route.primary)
     .map(
-      (page) =>
-        `<a href="${page.path}"${page.id === currentId ? ' aria-current="page"' : ""}>${page.id === "home" ? "Home" : page.id[0].toUpperCase() + page.id.slice(1)}</a>`,
+      (route) =>
+        `<a href="${route.path}"${route.id === currentId ? ' aria-current="page"' : ""}>${escapeHtml(route.label)}</a>`,
     )
     .join("\n          ");
+
+const faqBlock = (faqs) => {
+  if (!faqs || !faqs.length) return "";
+  return `
+        <div class="seo-static-faqs">
+          <h2>Frequently asked questions</h2>
+          ${faqs
+            .map(
+              (faq) => `<section>
+            <h3>${escapeHtml(faq.q)}</h3>
+            <p>${escapeHtml(faq.a)}</p>
+          </section>`,
+            )
+            .join("\n          ")}
+        </div>`;
+};
+
+const actionLinks = (page) => {
+  const actions = page.actions || [
+    { href: "/download/", label: "Download Ligand-X" },
+    { href: "https://github.com/kon-218/ligand-x-launcher", label: "View Ligand-X on GitHub" },
+  ];
+  return actions
+    .map((action) => `<a href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`)
+    .join("\n          ");
+};
 
 const staticContent = (page) => `
     <div class="seo-static">
@@ -259,6 +253,7 @@ const staticContent = (page) => `
         <p class="seo-static-eyebrow">${escapeHtml(page.eyebrow)}</p>
         <h1>${escapeHtml(page.heading)}</h1>
         <p class="seo-static-intro">${escapeHtml(page.intro)}</p>
+        ${page.landing ? `<p class="seo-static-claim">${escapeHtml(CLAIMS.freeCore)}</p>` : ""}
         <div class="seo-static-sections">
           ${page.sections
             .map(
@@ -269,14 +264,19 @@ const staticContent = (page) => `
             )
             .join("\n          ")}
         </div>
+        ${faqBlock(page.faqs)}
         <p class="seo-static-actions">
-          <a href="/download/">Download Ligand-X</a>
-          <a href="https://github.com/kon-218/ligand-x-launcher">View Ligand-X on GitHub</a>
+          ${actionLinks(page)}
         </p>
       </main>
       <footer>
         <p>Ligand-X is a self-hosted computational chemistry platform created by Konstantin Nomerotski.</p>
-        <a href="/contact/">Contact and licensing</a>
+        <nav aria-label="Topic pages">
+          <a href="/molecular-docking/">Molecular docking</a>
+          <a href="/molecular-dynamics/">Molecular dynamics</a>
+          <a href="/docking-to-md/">Docking to MD</a>
+          <a href="/contact/">Contact and licensing</a>
+        </nav>
       </footer>
     </div>`;
 
@@ -313,11 +313,12 @@ const structuredData = (page) => {
         "Ligand editing and management",
         "Molecular docking with AutoDock Vina",
         "Molecular dynamics with OpenMM",
+        "Docking to MD workflows",
         "Binding-pocket detection",
         "Protein-ligand analysis",
       ],
       description:
-        "A free, self-hosted workbench for protein preparation, ligand management, molecular docking, molecular dynamics, and computational drug discovery.",
+        "A free, self-hosted workbench for protein preparation, ligand management, molecular docking, molecular dynamics, docking-to-MD pipelines, and computational drug discovery.",
       author: {
         "@type": "Person",
         name: "Konstantin Nomerotski",
@@ -327,12 +328,12 @@ const structuredData = (page) => {
         "@type": "Offer",
         price: "0",
         priceCurrency: "USD",
-        category: "Academic use",
+        category: "Free core use",
       },
     },
   ];
 
-  if (page.id !== "home") {
+  if (page.id !== "home" || page.path !== "/") {
     graph.push({
       "@type": "WebPage",
       "@id": `${pageUrl(page)}#webpage`,
@@ -345,6 +346,37 @@ const structuredData = (page) => {
     });
   }
 
+  if (page.faqs && page.faqs.length) {
+    graph.push({
+      "@type": "FAQPage",
+      "@id": `${pageUrl(page)}#faq`,
+      mainEntity: page.faqs.map((faq) => ({
+        "@type": "Question",
+        name: faq.q,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: faq.a,
+        },
+      })),
+    });
+  }
+
+  if (page.guide) {
+    graph.push({
+      "@type": "HowTo",
+      "@id": `${pageUrl(page)}#howto`,
+      name: page.heading,
+      description: page.intro,
+      step: page.sections
+        .filter(([heading]) => heading.startsWith("Step "))
+        .map(([heading, text]) => ({
+          "@type": "HowToStep",
+          name: heading.replace(/^Step \d+:\s*/, ""),
+          text,
+        })),
+    });
+  }
+
   return JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
 };
 
@@ -353,16 +385,22 @@ const seoStyle = `
     .seo-static{max-width:1120px;margin:0 auto;padding:0 28px;color:#16201e;font-family:"IBM Plex Sans",system-ui,sans-serif}
     .seo-static-header{min-height:72px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #dce2df}
     .seo-static-brand{color:inherit;font-size:20px;font-weight:700;text-decoration:none}
-    .seo-static nav{display:flex;gap:22px}.seo-static nav a,.seo-static footer a{color:#315f58;text-decoration:none}
+    .seo-static nav{display:flex;gap:22px;flex-wrap:wrap}.seo-static nav a,.seo-static footer a{color:#315f58;text-decoration:none}
     .seo-static nav a[aria-current="page"]{font-weight:700}.seo-static main{padding:80px 0}
     .seo-static-eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:13px;font-weight:700;color:#397c71}
     .seo-static h1{max-width:820px;margin:12px 0 22px;font-size:clamp(40px,6vw,72px);line-height:1.03;letter-spacing:-.04em}
     .seo-static-intro{max-width:780px;font-size:20px;line-height:1.65;color:#4f5d59}
+    .seo-static-claim{max-width:780px;margin-top:18px;font-size:16px;line-height:1.6;color:#264d47;font-weight:600}
     .seo-static-sections{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:28px;margin-top:64px}
     .seo-static-sections section{padding-top:22px;border-top:2px solid #397c71}
-    .seo-static h2{font-size:20px}.seo-static section p,.seo-static footer{line-height:1.65;color:#5f6b68}
-    .seo-static-actions{display:flex;gap:14px;margin-top:48px}.seo-static-actions a{padding:12px 18px;border-radius:6px;background:#1d6d60;color:#fff;text-decoration:none}
-    .seo-static-actions a+ a{background:#edf2f0;color:#264d47}.seo-static footer{padding:28px 0 48px;border-top:1px solid #dce2df}
+    .seo-static h2{font-size:20px}.seo-static h3{font-size:17px;margin:0 0 8px}
+    .seo-static section p,.seo-static footer{line-height:1.65;color:#5f6b68}
+    .seo-static-faqs{margin-top:56px;max-width:780px}.seo-static-faqs h2{margin-bottom:24px}
+    .seo-static-faqs section{padding:18px 0;border-top:1px solid #dce2df}
+    .seo-static-actions{display:flex;gap:14px;margin-top:48px;flex-wrap:wrap}.seo-static-actions a{padding:12px 18px;border-radius:6px;background:#1d6d60;color:#fff;text-decoration:none}
+    .seo-static-actions a+ a{background:#edf2f0;color:#264d47}
+    .seo-static footer{padding:28px 0 48px;border-top:1px solid #dce2df}
+    .seo-static footer nav{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
     @media(max-width:700px){.seo-static-header{align-items:flex-start;gap:18px;padding:20px 0}.seo-static nav{flex-wrap:wrap;gap:10px 16px}.seo-static main{padding:52px 0}.seo-static-actions{align-items:flex-start;flex-direction:column}}
   </style>`;
 
@@ -443,7 +481,7 @@ fs.copyFileSync(path.join(ROOT, "robots.txt"), path.join(DIST, "robots.txt"));
 fs.copyFileSync(path.join(ROOT, "CNAME"), path.join(DIST, "CNAME"));
 fs.writeFileSync(path.join(DIST, ".nojekyll"), "");
 
-const lastModified = "2026-07-28";
+const lastModified = new Date().toISOString().slice(0, 10);
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${pages
@@ -451,13 +489,14 @@ ${pages
     (page) => `  <url>
     <loc>${pageUrl(page)}</loc>
     <lastmod>${lastModified}</lastmod>
-    <changefreq>${page.id === "home" ? "weekly" : "monthly"}</changefreq>
+    <changefreq>${page.id === "home" && page.path === "/" ? "weekly" : "monthly"}</changefreq>
   </url>`,
   )
   .join("\n")}
 </urlset>
 `;
 fs.writeFileSync(path.join(DIST, "sitemap.xml"), sitemap);
+fs.writeFileSync(path.join(ROOT, "sitemap.xml"), sitemap);
 
 const notFound = `<!doctype html>
 <html lang="en">
