@@ -404,10 +404,12 @@
           "Ketcher (Apache-2.0) — structure editing",
           "PyTorch (BSD-3-Clause), Boltz-2 (MIT), ADMET-AI (MIT), REINVENT4 (Apache-2.0) — model-based Pro modules",
           "PySCF (Apache-2.0), xtb (LGPL-3.0), ASH (GPL-2.0), AmberTools (GPL-3.0 and others) — quantum chemistry and QM/MM",
+          "NVIDIA CUDA runtime, cuDNN, and related GPU libraries (NVIDIA terms) — GPU-accelerated modules",
         ],
         after: [
-          "A complete component-by-component list, including transitive dependencies, ships with the software as THIRD_PARTY_NOTICES.md and can be regenerated from any released image.",
+          "A complete component-by-component list, including transitive dependencies, ships inside each image as /app/THIRD_PARTY_NOTICES.md and with the launcher as a GitHub release asset. It can be regenerated from any released image.",
           "Some of these components are licensed under the GNU GPL or LGPL. As required by those licences, Ligand-X Inc. will supply the complete corresponding source code for them to any recipient of an image containing them, for three years from the date of distribution. Write to support@ligand-x.com. We redistribute them unmodified.",
+          "NVIDIA components remain under NVIDIA's licence agreements. Ligand-X does not sublicense them except as those agreements allow.",
         ],
       },
       {
