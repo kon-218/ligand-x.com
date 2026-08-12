@@ -437,13 +437,6 @@ const PainValueSection = () => (
         <p className="pain-statement">
           None of that is chemistry. Ligand-X handles the conversions, keeps every job and result attached to the project that produced it, and lets you wire protein &rarr; docking &rarr; MD on one canvas and press run. What is left is the actual work &mdash; four moves.
         </p>
-        <p className="pain-topics">
-          <a href="/molecular-docking/" onClick={(e) => window.__nav("molecular-docking", e)}>Molecular docking</a>
-          <span aria-hidden="true">·</span>
-          <a href="/molecular-dynamics/" onClick={(e) => window.__nav("molecular-dynamics", e)}>Molecular dynamics</a>
-          <span aria-hidden="true">·</span>
-          <a href="/docking-to-md/" onClick={(e) => window.__nav("docking-to-md", e)}>Docking to MD</a>
-        </p>
       </div>
     </div>
   </section>
