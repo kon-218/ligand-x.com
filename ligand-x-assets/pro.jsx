@@ -54,7 +54,7 @@ const DOORS = [
     id: "commercial",
     kicker: "Company or contract research",
     title: "Commercial Pro, scoped to you",
-    body: "Pricing is quoted per organization — it depends on which modules you need, how many installs, and what support you want. Tell us the workflow and we will come back with a scope and a number.",
+    body: "Licensed by Ligand-X Inc. and quoted per organization — it depends on which modules you need, how many installs, and what support you want. Tell us the workflow and we will come back with a scope and a number.",
     cta: "Talk about commercial licensing",
     topic: "Commercial Pro modules",
     nav: "contact",
@@ -382,6 +382,21 @@ const ProPage = () => {
               <Icon name="arrow" size={14} />
             </button>
           </div>
+        </div>
+        <div className="container-wide">
+          <p style={{ color: 'var(--muted)', fontSize: 13.5, lineHeight: 1.7, marginTop: 'var(--sp-5)', marginBottom: 0 }}>
+            All Ligand-X licences are granted by {COMPANY.legalName}, {COMPANY.jurisdiction}. The
+            free core platform is licensed under PolyForm Noncommercial 1.0.0 and Pro modules are
+            proprietary — see the{' '}
+            <a
+              href="/legal/license/"
+              onClick={(event) => window.__nav('legal', event, { path: '/legal/license/' })}
+              style={{ color: 'var(--accent-strong)' }}
+            >
+              software licence
+            </a>{' '}
+            for what noncommercial means in practice.
+          </p>
         </div>
       </section>
     </div>

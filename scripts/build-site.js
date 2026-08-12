@@ -9,6 +9,8 @@ const { SITE_COPY, CLAIMS } = require("../ligand-x-assets/copy.js");
 const { SITE_ROUTES } = require("../ligand-x-assets/routes.js");
 const { GUIDES } = require("../ligand-x-assets/guides.js");
 const { GETTING_STARTED_PAGES } = require("../ligand-x-assets/getting-started.js");
+const { COMPANY } = require("../ligand-x-assets/company.js");
+const { LEGAL_PAGES } = require("../ligand-x-assets/legal.js");
 
 const pageFromCopy = (route) => {
   const block = SITE_COPY[route.id];
@@ -190,12 +192,36 @@ const benchmarkPages = [
   })),
 ];
 
+// Legal documents. The full text of each section is pre-rendered rather than
+// summarised: a policy a crawler (or a reader with JavaScript disabled) can
+// only see half of is not a posted policy.
+const legalPages = LEGAL_PAGES.map((document) => ({
+  id: "legal",
+  primary: false,
+  legal: true,
+  path: document.path,
+  title: document.seoTitle,
+  description: document.seoDescription,
+  eyebrow: document.eyebrow,
+  heading: document.title,
+  intro: `${document.desc} Effective ${document.updated}.`,
+  sections: document.sections.map((section) => [
+    section.title,
+    [...(section.body || []), ...(section.list || []), ...(section.after || [])].join(" "),
+  ]),
+  actions: [
+    { href: "/legal/", label: "All legal documents" },
+    { href: "/contact/", label: "Contact Ligand-X" },
+  ],
+}));
+
 const pages = [
   ...primaryPages,
   ...landingPages,
   ...gettingStartedPages,
   ...guidePages,
   ...benchmarkPages,
+  ...legalPages,
 ];
 
 const escapeHtml = (value) =>
@@ -270,18 +296,38 @@ const staticContent = (page) => `
         </p>
       </main>
       <footer>
-        <p>Ligand-X is a self-hosted computational chemistry platform created by Konstantin Nomerotski.</p>
+        <p>Ligand-X is a self-hosted computational chemistry platform from ${escapeHtml(COMPANY.legalName)}, ${escapeHtml(COMPANY.jurisdiction)}, founded by ${escapeHtml(COMPANY.founder)}.</p>
         <nav aria-label="Topic pages">
           <a href="/molecular-docking/">Molecular docking</a>
           <a href="/molecular-dynamics/">Molecular dynamics</a>
           <a href="/docking-to-md/">Docking to MD</a>
           <a href="/contact/">Contact and licensing</a>
         </nav>
+        <nav aria-label="Legal">
+          <a href="/legal/privacy/">Privacy policy</a>
+          <a href="/legal/terms/">Terms of use</a>
+          <a href="/legal/license/">Software licence</a>
+        </nav>
+        <p>&copy; ${escapeHtml(COMPANY.copyrightYear)} ${escapeHtml(COMPANY.legalName)} &middot; Core platform under PolyForm Noncommercial 1.0.0</p>
       </footer>
     </div>`;
 
 const structuredData = (page) => {
   const graph = [
+    {
+      // Authorship and ownership are different claims, and the graph now makes
+      // both: the Person below stays as `author` because he wrote it, while the
+      // company is the publisher and the party that licenses the software.
+      "@type": "Organization",
+      "@id": `${ORIGIN}/#organization`,
+      name: COMPANY.shortName,
+      legalName: COMPANY.legalName,
+      url: `${ORIGIN}/`,
+      email: COMPANY.contactEmail,
+      logo: `${ORIGIN}/ligand-x-assets/ligandx.png`,
+      founder: { "@type": "Person", name: COMPANY.founder, url: COMPANY.founderUrl },
+      sameAs: ["https://github.com/kon-218/ligand-x-launcher"],
+    },
     {
       "@type": "WebSite",
       "@id": `${ORIGIN}/#website`,
@@ -291,6 +337,7 @@ const structuredData = (page) => {
       description:
         "Official website for the Ligand-X self-hosted computational drug discovery workbench.",
       inLanguage: "en",
+      publisher: { "@id": `${ORIGIN}/#organization` },
     },
     {
       "@type": "SoftwareApplication",
@@ -321,9 +368,12 @@ const structuredData = (page) => {
         "A free, self-hosted workbench for protein preparation, ligand management, molecular docking, molecular dynamics, docking-to-MD pipelines, and computational drug discovery.",
       author: {
         "@type": "Person",
-        name: "Konstantin Nomerotski",
-        url: "https://k-nom.com/",
+        name: COMPANY.founder,
+        url: COMPANY.founderUrl,
       },
+      publisher: { "@id": `${ORIGIN}/#organization` },
+      provider: { "@id": `${ORIGIN}/#organization` },
+      copyrightHolder: { "@id": `${ORIGIN}/#organization` },
       offers: {
         "@type": "Offer",
         price: "0",

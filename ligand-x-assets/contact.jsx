@@ -84,6 +84,17 @@ const ContactPage = () => {
                   Back to Pro
                 </button>
               </div>
+              {/* Required once a privacy policy exists: the person filling this
+                  in has to be told who receives it and that a third party
+                  (FormSubmit) carries the message. */}
+              <p style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.6, marginTop: 16, marginBottom: 0 }}>
+                Submitting sends these details to {COMPANY.legalName} via FormSubmit, which delivers
+                the message to our inbox. We use them only to answer you and to scope a licence — no
+                marketing lists, no sharing. See the{' '}
+                <a href="/legal/privacy/" onClick={(event) => window.__nav('legal', event, { path: '/legal/privacy/' })}>
+                  privacy policy
+                </a>.
+              </p>
             </form>
           </div>
 

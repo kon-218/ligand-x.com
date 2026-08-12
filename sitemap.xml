@@ -2,117 +2,137 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.ligand-x.com/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/features/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/pro/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/download/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/contact/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.ligand-x.com/legal/</loc>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/molecular-docking/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/molecular-dynamics/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docking-to-md/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/requirements/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/first-launch/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/configuration/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/first-configuration/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/custom-configuration/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/guides/protein-cleaning/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/guides/docking/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/guides/molecular-dynamics/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/benchmarks/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/benchmarks/docking/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/benchmarks/molecular-dynamics/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/benchmarks/binding-affinity/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/benchmarks/free-energy/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
   <url>
     <loc>https://www.ligand-x.com/docs/benchmarks/quantum-chemistry/</loc>
-    <lastmod>2026-08-10</lastmod>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.ligand-x.com/legal/privacy/</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.ligand-x.com/legal/terms/</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.ligand-x.com/legal/license/</loc>
+    <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
   </url>
 </urlset>

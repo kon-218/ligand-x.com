@@ -18,6 +18,10 @@ const mimeTypes = {
   ".png": "image/png",
   ".svg": "image/svg+xml",
   ".txt": "text/plain; charset=utf-8",
+  // Self-hosted fonts. Without this they fall through to
+  // application/octet-stream, and the resulting dev-only font failure reads
+  // like a broken @font-face rule rather than a server default.
+  ".woff2": "font/woff2",
   ".xml": "application/xml; charset=utf-8",
 };
 

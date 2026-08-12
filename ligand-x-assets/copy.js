@@ -188,6 +188,35 @@
       },
     },
 
+    // The /legal/ hub. The documents themselves live in legal.js — this block
+    // exists because build-site.js pageFromCopy() throws for any non-landing
+    // route without an seo block.
+    legal: {
+      eyebrow: "Legal",
+      h1: "Terms, privacy, and licensing.",
+      lede:
+        "Ligand-X Inc. is a New York corporation. These are the documents that govern this website, your personal data, and your right to run Ligand-X.",
+      seo: {
+        title: "Legal — privacy, terms, and licensing — Ligand-X",
+        description:
+          "Legal documents for Ligand-X Inc.: privacy policy, terms of use, and how the free core platform and proprietary Pro modules are licensed.",
+        sections: [
+          [
+            "Privacy policy",
+            "How Ligand-X Inc. handles personal data: no analytics, no tracking cookies, and no telemetry in the desktop application. Contact-form data only, with GDPR and California rights.",
+          ],
+          [
+            "Terms of use",
+            "The terms covering this website and the Ligand-X software, including the scientific-use disclaimer, warranty disclaimer, limitation of liability, and governing law.",
+          ],
+          [
+            "Software licence",
+            "The core platform and launcher are licensed under PolyForm Noncommercial 1.0.0; Pro modules are proprietary and licensed by Ligand-X Inc. Academic licences include every Pro module free.",
+          ],
+        ],
+      },
+    },
+
     landings: {
       "molecular-docking": {
         path: "/molecular-docking/",

@@ -17,6 +17,10 @@
     { id: "pro", label: "Editions", path: "/pro/", primary: true },
     { id: "download", label: "Download", path: "/download/", primary: true },
     { id: "contact", label: "Request license", path: "/contact/", primary: false },
+    // primary:false deliberately keeps legal out of the header and mobile menu;
+    // it belongs in the footer. Sub-documents live under /legal/ and are
+    // resolved by path prefix in app.jsx, the same way /docs/ is.
+    { id: "legal", label: "Legal", path: "/legal/", primary: false },
     {
       id: "molecular-docking",
       label: "Molecular docking",

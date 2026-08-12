@@ -136,7 +136,8 @@ const Footer = () => (
           </div>
           <p style={{ color: 'var(--muted)', fontSize: 13.5, maxWidth: 320, margin: 0 }}>
             A free, self-hosted computational chemistry platform for the full drug-discovery
-            pipeline. Built by Konstantin Nomerotski.
+            pipeline. Built and licensed by {COMPANY.legalName}, {COMPANY.jurisdiction},
+            founded by {COMPANY.founder}.
           </p>
         </div>
         <div>
@@ -173,9 +174,18 @@ const Footer = () => (
             <li><a href="/contact/" onClick={(event) => window.__nav('contact', event)}>Request license</a></li>
           </ul>
         </div>
+        <div>
+          <h6>Company</h6>
+          <ul>
+            <li><a href="/legal/privacy/" onClick={(event) => window.__nav('legal', event, { path: '/legal/privacy/' })}>Privacy policy</a></li>
+            <li><a href="/legal/terms/" onClick={(event) => window.__nav('legal', event, { path: '/legal/terms/' })}>Terms of use</a></li>
+            <li><a href="/legal/license/" onClick={(event) => window.__nav('legal', event, { path: '/legal/license/' })}>Software licence</a></li>
+            <li><a href={`mailto:${COMPANY.contactEmail}`}>{COMPANY.contactEmail}</a></li>
+          </ul>
+        </div>
       </div>
       <div className="foot-base">
-        <span>© 2026 Konstantin Nomerotski · PolyForm Noncommercial</span>
+        <span>© {COMPANY.copyrightYear} {COMPANY.legalName} · Core platform under PolyForm Noncommercial</span>
         <span>v0.1.0 · current repository</span>
       </div>
     </div>
@@ -192,11 +202,18 @@ const App = () => {
     const route = ROUTES.find((candidate) => candidate.path.replace(/\/+$/, "") === path);
     if (route) return route.id;
     if (path.startsWith("/docs/")) return "docs";
+    if (path.startsWith("/legal/")) return "legal";
     return "home";
   };
   const [page, setPage] = React.useState(getPathPage);
   const [docsPathKey, setDocsPathKey] = React.useState(
     () => window.location.pathname.replace(/\/+$/, "") + "/" || "/docs/",
+  );
+  // Legal documents are one component switched by pathname, so it has to be
+  // re-keyed on navigation the same way docs is — otherwise moving between two
+  // legal pages leaves the previous document's scroll position and effects.
+  const [legalPathKey, setLegalPathKey] = React.useState(
+    () => window.location.pathname.replace(/\/+$/, "") + "/" || "/legal/",
   );
 
   const getInitialTheme = () => {
@@ -219,8 +236,13 @@ const App = () => {
     if (id === "docs") {
       setDocsPathKey(nextPath.replace(/\/+$/, "") + "/");
     }
+    if (id === "legal") {
+      setLegalPathKey(nextPath.replace(/\/+$/, "") + "/");
+    }
     if (id === "docs" && options.path && options.path !== "/docs/") {
       // Docs deep links apply their own title/description inside DocsPage.
+    } else if (id === "legal" && options.path && options.path !== "/legal/") {
+      // Likewise: each legal document applies its own SEO inside LegalPage.
     } else {
       syncDocumentSeo(id);
     }
@@ -235,6 +257,8 @@ const App = () => {
       setPage(next);
       if (next === "docs") {
         setDocsPathKey(window.location.pathname.replace(/\/+$/, "") + "/");
+      } else if (next === "legal") {
+        setLegalPathKey(window.location.pathname.replace(/\/+$/, "") + "/");
       } else {
         syncDocumentSeo(next);
       }
@@ -267,6 +291,7 @@ const App = () => {
     case "docs":      PageComp = <DocsPage key={docsPathKey} />; break;
     case "download":  PageComp = <DownloadPage />; break;
     case "contact":   PageComp = <ContactPage />; break;
+    case "legal":     PageComp = <LegalPage key={legalPathKey} />; break;
     case "molecular-docking":
     case "molecular-dynamics":
     case "docking-to-md":
