@@ -385,9 +385,8 @@ const ProPage = () => {
         </div>
         <div className="container-wide">
           <p style={{ color: 'var(--muted)', fontSize: 13.5, lineHeight: 1.7, marginTop: 'var(--sp-5)', marginBottom: 0 }}>
-            All Ligand-X licences are granted by {COMPANY.legalName}, {COMPANY.jurisdiction}. The
-            free core platform is licensed under PolyForm Noncommercial 1.0.0 and Pro modules are
-            proprietary — see the{' '}
+            All Ligand-X licences are granted by {COMPANY.legalName}. The free core platform is
+            licensed under PolyForm Noncommercial 1.0.0 and Pro modules are proprietary. See the{' '}
             <a
               href="/legal/license/"
               onClick={(event) => window.__nav('legal', event, { path: '/legal/license/' })}

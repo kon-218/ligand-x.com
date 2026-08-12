@@ -23,8 +23,8 @@ const LegalIndex = () => (
           Terms, privacy, and licensing.
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: 17, maxWidth: 720, margin: 0 }}>
-          {COMPANY.legalName} is {COMPANY.jurisdiction}. These are the documents that govern this
-          website, your personal data, and your right to run Ligand-X.
+          These are the documents that govern this website, your personal data, and your right to
+          run Ligand-X.
         </p>
       </div>
     </section>

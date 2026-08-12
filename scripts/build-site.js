@@ -296,7 +296,7 @@ const staticContent = (page) => `
         </p>
       </main>
       <footer>
-        <p>Ligand-X is a self-hosted computational chemistry platform from ${escapeHtml(COMPANY.legalName)}, ${escapeHtml(COMPANY.jurisdiction)}, founded by ${escapeHtml(COMPANY.founder)}.</p>
+        <p>Ligand-X is a free, self-hosted computational chemistry platform.</p>
         <nav aria-label="Topic pages">
           <a href="/molecular-docking/">Molecular docking</a>
           <a href="/molecular-dynamics/">Molecular dynamics</a>
@@ -315,9 +315,6 @@ const staticContent = (page) => `
 const structuredData = (page) => {
   const graph = [
     {
-      // Authorship and ownership are different claims, and the graph now makes
-      // both: the Person below stays as `author` because he wrote it, while the
-      // company is the publisher and the party that licenses the software.
       "@type": "Organization",
       "@id": `${ORIGIN}/#organization`,
       name: COMPANY.shortName,
@@ -325,7 +322,6 @@ const structuredData = (page) => {
       url: `${ORIGIN}/`,
       email: COMPANY.contactEmail,
       logo: `${ORIGIN}/ligand-x-assets/ligandx.png`,
-      founder: { "@type": "Person", name: COMPANY.founder, url: COMPANY.founderUrl },
       sameAs: ["https://github.com/kon-218/ligand-x-launcher"],
     },
     {
@@ -366,11 +362,7 @@ const structuredData = (page) => {
       ],
       description:
         "A free, self-hosted workbench for protein preparation, ligand management, molecular docking, molecular dynamics, docking-to-MD pipelines, and computational drug discovery.",
-      author: {
-        "@type": "Person",
-        name: COMPANY.founder,
-        url: COMPANY.founderUrl,
-      },
+      author: { "@id": `${ORIGIN}/#organization` },
       publisher: { "@id": `${ORIGIN}/#organization` },
       provider: { "@id": `${ORIGIN}/#organization` },
       copyrightHolder: { "@id": `${ORIGIN}/#organization` },

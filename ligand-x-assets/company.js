@@ -2,11 +2,9 @@
 // company.js — SINGLE SOURCE OF TRUTH for legal entity identity
 // ============================================================
 //
-// Ligand-X was incorporated as a New York corporation. Before that, the site
-// attributed the product to an individual in four different places that had
-// already drifted apart (React footer, pre-rendered static footer, schema.org
-// author, Pro page copy). Everything that names the legal entity now reads from
-// here so the next change is one edit, not four.
+// Ligand-X Inc. identity for legal documents and copyright lines. Marketing
+// copy should not lead with jurisdiction or founder; those stay available here
+// for privacy/terms wording and the registered-address interim line.
 //
 // Values marked __PLACEHOLDER_* are not yet known. scripts/check-documentation.js
 // fails the build on any placeholder that is not listed in its KNOWN_GAPS set —

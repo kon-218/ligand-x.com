@@ -136,8 +136,7 @@ const Footer = () => (
           </div>
           <p style={{ color: 'var(--muted)', fontSize: 13.5, maxWidth: 320, margin: 0 }}>
             A free, self-hosted computational chemistry platform for the full drug-discovery
-            pipeline. Built and licensed by {COMPANY.legalName}, {COMPANY.jurisdiction},
-            founded by {COMPANY.founder}.
+            pipeline.
           </p>
         </div>
         <div>

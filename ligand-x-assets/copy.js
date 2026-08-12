@@ -195,7 +195,7 @@
       eyebrow: "Legal",
       h1: "Terms, privacy, and licensing.",
       lede:
-        "Ligand-X Inc. is a New York corporation. These are the documents that govern this website, your personal data, and your right to run Ligand-X.",
+        "These are the documents that govern this website, your personal data, and your right to run Ligand-X.",
       seo: {
         title: "Legal — privacy, terms, and licensing — Ligand-X",
         description:
