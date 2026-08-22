@@ -168,8 +168,8 @@ const Footer = () => (
           <h6>Project</h6>
           <ul>
             <li><a href="https://github.com/kon-218/ligand-x-launcher" target="_blank">GitHub</a></li>
-            <li><a href="https://github.com/kon-218/ligand-x-launcher/issues" target="_blank">Issues</a></li>
-            <li><a href="https://github.com/kon-218/ligand-x-launcher/discussions" target="_blank">Discussions</a></li>
+            <li><a href="https://github.com/kon-218/ligand-x-support/issues/new/choose" target="_blank">Support &amp; issues</a></li>
+            <li><a href="https://github.com/kon-218/ligand-x-support/discussions" target="_blank">Discussions</a></li>
             <li><a href="/contact/" onClick={(event) => window.__nav('contact', event)}>Request license</a></li>
           </ul>
         </div>
