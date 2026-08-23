@@ -322,7 +322,11 @@ const structuredData = (page) => {
       url: `${ORIGIN}/`,
       email: COMPANY.contactEmail,
       logo: `${ORIGIN}/ligand-x-assets/ligandx.png`,
-      sameAs: ["https://github.com/kon-218/ligand-x-launcher"],
+      sameAs: [
+        "https://github.com/kon-218/ligand-x-launcher",
+        COMPANY.twitterUrl,
+        COMPANY.instagramUrl,
+      ],
     },
     {
       "@type": "WebSite",
