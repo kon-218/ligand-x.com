@@ -23,6 +23,11 @@
     jurisdictionShort: "New York, USA",
     address: "__PLACEHOLDER_REGISTERED_ADDRESS__",
     contactEmail: "support@ligand-x.com",
+    socialEmail: "social@ligand-x.com",
+    twitterUrl: "https://x.com/LigandXinc",
+    twitterHandle: "@LigandXinc",
+    instagramUrl: "https://www.instagram.com/ligandx.inc/",
+    instagramHandle: "@ligandx.inc",
     website: "https://www.ligand-x.com",
     // Author credit stays accurate — authorship and ownership are different claims.
     founder: "Konstantin Nomerotski",

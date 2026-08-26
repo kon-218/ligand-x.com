@@ -180,6 +180,9 @@ const Footer = () => (
             <li><a href="/legal/terms/" onClick={(event) => window.__nav('legal', event, { path: '/legal/terms/' })}>Terms of use</a></li>
             <li><a href="/legal/license/" onClick={(event) => window.__nav('legal', event, { path: '/legal/license/' })}>Software licence</a></li>
             <li><a href={`mailto:${COMPANY.contactEmail}`}>{COMPANY.contactEmail}</a></li>
+            <li><a href={COMPANY.twitterUrl} target="_blank" rel="noopener noreferrer">{COMPANY.twitterHandle} on X</a></li>
+            <li><a href={COMPANY.instagramUrl} target="_blank" rel="noopener noreferrer">{COMPANY.instagramHandle} on Instagram</a></li>
+            <li><a href={`mailto:${COMPANY.socialEmail}`}>{COMPANY.socialEmail}</a></li>
           </ul>
         </div>
       </div>
