@@ -337,6 +337,62 @@
       { id: "tips",       title: "Tips" },
     ],
   },
+  {
+    id: "ai-assistant",
+    title: "AI assistant (MCP)",
+    path: "/docs/guides/ai-assistant/",
+    eyebrow: "Guide · Automation",
+    time: "8 min",
+    desc: "Connect Claude Code, Codex, or Cursor to a local Ligand-X workspace through the launcher MCP connector, with human approval in the Ligand-X app.",
+    isPro: false,
+    prereqs: [
+      "Ligand-X running from the launcher (Start services succeeded)",
+      "A local Ligand-X login",
+      "Claude Code, Claude Desktop, Codex, or Cursor installed on the same machine",
+    ],
+    steps: [
+      {
+        title: "Open the running launcher screen",
+        body: "With services healthy, stay on the launcher Running screen. Optionally check Allow this assistant to execute approved calculations if you want the MCP session to call ligandx_execute_job_plan after you approve plans in Ligand-X. Leave it unchecked for planning-only access.",
+      },
+      {
+        title: "Connect an AI assistant",
+        body: "Click Connect an AI assistant. The launcher mints an 8-hour workspace credential into protected OS storage and copies paste-ready MCP configuration plus workflow instructions to the clipboard. No Docker commands or API secrets appear in the JSON.",
+      },
+      {
+        title: "Paste into a dedicated client session",
+        body: "Merge the mcpServers.ligand-x block into Claude MCP settings, Codex MCP servers, or Cursor .cursor/mcp.json. Prefer a dedicated assistant session that only connects to Ligand-X. Do not combine this connector with other MCP servers that can read private files or browse the open web while scientific content and optional egress are enabled.",
+      },
+      {
+        title: "Create a curated plan from the assistant",
+        body: "Ask the assistant to call ligandx_capabilities, then ligandx_list_templates. For the beta, use docking-from-pdb-smiles or docking-pose-to-md only. The assistant creates an immutable plan receipt; it cannot invent free-form job graphs.",
+      },
+      {
+        title: "Approve in Ligand-X, then execute",
+        body: "Open Ligand-X in the browser, review the plan hash and inputs, and approve there. If you enabled execution, the assistant may then call ligandx_execute_job_plan for that exact plan and poll ligandx_get_job. Jobs planned or executed through MCP show an MCP badge in the job list.",
+      },
+      {
+        title: "Continue docking into MD safely",
+        body: "When docking completes, the assistant reads ligandx_get_job_result for an opaque pose handle (ah_…), then creates a docking-pose-to-md plan. Raw PDB/SDF/paths stay browser-only. Revoke assistant access from the launcher when finished.",
+      },
+    ],
+    outputs: [
+      "Paste-ready MCP configuration without secrets",
+      "Immutable template-backed job plans awaiting Ligand-X approval",
+      "Optional executed docking and short MD jobs tagged MCP in the job list",
+    ],
+    tips: [
+      "Planning-only sessions are safer for exploration; enable execution only when you intend to run approved jobs from the assistant.",
+      "Remote egress (for example RCSB PDB fetch) may send identifiers off-host when enabled in Ligand-X settings — treat that as intentional network access.",
+      "If a credential is revoked or expires, reconnect from the launcher; do not copy mcp.json between machines or into a shared git repo.",
+    ],
+    sections: [
+      { id: "prereqs",    title: "Prerequisites" },
+      { id: "walkthrough", title: "Walkthrough" },
+      { id: "outputs",    title: "Expected outputs" },
+      { id: "tips",       title: "Tips" },
+    ],
+  },
 ];
 
   const GUIDE_EXPORTS = { GUIDES };

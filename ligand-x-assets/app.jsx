@@ -159,6 +159,7 @@ const Footer = () => (
             <li><a href="/docs/requirements/" onClick={(event) => window.__nav('docs', event, { path: '/docs/requirements/' })}>Requirements</a></li>
             <li><a href="/docs/first-launch/" onClick={(event) => window.__nav('docs', event, { path: '/docs/first-launch/' })}>First launch</a></li>
             <li><a href="/docs/configuration/" onClick={(event) => window.__nav('docs', event, { path: '/docs/configuration/' })}>Configuration</a></li>
+            <li><a href="/docs/guides/ai-assistant/" onClick={(event) => window.__nav('docs', event, { path: '/docs/guides/ai-assistant/' })}>AI assistant (MCP)</a></li>
             <li><a href="/docs/guides/docking/" onClick={(event) => window.__nav('docs', event, { path: '/docs/guides/docking/' })}>Docking guide</a></li>
             <li><a href="/docs/guides/molecular-dynamics/" onClick={(event) => window.__nav('docs', event, { path: '/docs/guides/molecular-dynamics/' })}>MD guide</a></li>
             <li><a href="/docs/#api-reference" onClick={(event) => { window.__nav('docs', event); requestAnimationFrame(() => window.__navDocs && window.__navDocs('api-reference')); }}>API reference</a></li>
