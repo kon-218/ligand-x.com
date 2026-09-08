@@ -63,6 +63,7 @@ const CRAWLABLE_GUIDE_IDS = [
   "protein-cleaning",
   "docking",
   "molecular-dynamics",
+  "ai-assistant",
 ];
 
 const guidePages = GUIDES.filter((guide) => CRAWLABLE_GUIDE_IDS.includes(guide.id)).map(
