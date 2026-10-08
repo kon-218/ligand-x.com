@@ -153,19 +153,15 @@ const benchmarkPages = [
     eyebrow: "Benchmark · Molecular docking · Draft",
     heading: "AutoDock Vina versus Vinardo on Astex Diverse.",
     intro:
-      "With preparation, search space, seed, and exhaustiveness held constant, Vinardo generated more sub-ångström poses but did not improve top-ranked pose success.",
+      "A controlled comparison of two scoring functions with preparation, search space, seed, and exhaustiveness held constant. The protocol is being revised and is not yet locked, so no results are published here.",
     sections: [
       [
         "Controlled comparison",
         "Both scoring functions were evaluated across the same 85 Astex Diverse complexes using an identical ligand-extent-plus-4-ångström search box, seed 20260720, exhaustiveness 32, and ten output modes.",
       ],
       [
-        "Primary result",
-        "Vina achieved 62.4% top-1 success at 2 Å versus 60.0% for Vinardo; Vinardo improved sub-1 Å success from 36.5% to 45.9% and median RMSD from 1.27 Å to 1.17 Å.",
-      ],
-      [
-        "Interpretation",
-        "Both methods sampled a correct pose in more than 84% of cases. The remaining accuracy reserve is primarily a pose-ranking problem rather than a pose-generation problem.",
+        "Results",
+        "Numerical results are withheld. The Astex docking analysis is under a revised protocol that has not been locked, and its release gate has not passed. Success rates and RMSD figures will be published here with the locked protocol and its reproducibility package.",
       ],
     ],
   },
