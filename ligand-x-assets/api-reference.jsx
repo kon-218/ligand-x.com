@@ -141,7 +141,7 @@ const API_GROUPS = [
   {
     id: 'workflows',
     title: 'Workflows',
-    desc: 'Run a multi-step canvas workflow — a directed graph of boltz2, md, and docking nodes — as a single job. Ligand-X performs a topological sort and injects upstream outputs automatically.',
+    desc: 'Run a canvas graph as a durable workflow: Ligand-X freezes the graph, records it as an approved plan, and runs each step as its own job, passing upstream outputs downstream. Runs survive restarts and can be read or cancelled step by step.',
   },
   {
     id: 'service-routes',
@@ -753,20 +753,37 @@ const WebSocketSection = () => (
 
 const WorkflowsSection = () => (
   <>
-    <Endpoint method="POST" path="/api/workflows/run" desc="Execute a directed canvas workflow. Ligand-X topologically sorts the nodes, injects upstream outputs (protein, ligand SDF), and dispatches a single orchestrating Celery task. Supported node types: boltz2, md, docking.">
+    <Endpoint method="POST" path="/api/workflows/preflight" desc="Compile a canvas graph and check every edge without creating anything. Returns the compiled steps, the binding each edge would carry or a structured refusal naming why it cannot bind, and any execution gate the run would hit.">
       <ParamTable title="Request body" rows={[
-        { name: 'project_id', type: 'UUID',  req: true,  desc: 'Project to associate the workflow job with.' },
-        { name: 'nodes',      type: 'array', req: true,  desc: 'React Flow node objects from the canvas.' },
-        { name: 'edges',      type: 'array', req: true,  desc: 'React Flow edge objects defining the execution order.' },
-        { name: 'campaign',   type: 'object', req: false, desc: 'Optional campaign metadata forwarded to REINVENT nodes.' },
+        { name: 'project_id', type: 'UUID',  req: true, desc: 'Project the graph belongs to.' },
+        { name: 'nodes',      type: 'array', req: true, desc: 'Canvas node objects.' },
+        { name: 'edges',      type: 'array', req: true, desc: 'Canvas edge objects.' },
+      ]} />
+    </Endpoint>
+
+    <Endpoint method="POST" path="/api/workflows/runs" desc="Run a canvas graph now. Pressing Run is the approval: the graph is frozen, stored as an approved workflow plan and executed. Requires an Idempotency-Key header; retrying with the same key and graph returns the same run, the same key with a different graph is 409.">
+      <ParamTable title="Request body" rows={[
+        { name: 'project_id', type: 'UUID',   req: true,  desc: 'Project to run the workflow in (owner or collaborator access).' },
+        { name: 'nodes',      type: 'array',  req: true,  desc: 'Canvas node objects.' },
+        { name: 'edges',      type: 'array',  req: true,  desc: 'Canvas edge objects defining data flow between steps.' },
+        { name: 'title',      type: 'string', req: false, desc: 'Run title (default "Canvas run").' },
+        { name: 'policy',     type: 'object', req: false, desc: 'Run deadline; per-step retries and timeouts travel on each node.' },
       ]} />
       <JsonExample label="200 Response" json={`{
-  "workflow_job_id": "wf-c8d2e…",
-  "stream_url": "/api/jobs/ws",
-  "step_count": 3,
-  "label": "Docking → MD → Boltz-2"
+  "run_id": "6f1c…",
+  "state": "running",
+  "plan_id": "a93e…",
+  "replayed": false,
+  "nodes": [
+    { "node_id": "dock", "child_job_id": "b21d…", "state": "waiting" },
+    { "node_id": "md",   "child_job_id": null,    "state": "blocked" }
+  ]
 }`} />
     </Endpoint>
+
+    <Endpoint method="GET" path="/api/workflows/runs/{run_id}" desc="Read a run's durable state: each node, its child job and its state. Run states are running, completed, failed and cancelled; node states include blocked, ready, waiting, succeeded, failed, skipped and cancelled. Requires access to the run's project." />
+
+    <Endpoint method="POST" path="/api/workflows/{run_id}/cancel" desc="Cancel a run. Steps not yet dispatched end cancelled at once; running steps have their child jobs revoked. The run's final state is derived from its steps." />
   </>
 );
 
