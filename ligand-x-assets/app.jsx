@@ -14,7 +14,7 @@ const syncDocumentSeo = (pageId) => {
 // Below 640px `.nav-links` is display:none and there was no replacement, so the
 // only reachable route from the header was Download. The panel renders the same
 // ROUTES list as the desktop nav — no third copy of the navigation to drift.
-const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.0" }) => {
+const TopNav = ({ page, onNav, theme, onThemeToggle, version = "v0.1.4" }) => {
   const [menuOpen, setMenuOpen] = React.useState(false);
 
   React.useEffect(() => { setMenuOpen(false); }, [page]);
@@ -189,7 +189,7 @@ const Footer = () => (
       </div>
       <div className="foot-base">
         <span>© {COMPANY.copyrightYear} {COMPANY.legalName} · Core platform under PolyForm Noncommercial</span>
-        <span>v0.1.0 · current repository</span>
+        <span>v0.1.4 · current release</span>
       </div>
     </div>
   </footer>

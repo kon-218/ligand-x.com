@@ -36,8 +36,8 @@
   ];
 
   // Full registry mirror, ordered as the discovery loop runs so the reference
-  // reads as a pipeline. Includes preview modules — but see the MODULES
-  // projection below: nothing on the site renders from this array directly.
+  // reads as a pipeline. Includes preview and internal modules — but see the
+  // MODULES projection below: nothing on the site renders from this array directly.
   const REGISTRY_MODULES = [
     // ---------------------------------------------------------- prepare
     {
@@ -79,9 +79,10 @@
         "Ranked binding-site summaries with residue context",
         "Pocket coordinates saved to the project and reusable",
         "Feeds the docking box directly — no manual coordinates",
+        "Cryptic pockets: Lacuna samples conformer sub-states and ranks sites by how far they open, with the open-state receptor carried into docking",
       ],
-      tools: ["fpocket", "P2Rank", "DeepPocket", "Pocketeer"],
-      io: "Cleaned PDB → ranked pocket candidates",
+      tools: ["fpocket", "P2Rank", "DeepPocket", "Pocketeer", "Lacuna"],
+      io: "Cleaned PDB → ranked pocket candidates, including cryptic sites",
       apiPrefixes: ["/api/pocket-finder"],
       guide: null,
     },
@@ -299,7 +300,7 @@
       short: "QM/MM",
       icon: "sigma",
       edition: "pro",
-      maturity: "preview",
+      maturity: "internal",
       category: "simulate",
       summary:
         "Hybrid quantum/classical calculations on a protein-embedded active site.",
@@ -320,7 +321,7 @@
       short: "Kinetics",
       icon: "wave",
       edition: "pro",
-      maturity: "preview",
+      maturity: "internal",
       category: "simulate",
       summary:
         "Residence-time and unbinding-pathway estimation with weighted-ensemble and steered methods.",
@@ -362,10 +363,11 @@
 
   // What the site is allowed to advertise. `maturity: "preview"` means the
   // module ships disabled by default and is not in a stable release, so it must
-  // not appear anywhere public — no cards, no matrix rows, no counts. Every page
-  // and helper below reads this projection, never REGISTRY_MODULES, so a module
-  // becomes visible on the site the moment (and only when) the registry marks it
-  // stable.
+  // not appear anywhere public — no cards, no matrix rows, no counts. `maturity:
+  // "internal"` means owner-only tooling that is never customer-facing. Every
+  // page and helper below reads this projection, never REGISTRY_MODULES, so a
+  // module becomes visible on the site the moment (and only when) the registry
+  // marks it stable.
   const MODULES = REGISTRY_MODULES.filter((m) => m.maturity === "stable");
 
   // Named pipelines — shows how modules compose, which single cards cannot.
