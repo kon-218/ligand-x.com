@@ -24,8 +24,6 @@ const PRO_MODULE_METHOD = {
   boltz2: "The published Boltz-2 model, run on your own GPU. Nothing about the target or the series leaves the machine.",
   "free-energy": "Alchemical ABFE with Boresch restraints and RBFE networks planned by LOMAP. MBAR overlap diagnostics ship with every run, so you can see when a leg is undersampled instead of trusting the number.",
   qc: "ORCA under a guided setup. You choose the method and basis; the workbench handles submission, queueing, and parsing.",
-  qmmm: "ASH drives ORCA and OpenMM over a prepared complex with a QM region you select.",
-  kinetics: "WESTPA weighted-ensemble and RAMD steered unbinding on a dedicated worker queue.",
   reinvent: "REINVENT campaigns under multi-objective scoring, with generated molecules landing back in the project library ready to dock.",
 };
 

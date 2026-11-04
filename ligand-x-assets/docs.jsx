@@ -1391,7 +1391,7 @@ const DocsPage = () => {
                   github.com/kon-218/ligand-x-launcher
                   <Icon name="external" size={11} />
                 </button>
-                <span className="tag">v0.1.0 · current repo</span>
+                <span className="tag">v0.1.4 · current release</span>
                 <span className="tag">launcher-first install</span>
               </div>
             </>
