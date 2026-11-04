@@ -39,6 +39,9 @@ Pushes to `main` build the site into `dist/` and deploy that directory through
 GitHub Pages using `.github/workflows/deploy.yml`. The custom domain is set by
 `CNAME`.
 
+Every pull request runs the same `npm run build` (documentation check plus static pages) through
+`.github/workflows/build.yml`, so a broken page fails before merge and the PR has a check to merge on.
+
 After a production deployment that changes public pages, submit
 `https://www.ligand-x.com/sitemap.xml` in Google Search Console and Bing
 Webmaster Tools. For major changes, use URL Inspection to test the live
