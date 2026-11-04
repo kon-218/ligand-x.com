@@ -250,7 +250,7 @@
           },
           {
             q: "Do I need an account or internet for docking?",
-            a: "No account is required. Ligand-X runs locally; after images are pulled you can work offline on your own hardware.",
+            a: "No Ligand-X cloud account is required; the launcher creates a local login. Docking can run offline after the required images are installed, using local protein and molecule inputs. Fetching public structures or compounds requires internet access.",
           },
           {
             q: "Which docking engine does Ligand-X use?",
@@ -297,7 +297,7 @@
           },
           {
             q: "Can I run MD offline?",
-            a: "Yes. Ligand-X is self-hosted and bound to localhost by default. Structures and trajectories stay on hardware you control.",
+            a: "Yes. Ligand-X is self-hosted and bound to localhost by default. Local calculations and trajectories stay on hardware you control. Optional remote scientific services can receive submitted queries or protein sequences when remote egress is enabled; see the privacy policy before using confidential inputs.",
           },
         ],
         primaryCta: { label: "Download Ligand-X", href: "/download/", nav: "download" },

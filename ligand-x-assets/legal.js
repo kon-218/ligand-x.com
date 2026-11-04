@@ -115,18 +115,20 @@
         title: "The Ligand-X application",
         body: [
           "Ligand-X is self-hosted software that runs on your own machine or infrastructure. This is the core of the product and it is also the core of its privacy posture.",
-          "Your protein structures, compounds, projects, job inputs, calculation results, and trajectories are written to storage you control. They are never transmitted to us. We have no ability to read them, and there is no account system, no cloud sync, and no usage telemetry in the application.",
+          "Your protein structures, compounds, projects, job inputs, calculation results, and trajectories are written to storage you control. The application has a local login account; it does not require a Ligand-X cloud account or sync your projects to us. Remote scientific services, when enabled, can receive the inputs described below.",
           "Licensed features are unlocked by a cryptographically signed licence file stored on your own machine and verified locally against a public key that ships with the software. Verification is entirely offline: running a licensed Ligand-X installation involves no contact with our servers.",
           "The application does make a small number of clearly bounded outbound connections, all to third parties rather than to us:",
         ],
         list: [
           "GitHub — to check for launcher updates and to download the runtime package.",
           "Container registries — to pull the software images your installation runs.",
+          "Public structure and compound databases — when you request identifiers, searches, or records from services such as RCSB PDB, PubChem, ChEMBL, and PDBe.",
+          "Remote sequence services — if enabled, MSA generation can send protein sequences to ColabFold/MMSeqs2 or NCBI BLAST. Boltz-2 remote MSA requires an explicit request choice and the installation's remote-egress setting. Use local inputs and suitable local resources when sequences must remain private.",
           "Zenodo — only when you fetch a public dataset record through the application.",
           "Cloudflare — only if you deliberately enable the optional remote-access tunnel. Doing so exposes your installation over the network; consider carefully who can reach it.",
         ],
         after: [
-          "Each of those parties will see your IP address in the course of serving the request, under their own privacy terms. None of them tells us anything about you.",
+          "Third-party services can see your IP address and the identifiers, queries, or sequences you send, under their own terms. Scientific remote requests are controlled by the installation's remote-egress setting; software downloads and optional remote-access setup are separate network activities.",
         ],
       },
       {
