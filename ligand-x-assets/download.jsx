@@ -15,6 +15,7 @@ const OS_OPTIONS = [
       "Install Docker Desktop with the WSL 2 backend before opening the launcher",
       "Portable .exe — if SmartScreen warns, choose More info → Run anyway",
       "GPU acceleration needs WSL 2 GPU passthrough and the NVIDIA Container Toolkit for WSL 2",
+      "Preview / not yet install-tested — the build is unsigned and has not been run on a Windows machine; please report install problems on the support tracker",
     ],
     dockerUrl: "https://docs.docker.com/desktop/setup/install/windows-install/",
   },
