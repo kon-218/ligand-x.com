@@ -104,7 +104,7 @@
       platforms: [
         {
           title: "Windows",
-          body: "The portable .exe needs no admin install. If SmartScreen warns, choose More info → Run anyway. Docker Desktop with WSL 2 must be running.",
+          body: "The portable .exe needs no admin install. If SmartScreen warns, choose More info → Run anyway. Docker Desktop with WSL 2 must be running. Preview / not yet install-tested: the build is unsigned and has not yet been run on a Windows machine.",
         },
         {
           title: "macOS",
