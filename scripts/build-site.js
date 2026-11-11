@@ -147,21 +147,21 @@ const benchmarkPages = [
     id: "docs",
     primary: false,
     path: "/docs/benchmarks/docking/",
-    title: "Vina vs Vinardo docking benchmark — Ligand-X",
+    title: "Docking benchmark in preparation — Ligand-X",
     description:
-      "Controlled Astex Diverse redocking benchmark comparing AutoDock Vina and Vinardo pose accuracy across 85 protein–ligand complexes.",
+      "Docking results are held until the matched 25 Å protocol re-run and its reproducibility package are complete.",
     eyebrow: "Benchmark · Molecular docking · Draft",
-    heading: "AutoDock Vina versus Vinardo on Astex Diverse.",
+    heading: "Docking benchmark in preparation.",
     intro:
-      "A controlled comparison of two scoring functions with preparation, search space, seed, and exhaustiveness held constant. The protocol is being revised and is not yet locked, so no results are published here.",
+      "Results are held pending a matched-protocol re-run with the published 25 Å search box and matching preparation.",
     sections: [
       [
-        "Controlled comparison",
-        "Both scoring functions were evaluated across the same 85 Astex Diverse complexes using an identical ligand-extent-plus-4-ångström search box, seed 20260720, exhaustiveness 32, and ten output modes.",
+        "Protocol",
+        "The planned comparison uses a 25 Å cube centred on the crystal ligand heavy-atom geometric centre, exhaustiveness 32, 40 generated poses and top-ranked selection. Three seeded replicates will measure run-to-run variation.",
       ],
       [
         "Results",
-        "Numerical results are withheld. The Astex docking analysis is under a revised protocol that has not been locked, and its release gate has not passed. Success rates and RMSD figures will be published here with the locked protocol and its reproducibility package.",
+        "No docking performance headline is available until the matched-protocol re-run and its verified reproducibility package are complete. RMSD-only and PoseBusters-valid outcomes will be reported separately, with every failed case retained.",
       ],
     ],
   },
